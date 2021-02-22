@@ -7,7 +7,7 @@ def similarity(a, b):
 
 
 
-
+from UserDefinedTagsFetcher import UserDefinedTagsFetcher
 import pickle
 
 #---------------------------------------------------------------------------------------
@@ -28,6 +28,9 @@ import pickle
 #     pickle.dump(steamGamesList, mockSteamReturn)
 
 # exit(1)
+
+# import os
+# gamesOnDisk = os.listdir("/Volumes/babyBlue/Games/PC/")
 
 class MatchQueueEntry:
     def __init__(self, gameNameFromSteam, gameNameOnDisk, steamIDNumber):
@@ -62,8 +65,6 @@ class UserInputRequiredQueueEntry:
         return self.possibleMatchesList
 
 def iterateOverGamesListAndApplyMinimumEditDistance(gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList, gamesOnDisk):
-    # XXX this should be injected
-
     for targetGame in gamesOnDisk:
         possibleMatchesList = []
         for game in steamGamesList:
@@ -77,7 +78,7 @@ def iterateOverGamesListAndApplyMinimumEditDistance(gameNameMatchesProcessingQue
                     gameNameMatchesProcessingQueue.put(MatchQueueEntry(steamName, targetGame, steamIDNumber))
                     break
         else:
-            sortedMatches = sorted(possibleMatchesList, key=lambda x: x.getMatchScore())
+            sortedMatches = sorted(possibleMatchesList, key=lambda x: x.getMatchScore(), reverse=True)
             uire = UserInputRequiredQueueEntry(targetGame, sortedMatches)
             userInputRequiredQueue.put(uire)
 
@@ -88,12 +89,10 @@ def iterateOverGamesListAndApplyMinimumEditDistance(gameNameMatchesProcessingQue
 
 #-----------------------------------------------------------------------------------------
 
+# XXX mocks
 with open('mockSteamReturn.txt', 'rb') as mockSteamReturn:
     steamGamesList = pickle.load(mockSteamReturn)
-
-# import os
-# gamesOnDisk = os.listdir("/Volumes/babyBlue/Games/PC/")
-
+# XXX mocks
 with open('mockGamesList.txt', 'rb') as mockGamesList:
     gamesOnDisk = pickle.load(mockGamesList)
 
@@ -109,21 +108,25 @@ if __name__ == '__main__':
     GameListIteratorAndMinimumEditDistanceProcess = Process(target=iterateOverGamesListAndApplyMinimumEditDistance, args=(gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList, gamesOnDisk))
     GameListIteratorAndMinimumEditDistanceProcess.start()
     
+    userDefinedTagsFetcher = UserDefinedTagsFetcher()
 
     uire = userInputRequiredQueue.get()
     while uire != None:
         nameOnDisk = uire.getTargetName()
         print(f"found {nameOnDisk}")
         for possibleMatch in uire.getPossibleMatchesList():
-            userInput = input(f"does it match '{possibleMatch.getSteamName()}'? (y/n)")
+            userInput = input(f"does it match '{possibleMatch.getSteamName()}' - {possibleMatch.steamIDNumber} - {possibleMatch.matchScore}? (y/n)")
             if userInput.lower() == 'y':
-                gameNameMatchesProcessingQueue.put(possibleMatch.convertToMatchQueueEntry(nameOnDisk))        
+                gameNameMatchesProcessingQueue.put(possibleMatch.convertToMatchQueueEntry(nameOnDisk)) 
+                userDefinedTagsFetcher.getTags(possibleMatch.steamIDNumber)       
                 break
         else:
             unmatchedGames.append(nameOnDisk)
         uire = userInputRequiredQueue.get()
-    GameListIteratorAndMinimumEditDistanceProcess.join()
 
+
+    
+    GameListIteratorAndMinimumEditDistanceProcess.join()
     print(unmatchedGames)
 
 
