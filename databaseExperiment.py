@@ -3,30 +3,28 @@ from psycopg2.errors import DuplicateDatabase
 
 
 
+class connectionFactory:
+  @staticmethod
+  def createConnection():
+    conn = psycopg2.connect(
+      database="postgres", user='postgres', password='password', host='127.0.0.1', port= '5432'
+    )
+    conn.autocommit = True
+    return conn
 
+# establishing the connection
+# conn = psycopg2.connect(
+#    database="postgres", user='postgres', password='password', host='127.0.0.1', port= '5432'
+# )
+# conn.autocommit = True
 
-#establishing the connection
-conn = psycopg2.connect(
-   database="postgres", user='postgres', password='password', host='127.0.0.1', port= '5432'
-)
-conn.autocommit = True
+conn = connectionFactory.createConnection()
 
 #Creating a cursor object using the cursor() method
 cursor = conn.cursor()
 
-sql = '''DROP DATABASE IF EXISTS mydb;'''
-cursor.execute(sql)
-
-#Preparing query to create a database
-sql = '''CREATE database mydb''';
-
-# postgres doesn't support "IF NOT EXISTS" for 'Create database'
-try:
-    #Creating a database
-    cursor.execute(sql)
-    print("Database created successfully........")
-except DuplicateDatabase:
-    pass
+# sql = '''DROP DATABASE IF EXISTS mydb;'''
+# cursor.execute(sql)
 
 
 
@@ -49,6 +47,14 @@ CREATE TABLE IF NOT EXISTS Games (
 
 cursor.execute(x)
 
+x = '''
+INSERT INTO Games (steam_id, name_on_harddrive, path_on_harddrive, name_on_steam, avg_review_score) VALUES
+    (1976647, 'Tampopo', 'String', '1985-02-10', 5.4),
+    (2658854, 'Factorio', '/Volumes/GameDrive/Factorio', 'Factorio', 9.2);
+'''
+cursor.execute(x)
+
+
 # UserTagMappings:
 #   steam_id -> int, foreign
 #   tag_id -> int, foreign
@@ -61,7 +67,14 @@ CREATE TABLE IF NOT EXISTS UserDefinedTagMappings (
 '''
 cursor.execute(x)
 
-
+x = '''
+INSERT INTO UserDefinedTagMappings (steam_id, tag_name) VALUES
+    (1976647, 'Good'),
+    (1976647, 'ol'),
+    (1976647, 'Fun'),
+    (2658854, 'Automation');
+'''
+cursor.execute(x)
 
 # BlacklistedSteamIds:
 #   steam_id -> int, primary
@@ -73,6 +86,17 @@ CREATE TABLE IF NOT EXISTS BlacklistedSteamIds (
 
 cursor.execute(x)
 
+
+x = '''
+INSERT INTO BlacklistedSteamIds (steam_id) VALUES
+    (75325785),
+    (83325366);
+'''
+cursor.execute(x)
+
+# INSERT INTO films (code, title, did, date_prod, kind) VALUES
+#     ('B6717', 'Tampopo', 110, '1985-02-10', 'Comedy'),
+#     ('HG120', 'The Dinner Game', 140, DEFAULT, 'Comedy');
 
 #Closing the connection
 conn.close()
