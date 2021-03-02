@@ -1,11 +1,33 @@
-class GameDAOPostgres:
 
+from PostgresConnectionFactory import PostgresConnectionFactory
+from itertools import repeat
+
+class PostgresGameDAO:
+    def __init__(self, connectionFactory):
+        self.connectionFactory = connectionFactory
+
+    def commitGame(self, gameModel):
+        conn = self.connectionFactory.createConnection()
+        with conn.cursor() as cur:
+            insertGame = "INSERT INTO Games (steam_id, name_on_harddrive, path_on_harddrive, name_on_steam, avg_review_score) VALUES (%s, %s, %s, %s, %s);"
+            gameData = (gameModel.steam_id, gameModel.name_on_harddrive, gameModel.path_on_harddrive, gameModel.name_on_steam, gameModel.avg_review_score)
+            cur.execute(insertGame, gameData) # doing it this way prevents sql injection
+
+            insertTags = "INSERT INTO UserDefinedTagMappings (steam_id, tag_name) VALUES (%s, %s);"
+            tagData = tuple(zip(repeat(gameModel.steam_id), gameModel.user_defined_tags))
+            cur.executemany(insertTags, tagData)
+
+
+class PostgresGameDAOFactory:
     @staticmethod
-    def commitGame(gameModel):
-        #lmao don't sql injection yourself I guess
-        sql = "INSERT INTO Games (steam_id, name_on_harddrive, path_on_harddrive, name_on_steam, avg_review_score) VALUES (%s);"
-        data = (21354671253467, 'Fake', 'Entry', 'Oh Yeah', 9.2, )
-        cur.execute(sql, data) # Note: no % operator
+    def createGameDAO():
+        return PostgresGameDAO(PostgresConnectionFactory)
+
+from GameModel import Game
+
+gameDAO = PostgresGameDAOFactory.createGameDAO()
+x = Game(12345, 'stuff', 'more stuff', 'steam name', 7, ['tag1', 'tag2', 'tag3'])
+gameDAO.commitGame(x)
 
 
 # x = '''

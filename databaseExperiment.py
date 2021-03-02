@@ -62,7 +62,8 @@ x = '''
 CREATE TABLE IF NOT EXISTS UserDefinedTagMappings (
   steam_id int NOT NULL,
   tag_name VARCHAR ( 100 ) NOT NULL,
-  FOREIGN KEY (steam_id) REFERENCES Games(steam_id)
+  FOREIGN KEY (steam_id) REFERENCES Games(steam_id),
+  PRIMARY KEY (steam_id, tag_name)
 );
 '''
 cursor.execute(x)
