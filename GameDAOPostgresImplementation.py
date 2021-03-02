@@ -23,11 +23,11 @@ class PostgresGameDAOFactory:
     def createGameDAO():
         return PostgresGameDAO(PostgresConnectionFactory)
 
-from GameModel import Game
+# from GameModel import Game
 
-gameDAO = PostgresGameDAOFactory.createGameDAO()
-x = Game(12345, 'stuff', 'more stuff', 'steam name', 7, ['tag1', 'tag2', 'tag3'])
-gameDAO.commitGame(x)
+# gameDAO = PostgresGameDAOFactory.createGameDAO()
+# x = Game(12345, 'stuff', 'more stuff', 'steam name', 7, ['tag1', 'tag2', 'tag3'])
+# gameDAO.commitGame(x)
 
 
 # x = '''

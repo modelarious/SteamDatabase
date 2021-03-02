@@ -9,6 +9,7 @@ END_OF_QUEUE = None
 
 from UserDefinedTagsFetcher import UserDefinedTagsFetcher
 import pickle
+from GameModel import Game
 
 #---------------------------------------------------------------------------------------
 # https://store.steampowered.com/appreviews/2028850?json=1  
@@ -117,11 +118,21 @@ import pickle
 # import os
 # gamesOnDisk = os.listdir("/Volumes/babyBlue/Games/PC/")
 
+
 class MatchQueueEntry:
     def __init__(self, gameNameFromSteam, gameNameOnDisk, steamIDNumber):
         self.gameNameFromSteam = gameNameFromSteam
         self.gameNameOnDisk = gameNameOnDisk
         self.steamIDNumber = steamIDNumber
+
+    def getGameNameFromSteam(self):
+        return self.gameNameFromSteam
+    
+    def getGameNameOnDisk(self):
+        return self.gameNameOnDisk
+
+    def getSteamIDNumber(self):
+        return self.steamIDNumber
 
 class PossibleMatchQueueEntry:
     def __init__(self, steamName, steamIDNumber, matchScore):
@@ -171,7 +182,25 @@ def iterateOverGamesListAndApplyMinimumEditDistance(gameNameMatchesProcessingQue
     # no more user input required after this
     userInputRequiredQueue.put(END_OF_QUEUE)
 
-def GameLookupAndStorageProcess(gameNameMatchesProcessingQueue):
+def gameLookupAndStorageProcess(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher):
+    gnmpe = gameNameMatchesProcessingQueue.get()
+    while gnmpe != END_OF_QUEUE:
+        print("found a game")
+        steamIDNumber = gnmpe.getSteamIDNumber()
+        userTags = userDefinedTagsFetcher.getTags(steamIDNumber)
+
+        game = Game(
+            steam_id=steamIDNumber, 
+            name_on_harddrive=gnmpe.getGameNameOnDisk(), 
+            path_on_harddrive="hello", 
+            name_on_steam=gnmpe.getGameNameFromSteam(), 
+            avg_review_score=7.4, 
+            user_defined_tags=userTags
+        )
+
+        gameDAO.commitGame(game)
+        gnmpe = gameNameMatchesProcessingQueue.get()
+
 
 
 #-----------------------------------------------------------------------------------------
@@ -184,20 +213,22 @@ with open('mockGamesList.txt', 'rb') as mockGamesList:
     gamesOnDisk = pickle.load(mockGamesList)
 
 from multiprocessing import Process, Queue
+from GameDAOPostgresImplementation import PostgresGameDAOFactory
 
 if __name__ == '__main__':
     gameNameMatchesProcessingQueue = Queue()
     userInputRequiredQueue = Queue()
     unmatchedGames = []
 
-    GameLookupAndStorageProcess = Process(target=GameLookupAndStorageProcess, args=(gameNameMatchesProcessingQueue))
+    gameDAO = PostgresGameDAOFactory.createGameDAO()
+    userDefinedTagsFetcher = UserDefinedTagsFetcher()
+    GameLookupAndStorageProcess = Process(target=gameLookupAndStorageProcess, args=(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher))
+    GameLookupAndStorageProcess.start()
 
     # One process for going through the steamGamesList and applying the min edit dist algo.
     # adds matches that are 1.0 to the GamePerfectMatches queue, adds anything else UserInputRequired queue for user input process to consume
     GameListIteratorAndMinimumEditDistanceProcess = Process(target=iterateOverGamesListAndApplyMinimumEditDistance, args=(gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList, gamesOnDisk))
     GameListIteratorAndMinimumEditDistanceProcess.start()
-    
-    userDefinedTagsFetcher = UserDefinedTagsFetcher()
 
     uire = userInputRequiredQueue.get()
     while uire != END_OF_QUEUE:
@@ -207,7 +238,6 @@ if __name__ == '__main__':
             userInput = input(f"does it match '{possibleMatch.getSteamName()}' - {possibleMatch.steamIDNumber} - {possibleMatch.matchScore}? (y/n)")
             if userInput.lower() == 'y':
                 gameNameMatchesProcessingQueue.put(possibleMatch.convertToMatchQueueEntry(nameOnDisk)) 
-                userDefinedTagsFetcher.getTags(possibleMatch.steamIDNumber)       
                 break
         else:
             unmatchedGames.append(nameOnDisk)

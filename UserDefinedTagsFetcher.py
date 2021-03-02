@@ -14,5 +14,6 @@ class UserDefinedTagsFetcher:
         sanitizedUserDefinedTags = []
         for tagNum in range(len(userDefinedTags)):
             tagText = userDefinedTags[tagNum].text.strip()
-            sanitizedUserDefinedTags.append(sanitizedUserDefinedTags)
-            print(tagText)
+            sanitizedUserDefinedTags.append(tagText)
+        
+        return sanitizedUserDefinedTags
