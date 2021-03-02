@@ -182,19 +182,21 @@ def iterateOverGamesListAndApplyMinimumEditDistance(gameNameMatchesProcessingQue
     # no more user input required after this
     userInputRequiredQueue.put(END_OF_QUEUE)
 
-def gameLookupAndStorageProcess(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher):
+def gameLookupAndStorageProcess(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, pathOnDisk):
     gnmpe = gameNameMatchesProcessingQueue.get()
     while gnmpe != END_OF_QUEUE:
         print("found a game")
         steamIDNumber = gnmpe.getSteamIDNumber()
         userTags = userDefinedTagsFetcher.getTags(steamIDNumber)
 
+        gameNameOnDisk = gnmpe.getGameNameOnDisk()
+
         game = Game(
             steam_id=steamIDNumber, 
-            name_on_harddrive=gnmpe.getGameNameOnDisk(), 
-            path_on_harddrive="hello", 
+            name_on_harddrive=gameNameOnDisk, 
+            path_on_harddrive=pathOnDisk + gameNameOnDisk, 
             name_on_steam=gnmpe.getGameNameFromSteam(), 
-            avg_review_score=7.4, 
+            avg_review_score=7.4,  # XXX
             user_defined_tags=userTags
         )
 
@@ -222,7 +224,8 @@ if __name__ == '__main__':
 
     gameDAO = PostgresGameDAOFactory.createGameDAO()
     userDefinedTagsFetcher = UserDefinedTagsFetcher()
-    GameLookupAndStorageProcess = Process(target=gameLookupAndStorageProcess, args=(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher))
+    pathOnDisk = "/Volumes/babyBlue/Games/PC/"
+    GameLookupAndStorageProcess = Process(target=gameLookupAndStorageProcess, args=(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, pathOnDisk))
     GameLookupAndStorageProcess.start()
 
     # One process for going through the steamGamesList and applying the min edit dist algo.
