@@ -23,11 +23,6 @@ conn = connectionFactory.createConnection()
 #Creating a cursor object using the cursor() method
 cursor = conn.cursor()
 
-# sql = '''DROP DATABASE IF EXISTS mydb;'''
-# cursor.execute(sql)
-
-
-
 
 # Games:
 #   steam_id -> int, primary -> used as foreign key in other tables
@@ -47,12 +42,12 @@ CREATE TABLE IF NOT EXISTS Games (
 
 cursor.execute(x)
 
-x = '''
-INSERT INTO Games (steam_id, name_on_harddrive, path_on_harddrive, name_on_steam, avg_review_score) VALUES
-    (1976647, 'Tampopo', 'String', '1985-02-10', 5.4),
-    (2658854, 'Factorio', '/Volumes/GameDrive/Factorio', 'Factorio', 9.2);
-'''
-cursor.execute(x)
+# x = '''
+# INSERT INTO Games (steam_id, name_on_harddrive, path_on_harddrive, name_on_steam, avg_review_score) VALUES
+#     (1976647, 'Tampopo', 'String', '1985-02-10', 5.4),
+#     (2658854, 'Factorio', '/Volumes/GameDrive/Factorio', 'Factorio', 9.2);
+# '''
+# cursor.execute(x)
 
 
 # UserTagMappings:
@@ -62,20 +57,21 @@ x = '''
 CREATE TABLE IF NOT EXISTS UserDefinedTagMappings (
   steam_id int NOT NULL,
   tag_name VARCHAR ( 100 ) NOT NULL,
+  rank int NOT NULL,
   FOREIGN KEY (steam_id) REFERENCES Games(steam_id),
   PRIMARY KEY (steam_id, tag_name)
 );
 '''
 cursor.execute(x)
 
-x = '''
-INSERT INTO UserDefinedTagMappings (steam_id, tag_name) VALUES
-    (1976647, 'Good'),
-    (1976647, 'ol'),
-    (1976647, 'Fun'),
-    (2658854, 'Automation');
-'''
-cursor.execute(x)
+# x = '''
+# INSERT INTO UserDefinedTagMappings (steam_id, tag_name) VALUES
+#     (1976647, 'Good'),
+#     (1976647, 'ol'),
+#     (1976647, 'Fun'),
+#     (2658854, 'Automation');
+# '''
+# cursor.execute(x)
 
 # BlacklistedSteamIds:
 #   steam_id -> int, primary
@@ -88,12 +84,12 @@ CREATE TABLE IF NOT EXISTS BlacklistedSteamIds (
 cursor.execute(x)
 
 
-x = '''
-INSERT INTO BlacklistedSteamIds (steam_id) VALUES
-    (75325785),
-    (83325366);
-'''
-cursor.execute(x)
+# x = '''
+# INSERT INTO BlacklistedSteamIds (steam_id) VALUES
+#     (75325785),
+#     (83325366);
+# '''
+# cursor.execute(x)
 
 # INSERT INTO films (code, title, did, date_prod, kind) VALUES
 #     ('B6717', 'Tampopo', 110, '1985-02-10', 'Comedy'),

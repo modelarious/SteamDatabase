@@ -8,96 +8,9 @@ END_OF_QUEUE = None
 
 
 from UserDefinedTagsFetcher import UserDefinedTagsFetcher
+from SteamAPIDataFetcher import SteamAPIDataFetcher
 import pickle
 from GameModel import Game
-
-#---------------------------------------------------------------------------------------
-# https://store.steampowered.com/appreviews/2028850?json=1  
-# review
-# https://store.steampowered.com/api/appdetails?appids=2028850 
-# "2028850" -> "data" -> "detailed_description"
-# "2028850" -> "data" -> "categories":[
-        #     {
-        #        "id":2,
-        #        "description":"Single-player"
-        #     },
-        #     {
-        #        "id":21,
-        #        "description":"Downloadable Content"
-        #     },
-        #     {
-        #        "id":22,
-        #        "description":"Steam Achievements"
-        #     },
-        #     {
-        #        "id":28,
-        #        "description":"Full controller support"
-        #     },
-        #     {
-        #        "id":23,
-        #        "description":"Steam Cloud"
-        #     }
-        #  ],
-        #  "genres":[
-        #     {
-        #        "id":"1",
-        #        "description":"Action"
-        #     }
-        #  ],
-        #  "screenshots":[
-        #     {
-        #        "id":0,
-        #        "path_thumbnail":"https:\/\/cdn.akamai.steamstatic.com\/steam\/apps\/2028850\/ss_c6f3fbf3e9f4cb1777462150203a7174608dfcd9.600x338.jpg?t=1560961334",
-        #        "path_full":"https:\/\/cdn.akamai.steamstatic.com\/steam\/apps\/2028850\/ss_c6f3fbf3e9f4cb1777462150203a7174608dfcd9.1920x1080.jpg?t=1560961334"
-        #     },
-        #     {
-        #        "id":1,
-        #        "path_thumbnail":"https:\/\/cdn.akamai.steamstatic.com\/steam\/apps\/2028850\/ss_d45294620026ff41f7e6b8610c6d60e13645fbf3.600x338.jpg?t=1560961334",
-        #        "path_full":"https:\/\/cdn.akamai.steamstatic.com\/steam\/apps\/2028850\/ss_d45294620026ff41f7e6b8610c6d60e13645fbf3.1920x1080.jpg?t=1560961334"
-        #     },
-        #     {
-        #        "id":2,
-        #        "path_thumbnail":"https:\/\/cdn.akamai.steamstatic.com\/steam\/apps\/2028850\/ss_3a364ffdcd2c1eeb3957435c624fc7c383d8cb69.600x338.jpg?t=1560961334",
-        #        "path_full":"https:\/\/cdn.akamai.steamstatic.com\/steam\/apps\/2028850\/ss_3a364ffdcd2c1eeb3957435c624fc7c383d8cb69.1920x1080.jpg?t=1560961334"
-        #     },
-        #     {
-        #        "id":3,
-        #        "path_thumbnail":"https:\/\/cdn.akamai.steamstatic.com\/steam\/apps\/2028850\/ss_26e2d983948edfb911db3e0d2c3679900b4ef9fa.600x338.jpg?t=1560961334",
-        #        "path_full":"https:\/\/cdn.akamai.steamstatic.com\/steam\/apps\/2028850\/ss_26e2d983948edfb911db3e0d2c3679900b4ef9fa.1920x1080.jpg?t=1560961334"
-        #     },
-        #     {
-        #        "id":4,
-        #        "path_thumbnail":"https:\/\/cdn.akamai.steamstatic.com\/steam\/apps\/2028850\/ss_4616da02724c2beaa8afc74a501929d27a65542a.600x338.jpg?t=1560961334",
-        #        "path_full":"https:\/\/cdn.akamai.steamstatic.com\/steam\/apps\/2028850\/ss_4616da02724c2beaa8afc74a501929d27a65542a.1920x1080.jpg?t=1560961334"
-        #     },
-        #     {
-        #        "id":5,
-        #        "path_thumbnail":"https:\/\/cdn.akamai.steamstatic.com\/steam\/apps\/2028850\/ss_fd6f5de55332f6c3cd119a01a9e017e840765c0e.600x338.jpg?t=1560961334",
-        #        "path_full":"https:\/\/cdn.akamai.steamstatic.com\/steam\/apps\/2028850\/ss_fd6f5de55332f6c3cd119a01a9e017e840765c0e.1920x1080.jpg?t=1560961334"
-        #     },
-        #     {
-        #        "id":6,
-        #        "path_thumbnail":"https:\/\/cdn.akamai.steamstatic.com\/steam\/apps\/2028850\/ss_37f25110f8d76335ddbc29a381bc6961e209acf6.600x338.jpg?t=1560961334",
-        #        "path_full":"https:\/\/cdn.akamai.steamstatic.com\/steam\/apps\/2028850\/ss_37f25110f8d76335ddbc29a381bc6961e209acf6.1920x1080.jpg?t=1560961334"
-        #     },
-        #     {
-        #        "id":7,
-        #        "path_thumbnail":"https:\/\/cdn.akamai.steamstatic.com\/steam\/apps\/2028850\/ss_dc76723504ce89c1ed1f66fd468682ba76548c32.600x338.jpg?t=1560961334",
-        #        "path_full":"https:\/\/cdn.akamai.steamstatic.com\/steam\/apps\/2028850\/ss_dc76723504ce89c1ed1f66fd468682ba76548c32.1920x1080.jpg?t=1560961334"
-        #     },
-        #     {
-        #        "id":8,
-        #        "path_thumbnail":"https:\/\/cdn.akamai.steamstatic.com\/steam\/apps\/2028850\/ss_e98deaf0e334206b84c2462276aee98107fa20d0.600x338.jpg?t=1560961334",
-        #        "path_full":"https:\/\/cdn.akamai.steamstatic.com\/steam\/apps\/2028850\/ss_e98deaf0e334206b84c2462276aee98107fa20d0.1920x1080.jpg?t=1560961334"
-        #     }
-        #  ],
-        #  "release_date":{
-        #     "coming_soon":false,
-        #     "date":"25 Jun, 2013"
-        #  },
-
-
-
 
 # from pprint import pprint
 # import requests
@@ -182,12 +95,13 @@ def iterateOverGamesListAndApplyMinimumEditDistance(gameNameMatchesProcessingQue
     # no more user input required after this
     userInputRequiredQueue.put(END_OF_QUEUE)
 
-def gameLookupAndStorageProcess(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, pathOnDisk):
+def gameLookupAndStorageProcess(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, steamAPIDataFetcher, pathOnDisk):
     gnmpe = gameNameMatchesProcessingQueue.get()
     while gnmpe != END_OF_QUEUE:
         print("found a game")
         steamIDNumber = gnmpe.getSteamIDNumber()
         userTags = userDefinedTagsFetcher.getTags(steamIDNumber)
+        reviewScore = steamAPIDataFetcher.getAvgReviewScore(steamIDNumber)
 
         gameNameOnDisk = gnmpe.getGameNameOnDisk()
 
@@ -196,7 +110,7 @@ def gameLookupAndStorageProcess(gameNameMatchesProcessingQueue, gameDAO, userDef
             name_on_harddrive=gameNameOnDisk, 
             path_on_harddrive=pathOnDisk + gameNameOnDisk, 
             name_on_steam=gnmpe.getGameNameFromSteam(), 
-            avg_review_score=7.4,  # XXX
+            avg_review_score=reviewScore,
             user_defined_tags=userTags
         )
 
@@ -224,8 +138,9 @@ if __name__ == '__main__':
 
     gameDAO = PostgresGameDAOFactory.createGameDAO()
     userDefinedTagsFetcher = UserDefinedTagsFetcher()
+    steamAPIDataFetcher = SteamAPIDataFetcher()
     pathOnDisk = "/Volumes/babyBlue/Games/PC/"
-    GameLookupAndStorageProcess = Process(target=gameLookupAndStorageProcess, args=(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, pathOnDisk))
+    GameLookupAndStorageProcess = Process(target=gameLookupAndStorageProcess, args=(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, steamAPIDataFetcher, pathOnDisk))
     GameLookupAndStorageProcess.start()
 
     # One process for going through the steamGamesList and applying the min edit dist algo.
@@ -250,6 +165,7 @@ if __name__ == '__main__':
 
     # by this point there is nothing that will write to the gameNameMatchesProcessingQueue (that is being read by GameLookupAndStorageProcess)
     gameNameMatchesProcessingQueue.put(END_OF_QUEUE)
+    GameLookupAndStorageProcess.join()
     print(f"unmatchedGames={unmatchedGames}")
 
 
