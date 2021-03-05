@@ -17,7 +17,7 @@ class PostgresGameDAO:
             steamIDIter = repeat(gameModel.steam_id)
             rank = range(1, (len(gameModel.user_defined_tags) + 1))
             
-            tagData = tuple(zip(steamIDIter, gameModel.user_defined_tags, rank)) # XXX you need to redefine the schema!!
+            tagData = tuple(zip(steamIDIter, gameModel.user_defined_tags, rank))
             cur.executemany(insertTags, tagData)
 
 
