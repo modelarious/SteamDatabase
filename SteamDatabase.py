@@ -32,8 +32,19 @@ from multiprocessing import Process, Manager
 #-----------------------------------------------------------------------------------------
 
 
+def build_steam_title_map(steamGamesList):
+    steamTitleMap = dict()
+    print(steamGamesList)
+    for gameObj in steamGamesList:
+        gameTitle = gameObj["name"].lower()
+        steamTitleMap[gameTitle] = gameObj
+    return steamTitleMap
+
 
 def main(steamGamesList, gamesOnDisk):
+
+    quickSteamTitleMap = build_steam_title_map(steamGamesList)
+
     print("creating manager and queues")
     m = Manager()
     gameNameMatchesProcessingQueue = m.Queue()
@@ -48,6 +59,7 @@ def main(steamGamesList, gamesOnDisk):
     print("finished constructing necessary objects")
 
     print("launching game storage process")
+    # XXX gameLookupAndStorageProcess -> game_lookup_and_storage_process
     GameLookupAndStorageProcess = Process(target=gameLookupAndStorageProcess, args=(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, steamAPIDataFetcher, pathOnDisk))
     GameLookupAndStorageProcess.start()
     print("finished launching game storage process")
@@ -56,7 +68,7 @@ def main(steamGamesList, gamesOnDisk):
     # This process goes through the steamGamesList and applies the min edit dist algo. (uses a pool of processes to accomplish this quicker)
     # adds matches that are 1.0 to the GamePerfectMatches queue, adds anything else UserInputRequired queue for user input process to consume
     print("launching minimum edit distance handling process")
-    MinimumEditDistanceProcess = Process(target=minimumEditDistanceProcessing, args=(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk))
+    MinimumEditDistanceProcess = Process(target=minimumEditDistanceProcessing, args=(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, quickSteamTitleMap))
     MinimumEditDistanceProcess.start()
     print("finished launching minimum edit distance handling process")
 
