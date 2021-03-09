@@ -22,9 +22,9 @@ def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, user
     # try the fast method
     try:
         # XXX encapsulate the data access in an object - this logic should be paired with build_steam_title_map
-        steamObj = quickSteamTitleMap[targetGame.lower()]
-        steamIDNumber = steamObj['appid']
-        steamName = steamObj['name']
+        game = quickSteamTitleMap[targetGame.lower()]
+        steamIDNumber = game['appid']
+        steamName = game['name']
         gameNameMatchesProcessingQueue.put(MatchQueueEntry(steamName, targetGame, steamIDNumber))
         return
     except KeyError:
