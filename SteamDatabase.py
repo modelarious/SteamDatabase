@@ -1,17 +1,12 @@
-from difflib import SequenceMatcher
+from ExternalDataFetchers.UserDefinedTagsFetcher import UserDefinedTagsFetcher
+from ExternalDataFetchers.SteamAPIDataFetcher import SteamAPIDataFetcher
+from minimumEditDistanceProcessing import minimumEditDistanceProcessing
+from gameLookupAndStorageProcess import gameLookupAndStorageProcess
+from Constants import END_OF_QUEUE
+from Database.PostgresGameDAOFactory import PostgresGameDAOFactory
 
-# minimum edit distance algo with support for junk detection
-def similarity(a, b):
-    return SequenceMatcher(a=a, b=b).ratio()
-
-END_OF_QUEUE = None
-
-from concurrent.futures import ProcessPoolExecutor, as_completed
-from UserDefinedTagsFetcher import UserDefinedTagsFetcher
-from SteamAPIDataFetcher import SteamAPIDataFetcher
 import pickle
-from GameModel import Game
-from psycopg2.errors import UniqueViolation
+from multiprocessing import Process, Manager
 
 # from pprint import pprint
 # import requests
@@ -33,175 +28,12 @@ from psycopg2.errors import UniqueViolation
 # gamesOnDisk = os.listdir("/Volumes/babyBlue/Games/PC/")
 
 
-class MatchQueueEntry:
-    def __init__(self, gameNameFromSteam, gameNameOnDisk, steamIDNumber):
-        self.gameNameFromSteam = gameNameFromSteam
-        self.gameNameOnDisk = gameNameOnDisk
-        self.steamIDNumber = steamIDNumber
-
-    def getGameNameFromSteam(self):
-        return self.gameNameFromSteam
-    
-    def getGameNameOnDisk(self):
-        return self.gameNameOnDisk
-
-    def getSteamIDNumber(self):
-        return self.steamIDNumber
-
-class PossibleMatchQueueEntry:
-    def __init__(self, steamName, steamIDNumber, matchScore):
-        self.steamName = steamName
-        self.steamIDNumber = steamIDNumber
-        self.matchScore = matchScore
-    
-    def getMatchScore(self):
-        return self.matchScore
-    
-    def getSteamName(self):
-        return self.steamName
-
-    def convertToMatchQueueEntry(self, gameNameOnDisk):
-        return MatchQueueEntry(self.steamName, gameNameOnDisk, self.steamIDNumber)
-
-class UserInputRequiredQueueEntry:
-    def __init__(self, targetName, possibleMatchesList):
-        self.targetName = targetName
-        self.possibleMatchesList = possibleMatchesList
-    
-    def getTargetName(self):
-        return self.targetName
-    
-    def getPossibleMatchesList(self):
-        return self.possibleMatchesList
-
-# GameListProcessingService
-def iterateOverGamesListAndApplyMinimumEditDistance(gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList, gamesOnDisk):
-    for targetGame in gamesOnDisk:
-        possibleMatchesList = []
-        for game in steamGamesList:
-            steamName = game['name']
-            steamIDNumber = game['appid']
-            score = similarity(steamName.lower(), targetGame.lower())
-            if score >= 0.7:
-                possibleMatchesList.append(PossibleMatchQueueEntry(steamName, steamIDNumber, score))
-                if score == 1.0:
-                    #print(steamName, targetGame, "added immediately")
-                    gameNameMatchesProcessingQueue.put(MatchQueueEntry(steamName, targetGame, steamIDNumber))
-                    break
-        else:
-            sortedMatches = sorted(possibleMatchesList, key=lambda x: x.getMatchScore(), reverse=True)
-            uire = UserInputRequiredQueueEntry(targetGame, sortedMatches)
-            userInputRequiredQueue.put(uire)
-
-    # no more user input required after this
-    userInputRequiredQueue.put(END_OF_QUEUE)
-
-def gameLookupAndStorageProcess(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, steamAPIDataFetcher, pathOnDisk):
-    unableToInsert = []
-    gnmpe = gameNameMatchesProcessingQueue.get()
-    while gnmpe != END_OF_QUEUE:
-        steamIDNumber = gnmpe.getSteamIDNumber()
-        userTags = userDefinedTagsFetcher.getTags(steamIDNumber)
-        reviewScore = steamAPIDataFetcher.getAvgReviewScore(steamIDNumber)
-
-        gameNameOnDisk = gnmpe.getGameNameOnDisk()
-
-        game = Game(
-            steam_id=steamIDNumber, 
-            name_on_harddrive=gameNameOnDisk, 
-            path_on_harddrive=pathOnDisk + gameNameOnDisk, 
-            name_on_steam=gnmpe.getGameNameFromSteam(), 
-            avg_review_score=reviewScore,
-            user_defined_tags=userTags
-        )
-
-        try:
-            gameDAO.commitGame(game)
-        except UniqueViolation:
-            unableToInsert.append(gameNameOnDisk)
-        
-        gnmpe = gameNameMatchesProcessingQueue.get()
-        
-    return unableToInsert
-
-
 
 #-----------------------------------------------------------------------------------------
 
 
 
-
-from multiprocessing import Process, Queue, cpu_count, Manager
-from GameDAOPostgresImplementation import PostgresGameDAOFactory
-
-
-# GameListProcessingService
-def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList):
-    print(targetGame)
-    possibleMatchesList = []
-    for game in steamGamesList:
-        steamName = game['name']
-        steamIDNumber = game['appid']
-        score = similarity(steamName.lower(), targetGame.lower())
-        if score >= 0.7:
-            possibleMatchesList.append(PossibleMatchQueueEntry(steamName, steamIDNumber, score))
-            if score == 1.0:
-                print(steamName, targetGame, "added immediately")
-                gameNameMatchesProcessingQueue.put(MatchQueueEntry(steamName, targetGame, steamIDNumber))
-                break
-    else:
-        sortedMatches = sorted(possibleMatchesList, key=lambda x: x.getMatchScore(), reverse=True)
-        uire = UserInputRequiredQueueEntry(targetGame, sortedMatches)
-        userInputRequiredQueue.put(uire)
-
-
-def minimumEditDistanceProcessing(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, apply_minimum_edit_distance_function):
-    # (in an ideal world)
-    # one core for the gameLookupAndStorageProcess
-    # one core for the user input process
-    # the rest are used 2 per core for doing "nearest titles" search - MinimumEditDistanceProcess
-    PER_CORE = 2
-    OTHER_PROCESS_COUNT = 2
-    availableCores = (cpu_count() - OTHER_PROCESS_COUNT) * PER_CORE
-    numDesignatedCores = max(1, availableCores)
-    print(f"numDesignatedCores = {numDesignatedCores}")
-
-    print("starting process pool executor")
-    with ProcessPoolExecutor(max_workers=numDesignatedCores) as MinimumEditDistanceProcessPool:
-        # future = MinimumEditDistanceProcessPool.submit(pow, 323, 1235)
-        # executor.map(is_prime, PRIMES)
-
-        # fastest method of exhausting an iterable when you don't care about the output
-        # https://code.activestate.com/lists/python-ideas/23364
-        # exhaust_iterable = deque(maxlen=0).extend
-        # exhaust_iterable(futureMap)
-
-        futureMap = {
-            MinimumEditDistanceProcessPool.submit(
-                apply_minimum_edit_distance_function, targetGame, gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList
-            ) : targetGame
-            for targetGame in gamesOnDisk
-        }
-
-        for future in as_completed(futureMap):
-            result = future.result() # unused
-
-    # no more user input required after this
-    userInputRequiredQueue.put(END_OF_QUEUE)
-
-if __name__ == '__main__':
-    # XXX mocks
-    print("mocking the steam games list from API")
-    with open('mockSteamReturn.txt', 'rb') as mockSteamReturn:
-        steamGamesList = pickle.load(mockSteamReturn)
-        print("finished mocking the steam games list from API")
-
-    # XXX mocks
-    print("mocking the local games list from directory")
-    with open('mockGamesList.txt', 'rb') as mockGamesList:
-        gamesOnDisk = pickle.load(mockGamesList)
-        print("finished mocking the local games list from directory")
-
+def main(steamGamesList, gamesOnDisk):
     print("creating manager and queues")
     m = Manager()
     gameNameMatchesProcessingQueue = m.Queue()
@@ -224,7 +56,7 @@ if __name__ == '__main__':
     # This process goes through the steamGamesList and applies the min edit dist algo. (uses a pool of processes to accomplish this quicker)
     # adds matches that are 1.0 to the GamePerfectMatches queue, adds anything else UserInputRequired queue for user input process to consume
     print("launching minimum edit distance handling process")
-    MinimumEditDistanceProcess = Process(target=minimumEditDistanceProcessing, args=(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, apply_minimum_edit_distance))
+    MinimumEditDistanceProcess = Process(target=minimumEditDistanceProcessing, args=(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk))
     MinimumEditDistanceProcess.start()
     print("finished launching minimum edit distance handling process")
 
@@ -251,9 +83,25 @@ if __name__ == '__main__':
     # by this point there is nothing that will write to the gameNameMatchesProcessingQueue (that is being read by GameLookupAndStorageProcess)
     gameNameMatchesProcessingQueue.put(END_OF_QUEUE)
 
-
     unableToInsert = GameLookupAndStorageProcess.join()
     print(f"unmatchedGames={unmatchedGames}, unableToInsert={unableToInsert}")
+
+if __name__ == '__main__':
+    # XXX mocks
+    print("mocking the steam games list from API")
+    with open('mockSteamReturn.txt', 'rb') as mockSteamReturn:
+        steamGamesList = pickle.load(mockSteamReturn)
+    print("finished mocking the steam games list from API")
+
+    # XXX mocks
+    print("mocking the local games list from directory")
+    with open('mockGamesList.txt', 'rb') as mockGamesList:
+        gamesOnDisk = pickle.load(mockGamesList)
+    print("finished mocking the local games list from directory")
+    
+    main(steamGamesList, gamesOnDisk)
+
+    
 
 
 # One process for going through the steamGamesList and applying the min edit dist algo - adds matches that are 1.0 to the GamePerfectMatches queue, adds anything else UserInputRequired queue for user input process to consume
