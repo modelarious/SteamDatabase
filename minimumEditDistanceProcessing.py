@@ -16,10 +16,25 @@ def similarity(a, b):
 # applies minimum edit distance to find close matches into a list.
 # if it finds an exact match, it sends this off to the next step (gameNameMatchesProcessingQueue).
 # if it doesn't find an exact match, it sends the list off to get input from the user (userInputRequiredQueue).
-def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList):
+def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList, quickSteamTitleMap):
     print(targetGame)
+
+    # try the fast method
+    try:
+        # XXX encapsulate the data access in an object - this logic should be paired with build_steam_title_map
+        game = quickSteamTitleMap[targetGame.lower()]
+        steamIDNumber = game['appid']
+        steamName = game['name']
+        gameNameMatchesProcessingQueue.put(MatchQueueEntry(steamName, targetGame, steamIDNumber))
+        return
+    except KeyError:
+        # didn't find the title in the quick map - this is fine
+        pass
+
+    # fallback to the slow method
     possibleMatchesList = []
     for game in steamGamesList:
+        # XXX encapsulate the data access in an object
         steamName = game['name']
         steamIDNumber = game['appid']
         score = similarity(steamName.lower(), targetGame.lower())
@@ -30,12 +45,13 @@ def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, user
                 gameNameMatchesProcessingQueue.put(MatchQueueEntry(steamName, targetGame, steamIDNumber))
                 break
     else:
+        # sort by closest match first
         sortedMatches = sorted(possibleMatchesList, key=lambda x: x.getMatchScore(), reverse=True)
         uire = UserInputRequiredQueueEntry(targetGame, sortedMatches)
         userInputRequiredQueue.put(uire)
 
 
-def minimumEditDistanceProcessing(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk):
+def minimumEditDistanceProcessing(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, quickSteamTitleMap):
     # (in an ideal world)
     # one core for the gameLookupAndStorageProcess
     # one core for the user input process
@@ -58,7 +74,7 @@ def minimumEditDistanceProcessing(userInputRequiredQueue, gameNameMatchesProcess
 
         futureMap = {
             MinimumEditDistanceProcessPool.submit(
-                apply_minimum_edit_distance, targetGame, gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList
+                apply_minimum_edit_distance, targetGame, gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList, quickSteamTitleMap
             ) : targetGame
             for targetGame in gamesOnDisk
         }
