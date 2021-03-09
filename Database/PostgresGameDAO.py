@@ -1,5 +1,4 @@
 
-from PostgresConnectionFactory import PostgresConnectionFactory
 from itertools import repeat
 
 class PostgresGameDAO:
@@ -20,11 +19,6 @@ class PostgresGameDAO:
             tagData = tuple(zip(steamIDIter, gameModel.user_defined_tags, rank))
             cur.executemany(insertTags, tagData)
 
-
-class PostgresGameDAOFactory:
-    @staticmethod
-    def createGameDAO():
-        return PostgresGameDAO(PostgresConnectionFactory)
 
 # from GameModel import Game
 
