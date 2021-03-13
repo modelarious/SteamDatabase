@@ -30,14 +30,31 @@ def hello_world(ws):
         print(from_browser)
 
 class ConnectionStorage:
-    def __init__(self):
-        pass
-
     def track_game_socket(self, ws):
         self.game_socket = ws
+        #XXX this is dangling - should this be returned and waited on in the main process?
+        #XXX Essentially you are read blocking on this socket - you can still write to it
+        #XXX from other threads, but you can't join the thread that's read blocked.  You also
+        #XXX can't guarantee that the clients will close the connections
+        #
+        #XXX actually - it looks like when a client disconnects, these will all unblock
+        self.game_socket.wait() 
     
     def send_to_game_socket(self, content):
+        print(f"updating game_socket with content {content}")
+        print(self.game_socket)
         self.game_socket.send(str(content))
+    
+    def track_no_socket(self, ws):
+        self.no_socket = ws
+
+        self.no_socket.wait() 
+    
+    def send_to_no_socket(self, content):
+        print(f"updating no_socket with content {content}")
+        print(self.no_socket)
+        self.no_socket.send(str(content))
+
 
 # def state_updates(ws):
 #     arr = []
@@ -48,24 +65,36 @@ class ConnectionStorage:
 #         from_browser = ws.wait()
 #         print(from_browser)
 
-@websocket.WebSocketWSGI
-def socket_collector(ws):
-    connectionStorage.track_game_socket(ws)
 
-def server():
-    # wsgi.server(eventlet.listen(('', 8090)), hello_world)
-    wsgi.server(eventlet.listen(('', 8091)), socket_collector)
 
-from multiprocessing import Process
+
+# def server():
+#     pass
+
+
+from threading import Thread
 from time import sleep
 if __name__ == '__main__':
     connectionStorage = ConnectionStorage()
-    serverProcess = Process(target=server)
-    serverProcess.start()
 
+    def server(connectionStorage):
+        # wsgi.server(eventlet.listen(('', 8090)), hello_world)
+        @websocket.WebSocketWSGI
+        def socket_collector(ws):
+            print(ws.path)
+            if ws.path == "/game":
+                connectionStorage.track_game_socket(ws)
+            elif ws.path == "/no":
+                connectionStorage.track_no_socket(ws)
+                
+        wsgi.server(eventlet.listen(('', 8091)), socket_collector)
 
+    serverThread = Thread(target=server, args = (connectionStorage,))
+    serverThread.start()
     sleep(30)
-    print("writing to socket")
+    print("writing to sockets /no and /game")
+    print(f"connectionStorage = {connectionStorage}")
     connectionStorage.send_to_game_socket('helllo')
     connectionStorage.send_to_game_socket('hi there')
-    serverProcess.join()
+    connectionStorage.send_to_no_socket('secret secret')
+    serverThread.join()
