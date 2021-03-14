@@ -21,55 +21,33 @@ http://pypi.python.org/pypi/Spawning/
 
 from eventlet import wsgi, websocket
 import eventlet
+from queue import Queue
 
-@websocket.WebSocketWSGI
-def hello_world(ws):
-    while True:
-        ws.send("hello world")
-        from_browser = ws.wait()
-        print(from_browser)
+class SocketInfo:
+    def __init__(self, socket):
+        self.socket = socket
+        self.received_message_queue = Queue()
 
-class ConnectionStorage:
-    def track_game_socket(self, ws):
-        self.game_socket = ws
-        #XXX this is dangling - should this be returned and waited on in the main process?
-        #XXX Essentially you are read blocking on this socket - you can still write to it
-        #XXX from other threads, but you can't join the thread that's read blocked.  You also
-        #XXX can't guarantee that the clients will close the connections
-        #
-        #XXX actually - it looks like when a client disconnects, these will all unblock
-        self.game_socket.wait() 
+# stores a given websocket 
+class WebsocketClientHandler:
+    def __init__(self):
+        self.sockets = dict()
+        self.received_message_queue = Queue()
     
-    def send_to_game_socket(self, content):
-        print(f"updating game_socket with content {content}")
-        print(self.game_socket)
-        self.game_socket.send(str(content))
+    def track_socket(self, socket, socket_name):
+        self.sockets[socket_name] = socket
+        self.__connection_loop(socket_name)
     
-    def track_no_socket(self, ws):
-        self.no_socket = ws
-
-        self.no_socket.wait() 
+    def __connection_loop(self, socket_name):        
+        socket = self.sockets[socket_name]
+        while True:
+            received_message = socket.wait()
+            self.received_message_queue.put(received_message) # XXX this needs to be stored per socket
+            print(received_message)
     
-    def send_to_no_socket(self, content):
-        print(f"updating no_socket with content {content}")
-        print(self.no_socket)
-        self.no_socket.send(str(content))
-
-
-# def state_updates(ws):
-#     arr = []
-#     for i in range(10):
-#         arr.append(i)
-#         ws.send(str(arr))
-#         print(ws.path)
-#         from_browser = ws.wait()
-#         print(from_browser)
-
-
-
-
-# def server():
-#     pass
+    def send_to_socket(self, socket_name, content):
+        print(f"updating {socket_name} with content {content}")
+        self.sockets[socket_name].send(str(content))
 
 
 from threading import Thread
@@ -78,23 +56,22 @@ if __name__ == '__main__':
     connectionStorage = ConnectionStorage()
 
     def server(connectionStorage):
-        # wsgi.server(eventlet.listen(('', 8090)), hello_world)
+
+        # this blocks and fills a queue with messages received from the socket
         @websocket.WebSocketWSGI
         def socket_collector(ws):
             print(ws.path)
-            if ws.path == "/game":
-                connectionStorage.track_game_socket(ws)
-            elif ws.path == "/no":
-                connectionStorage.track_no_socket(ws)
-                
+            connectionStorage.track_socket(ws, ws.path)
+
         wsgi.server(eventlet.listen(('', 8091)), socket_collector)
 
     serverThread = Thread(target=server, args = (connectionStorage,))
     serverThread.start()
     sleep(30)
-    print("writing to sockets /no and /game")
-    print(f"connectionStorage = {connectionStorage}")
-    connectionStorage.send_to_game_socket('helllo')
-    connectionStorage.send_to_game_socket('hi there')
-    connectionStorage.send_to_no_socket('secret secret')
+    # print("writing to sockets /no and /game")
+    # print(f"connectionStorage = {connectionStorage}")
+    connectionStorage.send_to_socket('/game', 'hello')
+    # connectionStorage.send_to_game_socket('hi there')
+    # connectionStorage.send_to_no_socket('secret secret')
+    # connectionStorage.sockets['/input']
     serverThread.join()
