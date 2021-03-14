@@ -24,9 +24,10 @@ import eventlet
 from queue import Queue
 
 # provides an interface to access the 
-class SocketInfo:
-    def __init__(self, socket):
+class SocketWrapper:
+    def __init__(self, socket, socket_name):
         self.socket = socket
+        self.socket_name = socket_name
         self.received_message_queue = Queue()
     
     def wait(self):
@@ -38,50 +39,30 @@ class SocketInfo:
         return self.received_message_queue.get()
     
     def send_message(self, content):
+        print(f"updating {self.socket_name} with {content}")
         self.socket.send(str(content))
-
-
-
-# XXX
-# The logic here is strange - some deals with the socket itself, other deals with the socket storage
-# perhaps you should move the connection loop into the SocketInfo class and rename it to SocketWrapper
-# XXX
-
-class WebsocketClientHandler:
-    def __init__(self):
-        self.socketInfos = dict()
     
-    def track_socket(self, socket, socket_name):
-        self.socketInfos[socket_name] = SocketInfo(socket)
-        self.__connection_loop(socket_name)
-    
-    def _resolve_socket(self, socket_name):
-        return self.socketInfos[socket_name]
-    
-    def __connection_loop(self, socket_name):        
-        socket = self._resolve_socket(socket_name)
+    def connection_loop(self):
         while True:
-            received_message = socket.wait()
-
+            received_message = self.wait()
             # if the client closed the connection, break out
             if received_message == None:
                 return
-            print(received_message)
+
+class WebsocketClientHandler:
+    def __init__(self):
+        self.socketWrappers = dict()
     
-    def send_to_socket(self, socket_name, content):
-        print(f"updating {socket_name} with content {content}")
-        socket = self._resolve_socket(socket_name)
-        socket.send_message(content)
+    def track_socket(self, socket, socket_name):
+        wrapped_socket = SocketWrapper(socket, socket_name)
+        self.socketWrappers[socket_name] = wrapped_socket
+        wrapped_socket.connection_loop()
     
-    def get_message(self, socket_name):
-        socket = self._resolve_socket(socket_name)
-        return socket.get_message()
+    def get_socket(self, socket_name):
+        return self.socketWrappers[socket_name]
 
 
-
-from threading import Thread
-from time import sleep
-if __name__ == '__main__':
+def server_function():
     websocketClientHandler = WebsocketClientHandler()
 
     def server(websocketClientHandler):
@@ -97,16 +78,25 @@ if __name__ == '__main__':
     serverThread = Thread(target=server, args = (websocketClientHandler,))
     serverThread.start()
     sleep(10)
-    # print("writing to sockets /no and /game")
-    # print(f"connectionStorage = {connectionStorage}")
-    websocketClientHandler.send_to_socket('/game', 'hello')
-    # connectionStorage.send_to_game_socket('hi there')
-    # connectionStorage.send_to_no_socket('secret secret')
-    # connectionStorage.sockets['/input']
+
+    GAME_SOCKET = '/game'
+
+    gameSock = websocketClientHandler.get_socket(GAME_SOCKET)
+
+    gameSock.send_message('oh')
+    gameSock.send_message('yeah')
+    gameSock.send_message('biiiiiitch')
 
     while True:
         print("top of loop")
+        print(gameSock.get_message())
         sleep(5)
-        print(websocketClientHandler.get_message('/game'))
+        
 
     serverThread.join()
+
+
+from threading import Thread
+from time import sleep
+if __name__ == '__main__':
+    server_function()
