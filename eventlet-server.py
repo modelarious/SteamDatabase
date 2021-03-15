@@ -42,22 +42,35 @@ class WebsocketClientHandler:
     def get_socket(self, socket_name):
         return self.socketWrappers[socket_name]
 
-# starts the server thread and blocks forever
-def server_function():
-    websocketClientHandler = WebsocketClientHandler()
 
-    def server(websocketClientHandler):
+class Server:
+    def __init__(self, websocketClientHandler):
+        self.websocketClientHandler = websocketClientHandler
+        self.serverThread = None
 
+    def __server(self):
         # this blocks and fills a queue with messages received from the socket
         @websocket.WebSocketWSGI
         def socket_collector(ws):
             print(ws.path)
-            websocketClientHandler.track_socket(ws, ws.path)
+            self.websocketClientHandler.track_socket(ws, ws.path)
 
         wsgi.server(eventlet.listen(('', 8091)), socket_collector)
 
-    serverThread = Thread(target=server, args = (websocketClientHandler,))
-    serverThread.start()
+    def start(self):
+        self.serverThread = Thread(target=self.__server)
+        self.serverThread.start()
+    
+    def join(self):
+        self.serverThread.join()
+
+
+from threading import Thread
+from time import sleep
+if __name__ == '__main__':
+    websocketClientHandler = WebsocketClientHandler()
+    server = Server(websocketClientHandler)
+    server.start()
 
     # XXX all below is driver code
     sleep(10)
@@ -69,16 +82,10 @@ def server_function():
     gameSock.send_message('oh')
     gameSock.send_message('yeah')
 
-    while True:
-        print("top of loop")
-        print(gameSock.get_message())
-        sleep(5)
-
-    # XXX apart from this - this needs to stay
-    serverThread.join()
-
-
-from threading import Thread
-from time import sleep
-if __name__ == '__main__':
-    server_function()
+    # while True:
+    print("top of loop")
+    print(gameSock.get_message())
+    # sleep(5)
+    
+    print("waiting on server")
+    server.join()
