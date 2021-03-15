@@ -35,12 +35,14 @@ class WebsocketClientHandler:
     def track_socket(self, socket, socket_name):
         wrapped_socket = SocketWrapper(socket, socket_name)
         self.socketWrappers[socket_name] = wrapped_socket
+
+        # loop until client closes connection
         wrapped_socket.connection_loop()
     
     def get_socket(self, socket_name):
         return self.socketWrappers[socket_name]
 
-
+# starts the server thread and blocks forever
 def server_function():
     websocketClientHandler = WebsocketClientHandler()
 
@@ -56,6 +58,8 @@ def server_function():
 
     serverThread = Thread(target=server, args = (websocketClientHandler,))
     serverThread.start()
+
+    # XXX all below is driver code
     sleep(10)
 
     GAME_SOCKET = '/game'
@@ -70,6 +74,7 @@ def server_function():
         print(gameSock.get_message())
         sleep(5)
 
+    # XXX apart from this - this needs to stay
     serverThread.join()
 
 
