@@ -65,25 +65,38 @@ class Server:
         self.serverThread.join()
 
 
+
 from threading import Thread
-from time import sleep
 if __name__ == '__main__':
     websocketClientHandler = WebsocketClientHandler()
     server = Server(websocketClientHandler)
     server.start()
 
     # XXX all below is driver code
-    sleep(10)
+    from json import dumps
+    input("tell me when you're connected")
 
     GAME_SOCKET = '/game'
 
     gameSock = websocketClientHandler.get_socket(GAME_SOCKET)
 
-    gameSock.send_message('oh')
-    gameSock.send_message('yeah')
+    jsonMessage = dumps({
+        "person" : [
+            { 'id': 3, 'name': 'no' }
+        ]
+    })
+    gameSock.send_message(jsonMessage)
+
+    jsonMessage = dumps({
+        "person" : [
+            { 'id': 4, 'name': 'jome' }
+        ]
+    })
+    gameSock.send_message(jsonMessage)
+    # gameSock.send_message('yeah')
 
     # while True:
-    print("top of loop")
+    # print("top of loop")
     print(gameSock.get_message())
     # sleep(5)
     
