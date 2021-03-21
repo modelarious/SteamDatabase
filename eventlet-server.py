@@ -81,15 +81,15 @@ if __name__ == '__main__':
     gameSock = websocketClientHandler.get_socket(GAME_SOCKET)
 
     jsonMessage = dumps({
-        "person" : [
-            { 'id': 3, 'name': 'no' }
+        "game" : [
+            { 'steamID': 3, 'steamName': 'no' }
         ]
     })
     gameSock.send_message(jsonMessage)
 
     jsonMessage = dumps({
-        "person" : [
-            { 'id': 4, 'name': 'jome' }
+        "game" : [
+            { 'steamID': 4, 'steamName': 'jome' }
         ]
     })
     gameSock.send_message(jsonMessage)

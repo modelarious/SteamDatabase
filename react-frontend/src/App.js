@@ -7,30 +7,28 @@ class App extends Component {
   constructor() {
     super()
     this.state = {}
-    this.state.people = [
-      { id: 1, name: 'chris' },
-      { id: 2, name: 'nick' }
+    this.state.games = [
+      { steamID: "1", steamName: 'factorio' },
+      { steamID: "2", steamName: 'satisfactory' }
     ];
   }
   
-  componentWillMount() {
+  componentDidMount() {
     client.onopen = () => {
-      console.log("open")
-      //do stuff
+      console.log("/game open")
     };
     client.onclose = () => {
-      //do stuff
+      console.log("/game close")
     }
     client.onmessage = (message) => {
       console.log(message);
-      const newPerson = JSON.parse(message.data).person
-      // this.setState()
+      const newGame = JSON.parse(message.data).game
 
       // this.setState(previousState => ({
-      //   people: [...previousState.people, ...newPeople]
+      //   games: [...previousState.games, ...newGames]
       // }));
       this.setState({
-        people: this.state.people.concat(newPerson)
+        games: this.state.games.concat(newGame)
       })
     };
   }
@@ -40,11 +38,11 @@ class App extends Component {
 
       <div>
       <div>
-        Practical Intro To WebSockets.
+        /game socket test
       </div>
       <div>
-      {this.state.people.map(person => (
-        <p key={person.id}>{person.name}</p>
+      {this.state.games.map(game => (
+        <p key={game.steamID}>{game.steamName}</p>
       ))}
     </div>
     </div>
