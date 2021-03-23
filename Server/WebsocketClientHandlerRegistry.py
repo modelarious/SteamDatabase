@@ -1,0 +1,15 @@
+from Server.SocketWrapper import SocketWrapper
+
+class WebsocketClientHandlerRegistry:
+    def __init__(self):
+        self.socketWrappers = dict()
+    
+    def track_socket(self, socket, socket_name):
+        wrapped_socket = SocketWrapper(socket, socket_name)
+        self.socketWrappers[socket_name] = wrapped_socket
+
+        # loop until client closes connection
+        wrapped_socket.connection_loop()
+    
+    def get_socket(self, socket_name):
+        return self.socketWrappers[socket_name]
