@@ -14,7 +14,7 @@ class Server:
             print(ws.path)
 
             # this blocks and fills a queue with messages received from the socket.
-            self.websocketClientHandlerRegistry.track_socket(ws, ws.path)
+            self.websocketClientHandlerRegistry.track_socket_and_loop(ws, ws.path)
 
         wsgi.server(listen(('', 8091)), socket_collector)
 

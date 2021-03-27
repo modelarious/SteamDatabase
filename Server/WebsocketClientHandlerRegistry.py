@@ -4,7 +4,7 @@ class WebsocketClientHandlerRegistry:
     def __init__(self):
         self.socketWrappers = dict()
     
-    def track_socket(self, socket, socket_name):
+    def track_socket_and_loop(self, socket, socket_name):
         wrapped_socket = SocketWrapper(socket, socket_name)
         self.socketWrappers[socket_name] = wrapped_socket
 
