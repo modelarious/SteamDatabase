@@ -10,6 +10,9 @@ class WebsocketClientHandlerRegistry:
 
         # loop until client closes connection
         wrapped_socket.connection_loop()
+
+        # client has closed connection, so stop tracking it
+        del self.socketWrappers[socket_name]
     
     def get_socket(self, socket_name):
         return self.socketWrappers[socket_name]

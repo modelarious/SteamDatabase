@@ -9,10 +9,11 @@ class Server:
 
     def __server(self):
         # when a websocket connection is opened, this is run.
-        # this blocks and fills a queue with messages received from the socket.
         @websocket.WebSocketWSGI
         def socket_collector(ws):
             print(ws.path)
+
+            # this blocks and fills a queue with messages received from the socket.
             self.websocketClientHandlerRegistry.track_socket(ws, ws.path)
 
         wsgi.server(listen(('', 8091)), socket_collector)

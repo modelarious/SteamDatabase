@@ -1,6 +1,6 @@
 from queue import Queue
 
-# provides an interface to access the 
+# provides an interface to access the socket
 class SocketWrapper:
     def __init__(self, socket, socket_name):
         self.socket = socket
