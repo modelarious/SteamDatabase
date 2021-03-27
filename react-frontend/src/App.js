@@ -21,15 +21,16 @@ class App extends Component {
       console.log("/game close")
     }
     client.onmessage = (message) => {
-      console.log(message);
-      const newGame = JSON.parse(message.data).game
+      const receivedMessage = JSON.parse(message.data);
+      console.log(receivedMessage);
+      const newGames = receivedMessage.games;
+      if (!newGames) {
+        throw Error('games field was not defined in ' + message.data);
+      }
 
-      // this.setState(previousState => ({
-      //   games: [...previousState.games, ...newGames]
-      // }));
-      this.setState({
-        games: this.state.games.concat(newGame)
-      })
+      this.setState(previousState => ({
+        games: [...previousState.games, ...newGames]
+      }));
     };
   }
   
@@ -51,3 +52,10 @@ class App extends Component {
 }
 
 export default App;
+//states:
+// - todo
+// - finding name (active)
+// - awaiting user input
+// - queued for info retrieval
+// - info retrieval (active)
+// - stored
