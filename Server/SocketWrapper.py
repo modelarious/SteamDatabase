@@ -1,4 +1,5 @@
 from queue import Queue
+from json import dumps
 
 # provides an interface to access the socket
 class SocketWrapper:
@@ -16,8 +17,9 @@ class SocketWrapper:
         return self.received_message_queue.get()
     
     def send_message(self, content):
-        print(f"updating {self.socket_name} with {content}")
-        self.socket.send(str(content))
+        json_message = dumps(content)
+        print(f"updating {self.socket_name} with {json_message}")
+        self.socket.send(json_message)
     
     def connection_loop(self):
         while True:

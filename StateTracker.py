@@ -53,7 +53,7 @@ class StateTracker:
 
         # XXX factory
         upcomingSocket = self.websocketRegistry.get_socket('/upcoming')
-        upcomingStateArray = []
+        upcomingStateArray = ["satisfactory", "factorio"]
         self.upcoming = ObservedDataStructure(upcomingSocket, upcomingStateArray)
 
         # print("creating manager and queues")
