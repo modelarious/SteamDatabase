@@ -4,6 +4,7 @@ from minimumEditDistanceProcessing import minimumEditDistanceProcessing
 from gameLookupAndStorageProcess import gameLookupAndStorageProcess
 from Constants import END_OF_QUEUE
 from Database.PostgresGameDAOFactory import PostgresGameDAOFactory
+from StateTracker import StateTracker
 
 import pickle
 from multiprocessing import Process, Manager
@@ -40,8 +41,16 @@ def build_steam_title_map(steamGamesList):
         steamTitleMap[gameTitle] = gameObj
     return steamTitleMap
 
-
+#
 def main(steamGamesList, gamesOnDisk):
+
+    # st = StateTracker(websocketRegistry, gamesOnDisk)
+
+    # for game in gamesOnDisk:
+    #     print(game)
+    
+    # exit(1)
+
 
     quickSteamTitleMap = build_steam_title_map(steamGamesList)
 

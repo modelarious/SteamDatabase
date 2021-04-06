@@ -1,10 +1,14 @@
 from Server.WebsocketClientHandlerRegistry import WebsocketClientHandlerRegistry
 from Server.Server import Server
+from StateTracker import StateTracker
 
 if __name__ == '__main__':
     websocketClientHandlerRegistry = WebsocketClientHandlerRegistry()
     server = Server(websocketClientHandlerRegistry)
-    server.start()
+    server.startInThread()
+
+    stateTracker = StateTracker(websocketClientHandlerRegistry)
+    
 
     # XXX all below is driver code
     from json import dumps

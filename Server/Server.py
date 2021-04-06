@@ -18,7 +18,7 @@ class Server:
 
         wsgi.server(listen(('', 8091)), socket_collector)
 
-    def start(self):
+    def startInThread(self):
         self.serverThread = Thread(target=self.__server)
         self.serverThread.start()
     
