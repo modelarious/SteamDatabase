@@ -1,26 +1,42 @@
 import React, { Component } from 'react';
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 
-const client = new W3CWebSocket('ws://127.0.0.1:8091/upcoming');
+const upcomingSocket = new W3CWebSocket('ws://127.0.0.1:8091/upcoming');
+const findingNameActiveSocket = new W3CWebSocket('ws://127.0.0.1:8091/findingNameActive');
 class App extends Component {
   constructor() {
     super()
     this.state = {}
     this.state.upcoming = [];
+    this.state.findingNameActive = [];
   }
   
   componentDidMount() {
-    client.onopen = () => {
+    upcomingSocket.onopen = () => {
       console.log("/upcoming open")
     };
-    client.onclose = () => {
+    upcomingSocket.onclose = () => {
       console.log("/upcoming close")
     }
-    client.onmessage = (message) => {
+    upcomingSocket.onmessage = (message) => {
       console.log(message.data);
       const receivedMessage = JSON.parse(message.data);
       this.setState({
         upcoming: receivedMessage
+      });
+    };
+
+    findingNameActiveSocket.onopen = () => {
+      console.log("/findingNameActive open")
+    };
+    findingNameActiveSocket.onclose = () => {
+      console.log("/upfindingNameActivecoming close")
+    }
+    findingNameActiveSocket.onmessage = (message) => {
+      console.log(message.data);
+      const receivedMessage = JSON.parse(message.data);
+      this.setState({
+        findingNameActive: receivedMessage
       });
     };
   }
@@ -28,15 +44,24 @@ class App extends Component {
   render() {
     return (
 
+    <div>
       <div>
-      <div>
-        upcoming test
+        upcoming
       </div>
       <div>
       {this.state.upcoming.map(title => (
         <p key={title}>{title}</p>
       ))}
-    </div>
+      </div>
+      <hr></hr>
+      <div>
+        FindingNameActive
+      </div>
+      <div>
+        {this.state.findingNameActive.map(title => (
+          <p key={title}>{title}</p>
+        ))}
+      </div>
     </div>
     );
   }

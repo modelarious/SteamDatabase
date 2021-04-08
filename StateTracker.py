@@ -53,8 +53,13 @@ class StateTracker:
 
         # XXX factory
         upcomingSocket = self.websocketRegistry.get_socket('/upcoming')
-        upcomingStateArray = ["satisfactory", "factorio"]
+        upcomingStateArray = []
         self.upcoming = ObservedDataStructure(upcomingSocket, upcomingStateArray)
+
+        # XXX factory
+        findingNameActiveSocket = self.websocketRegistry.get_socket('/findingNameActive')
+        findingNameActiveStateArray = []
+        self.findingNameActive = ObservedDataStructure(findingNameActiveSocket, findingNameActiveStateArray)
 
         # print("creating manager and queues")
         # m = Manager()
@@ -65,4 +70,16 @@ class StateTracker:
 
     def setUpcomingState(self, gameTitle : str):
         self.upcoming.add(gameTitle)
+    
+    def setFindingNameActiveState(self, gameTitle : str):
+        self.upcoming.remove(gameTitle)
+        self.findingNameActive.add(gameTitle)
 
+
+# states:
+#  - upcoming
+#  - finding name (active)
+#  - awaiting user input
+#  - queued for info retrieval
+#  - info retrieval (active)
+#  - stored

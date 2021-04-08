@@ -1,5 +1,5 @@
 from queue import Queue
-from json import dumps
+from json import dumps, loads
 
 # provides an interface to access the socket
 class SocketWrapper:
@@ -10,7 +10,13 @@ class SocketWrapper:
     
     def wait(self):
         received_message = self.socket.wait()
-        self.received_message_queue.put(received_message)
+
+        # message would be None if client closed the connection unexpectedly
+        if received_message != None:
+            json_message = loads(received_message)
+            print(f"received {json_message} on {self.socket_name}")
+            self.received_message_queue.put(json_message)
+        
         return received_message
 
     def get_message(self):

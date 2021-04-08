@@ -8,6 +8,15 @@ if __name__ == '__main__':
     server.startInThread()
 
     stateTracker = StateTracker(websocketClientHandlerRegistry)
+
+    from time import sleep
+    stateTracker.setUpcomingState('factorio')
+    sleep(1)
+    stateTracker.setUpcomingState('satisfactory')
+    sleep(3)
+    stateTracker.setFindingNameActiveState('factorio')
+    sleep(3)
+    stateTracker.setFindingNameActiveState('satisfactory')
     
 
     # XXX all below is driver code

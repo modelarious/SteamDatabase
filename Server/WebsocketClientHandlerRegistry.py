@@ -8,9 +8,13 @@ COMMAND = '/command'
 # socket is used for communicating which games are awaiting initial processing
 UPCOMING_STATE = '/upcoming'
 
+# socket is used for communicating which games are having their nearest names found
+FINDING_NAME_ACTIVE = '/findingNameActive'
+
 expectedSockets = set([
     COMMAND,
-    UPCOMING_STATE
+    UPCOMING_STATE,
+    FINDING_NAME_ACTIVE
 ])
 
 class WebsocketClientHandlerRegistry:
