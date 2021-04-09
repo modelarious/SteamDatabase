@@ -1,21 +1,17 @@
 from Server.SocketWrapper import SocketWrapper
 from threading import Event
 from enum import Enum
+from State.States import STATES
 
 # socket is used for issuing commands from front end to back end
 COMMAND = '/command'
 
-# socket is used for communicating which games are awaiting initial processing
-UPCOMING_STATE = '/upcoming'
-
-# socket is used for communicating which games are having their nearest names found
-FINDING_NAME_ACTIVE = '/findingNameActive'
-
 expectedSockets = set([
-    COMMAND,
-    UPCOMING_STATE,
-    FINDING_NAME_ACTIVE
+    COMMAND
 ])
+
+# add all States to expectedSockets
+expectedSockets |= STATES
 
 class WebsocketClientHandlerRegistry:
     def __init__(self):
@@ -40,6 +36,9 @@ class WebsocketClientHandlerRegistry:
         return self.__socketWrappers[socket_name]
     
     def _internalCheckAllSocketsReady(self):
-        if set(self.__socketWrappers.keys()) == expectedSockets:
+        currentSockets = set(self.__socketWrappers.keys())
+        if currentSockets == expectedSockets:
             #signal to any processes waiting for configuration
             self.__allSocketsReady.set()
+        else:
+            print(f"waiting for {expectedSockets.difference(currentSockets)}")

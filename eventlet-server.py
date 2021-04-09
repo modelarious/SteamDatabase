@@ -1,6 +1,6 @@
 from Server.WebsocketClientHandlerRegistry import WebsocketClientHandlerRegistry
 from Server.Server import Server
-from StateTracker import StateTracker
+from State.StateTracker import StateTracker
 
 if __name__ == '__main__':
     websocketClientHandlerRegistry = WebsocketClientHandlerRegistry()
