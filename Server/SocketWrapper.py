@@ -19,7 +19,7 @@ class SocketWrapper:
         self.socket_name = socket_name
         self.received_message_queue = Queue()
     
-    def wait(self):
+    def _wait(self):
         received_message = self.socket.wait()
 
         # message would be None if client closed the connection unexpectedly
@@ -40,7 +40,7 @@ class SocketWrapper:
     
     def connection_loop(self):
         while True:
-            received_message = self.wait()
+            received_message = self._wait()
             # if the client closed the connection, break out
             if received_message == None:
                 return
