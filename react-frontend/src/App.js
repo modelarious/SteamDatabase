@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 
-const upcomingSocket = new W3CWebSocket('ws://127.0.0.1:8091/upcoming');
-const findingNameActiveSocket = new W3CWebSocket('ws://127.0.0.1:8091/findingNameActive');
+const upcomingSocket = new W3CWebSocket('ws://127.0.0.1:3091/upcoming');
+const findingNameActiveSocket = new W3CWebSocket('ws://127.0.0.1:3091/findingNameActive');
 class App extends Component {
   constructor() {
     super()

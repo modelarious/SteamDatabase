@@ -1,7 +1,7 @@
 from queue import Queue
 from json import dumps, loads
 
-# https://stackoverflow.com/a/8230505/7520564
+# SetEncoder adapted from https://stackoverflow.com/a/8230505/7520564
 # Clean way to encode sets into json objects by transforming them into a list.
 # Also handles sorting the list here because it needs to be sorted before it is
 # sent.
