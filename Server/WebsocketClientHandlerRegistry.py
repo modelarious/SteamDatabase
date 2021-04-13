@@ -1,6 +1,5 @@
 from Server.SocketWrapper import SocketWrapper
 from threading import Event
-from enum import Enum
 from State.States import STATES
 
 # socket is used for issuing commands from front end to back end
