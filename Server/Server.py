@@ -16,9 +16,9 @@ class Server:
             # this blocks and fills a queue with messages received from the socket.
             self.websocketClientHandlerRegistry.track_socket_and_loop(ws, ws.path)
 
-        wsgi.server(listen(('', 8091)), socket_collector)
+        wsgi.server(listen(('', 3091)), socket_collector)
 
-    def start(self):
+    def startInThread(self):
         self.serverThread = Thread(target=self.__server)
         self.serverThread.start()
     

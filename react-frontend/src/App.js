@@ -1,51 +1,67 @@
 import React, { Component } from 'react';
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 
-const client = new W3CWebSocket('ws://127.0.0.1:8091/game');
-
+const upcomingSocket = new W3CWebSocket('ws://127.0.0.1:3091/upcoming');
+const findingNameActiveSocket = new W3CWebSocket('ws://127.0.0.1:3091/findingNameActive');
 class App extends Component {
   constructor() {
     super()
     this.state = {}
-    this.state.games = [
-      { steamID: "1", steamName: 'factorio' },
-      { steamID: "2", steamName: 'satisfactory' }
-    ];
+    this.state.upcoming = [];
+    this.state.findingNameActive = [];
   }
   
   componentDidMount() {
-    client.onopen = () => {
-      console.log("/game open")
+    upcomingSocket.onopen = () => {
+      console.log("/upcoming open")
     };
-    client.onclose = () => {
-      console.log("/game close")
+    upcomingSocket.onclose = () => {
+      console.log("/upcoming close")
     }
-    client.onmessage = (message) => {
+    upcomingSocket.onmessage = (message) => {
+      console.log(message.data);
       const receivedMessage = JSON.parse(message.data);
-      console.log(receivedMessage);
-      const newGames = receivedMessage.games;
-      if (!newGames) {
-        throw Error('games field was not defined in ' + message.data);
-      }
+      this.setState({
+        upcoming: receivedMessage
+      });
+    };
 
-      this.setState(previousState => ({
-        games: [...previousState.games, ...newGames]
-      }));
+    findingNameActiveSocket.onopen = () => {
+      console.log("/findingNameActive open")
+    };
+    findingNameActiveSocket.onclose = () => {
+      console.log("/upfindingNameActivecoming close")
+    }
+    findingNameActiveSocket.onmessage = (message) => {
+      console.log(message.data);
+      const receivedMessage = JSON.parse(message.data);
+      this.setState({
+        findingNameActive: receivedMessage
+      });
     };
   }
   
   render() {
     return (
 
+    <div>
       <div>
-      <div>
-        /game socket test
+        upcoming
       </div>
       <div>
-      {this.state.games.map(game => (
-        <p key={game.steamID}>{game.steamName}</p>
+      {this.state.upcoming.map(title => (
+        <p key={title}>{title}</p>
       ))}
-    </div>
+      </div>
+      <hr></hr>
+      <div>
+        FindingNameActive
+      </div>
+      <div>
+        {this.state.findingNameActive.map(title => (
+          <p key={title}>{title}</p>
+        ))}
+      </div>
     </div>
     );
   }
