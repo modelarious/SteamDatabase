@@ -41,7 +41,8 @@ def build_steam_title_map(steamGamesList):
     return steamTitleMap
 
 
-def main(steamGamesList, gamesOnDisk):
+# XXX this is ripe for refactor
+def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk):
 
     quickSteamTitleMap = build_steam_title_map(steamGamesList)
 
@@ -98,6 +99,7 @@ def main(steamGamesList, gamesOnDisk):
     unableToInsert = GameLookupAndStorageProcess.join()
     print(f"unmatchedGames={unmatchedGames}, unableToInsert={unableToInsert}")
 
+
 if __name__ == '__main__':
     # XXX mocks
     print("mocking the steam games list from API")
@@ -111,7 +113,7 @@ if __name__ == '__main__':
         gamesOnDisk = pickle.load(mockGamesList)
     print("finished mocking the local games list from directory")
     
-    main(steamGamesList, gamesOnDisk)
+    match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk)
 
     
 
