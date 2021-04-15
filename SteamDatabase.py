@@ -8,29 +8,6 @@ from Database.PostgresGameDAOFactory import PostgresGameDAOFactory
 import pickle
 from multiprocessing import Process, Manager
 
-# from pprint import pprint
-# import requests
-
-# URL = "http://api.steampowered.com/ISteamApps/GetAppList/v0002/?key=STEAMKEY&format=json"
-
-# requestReturn = requests.get(url = URL) 
-# gamesObject = requestReturn.json()
-# steamGamesList = gamesObject["applist"]["apps"]
-
-
-
-# with open('mockSteamReturn.txt', 'wb') as mockSteamReturn:
-#     pickle.dump(steamGamesList, mockSteamReturn)
-
-# exit(1)
-
-# import os
-# gamesOnDisk = os.listdir("/Volumes/babyBlue/Games/PC/")
-
-
-
-#-----------------------------------------------------------------------------------------
-
 
 def build_steam_title_map(steamGamesList):
     steamTitleMap = dict()
