@@ -8,7 +8,7 @@ class ObservedDataStructure:
         # updates socket after performing an action
         def update_sock(self, *args, **kwargs):
             func(self, *args, **kwargs)
-            self.socketToUpdate.send_message(self.set)
+            self.socketToUpdate.send_message(self.set.copy())
         return update_sock
 
     @sendUpdateDecorator
