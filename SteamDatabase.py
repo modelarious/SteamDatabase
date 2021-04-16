@@ -5,7 +5,6 @@ from gameLookupAndStorageProcess import gameLookupAndStorageProcess
 from Constants import END_OF_QUEUE
 from Database.PostgresGameDAOFactory import PostgresGameDAOFactory
 
-import pickle
 from multiprocessing import Process, Manager
 
 
@@ -18,7 +17,9 @@ def build_steam_title_map(steamGamesList):
     return steamTitleMap
 
 
-# XXX this is ripe for refactor
+# XXX this is ripe for refactor.
+# XXX Go all Dependency Injection on it's ass.
+# XXX move UI handling into a dedicated function or class
 def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk):
 
     quickSteamTitleMap = build_steam_title_map(steamGamesList)
@@ -75,24 +76,6 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk):
 
     unableToInsert = GameLookupAndStorageProcess.join()
     print(f"unmatchedGames={unmatchedGames}, unableToInsert={unableToInsert}")
-
-
-if __name__ == '__main__':
-    # XXX mocks
-    print("mocking the steam games list from API")
-    with open('mockSteamReturn.txt', 'rb') as mockSteamReturn:
-        steamGamesList = pickle.load(mockSteamReturn)
-    print("finished mocking the steam games list from API")
-
-    # XXX mocks
-    print("mocking the local games list from directory")
-    with open('mockGamesList.txt', 'rb') as mockGamesList:
-        gamesOnDisk = pickle.load(mockGamesList)
-    print("finished mocking the local games list from directory")
-    
-    match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk)
-
-    
 
 
 # One process for going through the steamGamesList and applying the min edit dist algo - adds matches that are 1.0 to the GamePerfectMatches queue, adds anything else UserInputRequired queue for user input process to consume
