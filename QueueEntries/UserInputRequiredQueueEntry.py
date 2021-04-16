@@ -1,10 +1,13 @@
+from typing import List
+from QueueEntries.PossibleMatchQueueEntry import PossibleMatchQueueEntry
+
 class UserInputRequiredQueueEntry:
-    def __init__(self, targetName, possibleMatchesList):
-        self.targetName = targetName
+    def __init__(self, gameName, possibleMatchesList: List[PossibleMatchQueueEntry]):
+        self.gameName = gameName
         self.possibleMatchesList = possibleMatchesList
     
-    def getTargetName(self):
-        return self.targetName
+    def getGameName(self):
+        return self.gameName
     
     def getPossibleMatchesList(self):
         return self.possibleMatchesList

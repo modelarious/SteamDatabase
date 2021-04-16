@@ -7,10 +7,9 @@ from QueueEntries.UserInputRequiredQueueEntry import UserInputRequiredQueueEntry
 # XXX concurrency
 class StateTracker:
     def __init__(self, observerSocketHookupFactory : ObserverSocketHookupFactory):
-
+        factoryMethod = observerSocketHookupFactory.hookUpObservableDataStructure
 
         # creating observable data structures
-        factoryMethod = observerSocketHookupFactory.hookUpObservableDataStructure
         self.upcoming  = factoryMethod(UPCOMING_STATE)
         self.findingNameActive = factoryMethod(FINDING_NAME_ACTIVE_STATE)
         self.awaitingUser = factoryMethod(AWAITING_USER_STATE)
@@ -23,7 +22,7 @@ class StateTracker:
         self.findingNameActive.add(gameTitle)
     
     def setAwaitingUserInputState(self, userInputRequiredEntry : UserInputRequiredQueueEntry):
-        gameTitle = userInputRequiredQueueEntry.getTargetName()
+        gameTitle = userInputRequiredQueueEntry.getGameName()
         self.findingNameActive.remove(gameTitle)
         self.awaitingUser.addByTag(gameTitle, userInputRequiredQueueEntry.toJson()) 
     

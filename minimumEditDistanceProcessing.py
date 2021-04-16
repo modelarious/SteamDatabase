@@ -72,6 +72,7 @@ def minimumEditDistanceProcessing(userInputRequiredQueue, gameNameMatchesProcess
         # exhaust_iterable = deque(maxlen=0).extend
         # exhaust_iterable(futureMap)
 
+        # XXX gather queues up into one object: QueueLayer (https://github.com/modelarious/SteamDatabase/issues/17)
         futureMap = {
             MinimumEditDistanceProcessPool.submit(
                 apply_minimum_edit_distance, targetGame, gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList, quickSteamTitleMap
