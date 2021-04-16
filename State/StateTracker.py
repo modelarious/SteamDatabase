@@ -6,14 +6,11 @@ from QueueEntries.UserInputRequiredQueueEntry import UserInputRequiredQueueEntry
 
 # XXX concurrency
 class StateTracker:
-    def __init__(self, websocketRegistry : WebsocketClientHandlerRegistry):
-        print("STATETRACKER - waiting on sockets")
-        websocketRegistry.waitForAllSocketsReady()
-        print("STATETRACKER - all needed sockets have been connected")
+    def __init__(self, observerSocketHookupFactory : ObserverSocketHookupFactory):
+
 
         # creating observable data structures
-        factoryMethod = ObserverSocketHookupFactory(websocketRegistry).hookUpObservableDataStructure
-
+        factoryMethod = observerSocketHookupFactory.hookUpObservableDataStructure
         self.upcoming  = factoryMethod(UPCOMING_STATE)
         self.findingNameActive = factoryMethod(FINDING_NAME_ACTIVE_STATE)
         self.awaitingUser = factoryMethod(AWAITING_USER_STATE)
