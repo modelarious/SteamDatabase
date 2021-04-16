@@ -12,7 +12,8 @@ class PostgresGameDAO:
             gameData = (gameModel.steam_id, gameModel.name_on_harddrive, gameModel.path_on_harddrive, gameModel.name_on_steam, gameModel.avg_review_score)
             cur.execute(insertGame, gameData) # doing it this way prevents sql injection
 
-            insertTags = "INSERT INTO UserDefinedTagMappings (steam_id, tag_name, rank) VALUES (%s, %s, %s);"
+            # these are similar to genres as defined by users
+            insertTags = "INSERT INTO UserDefinedGenres (steam_id, genre_name, rank) VALUES (%s, %s, %s);"
             steamIDIter = repeat(gameModel.steam_id)
             rank = range(1, (len(gameModel.user_defined_tags) + 1))
             
