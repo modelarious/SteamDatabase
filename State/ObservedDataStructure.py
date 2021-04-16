@@ -1,4 +1,3 @@
-
 from Server.SocketWrapper import SocketWrapper
 
 # Observer pattern, but sending updates over a socket
@@ -16,6 +15,7 @@ class ObservedDataStructure:
     def __init__(self, socketToUpdate : SocketWrapper):
         self.socketToUpdate = socketToUpdate
         self.set = set()
+        self.internalTag = dict()
     
     @sendUpdateDecorator
     def add(self, value):
@@ -24,3 +24,12 @@ class ObservedDataStructure:
     @sendUpdateDecorator
     def remove(self, value):
         self.set.remove(value)
+    
+    # these don't need the decorator because they don't update the set data structure directly
+    def removeByTag(self, tag):
+        value = self.internalTag[tag]
+        self.remove(value)
+
+    def addByTag(self, tag, value):
+        self.internalTag[tag] = value
+        self.add(value)
