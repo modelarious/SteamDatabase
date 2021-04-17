@@ -1,26 +1,24 @@
 from State.States import *
-from State.ObserverSocketHookupFactory import ObserverSocketHookupFactory
 
-# type checking
+# type hints
+from typing import Dict
 from QueueEntries.UserInputRequiredQueueEntry import UserInputRequiredQueueEntry
 from QueueEntries.MatchQueueEntry import MatchQueueEntry
 from State.ObservedDataStructure import ObservedDataStructure
 
-# XXX concurrency
+# XXX concurrency, which should be handled in ObservedDataStructure
 class StateTracker:
-    def __init__(self, observerSocketHookupFactory : ObserverSocketHookupFactory):
-        factoryMethod = observerSocketHookupFactory.hookUpObservableDataStructure
+    def __init__(self, connections : Dict[StateStrType, ObservedDataStructure]):
 
         self.previousState = {}
 
-        # creating observable data structures with helpful names so accesses in member functions
-        # are easy to read
-        self.upcoming  = factoryMethod(UPCOMING_STATE)
-        self.findingNameActive = factoryMethod(FINDING_NAME_ACTIVE_STATE)
-        self.awaitingUser = factoryMethod(AWAITING_USER_STATE)
-        self.queuedForInfoRetrieval = factoryMethod(QUEUED_FOR_INFO_RETRIEVAL_STATE)
-        self.infoRetrievalActive = factoryMethod(INFO_RETRIEVAL_ACTIVE_STATE)
-        self.stored = factoryMethod(STORED)
+        # doing this with helpful names so accesses in member functions are easy to read
+        self.upcoming  = connections[UPCOMING_STATE]
+        self.findingNameActive = connections[FINDING_NAME_ACTIVE_STATE]
+        self.awaitingUser = connections[AWAITING_USER_STATE]
+        self.queuedForInfoRetrieval = connections[QUEUED_FOR_INFO_RETRIEVAL_STATE]
+        self.infoRetrievalActive = connections[INFO_RETRIEVAL_ACTIVE_STATE]
+        self.stored = connections[STORED]
 
     def setUpcomingState(self, gameTitle : str):
         self.upcoming.add(gameTitle)
@@ -66,22 +64,3 @@ class StateTracker:
         return self.previousState[gameTitle]
 
     
-
-
-
-# awaiting an available process to start retrieving info
-QUEUED_FOR_INFO_RETRIEVAL_STATE = '/queuedForInfoRetrieval'
-
-# info about game is currently being collected - scraping steam page, hitting steam API
-INFO_RETRIEVAL_ACTIVE_STATE = '/infoRetrievalActive'
-
-# game has been persisted to database and will now show up on main screen
-STORED = '/stored'
-
-# states:
-#  - upcoming
-#  - finding name (active)
-#  - awaiting user input
-#  - queued for info retrieval
-#  - info retrieval (active)
-#  - stored

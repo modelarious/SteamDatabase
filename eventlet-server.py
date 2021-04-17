@@ -1,5 +1,8 @@
 from Server.WebsocketClientHandlerRegistry import WebsocketClientHandlerRegistry
 from Server.Server import Server
+
+from State.StateTrackerFactory import StateTrackerFactory
+from State.ObserverSocketHookupFactory import ObserverSocketHookupFactory
 from State.StateTracker import StateTracker
 
 if __name__ == '__main__':
@@ -12,7 +15,8 @@ if __name__ == '__main__':
     print("all needed sockets have been connected")
 
     observerSocketHookupFactory = ObserverSocketHookupFactory(websocketRegistry)
-    stateTracker = StateTracker(observerSocketHookupFactory)
+    stateTrackerFactory = StateTrackerFactory()
+    stateTracker = stateTrackerFactory.createStateTracker(observerSocketHookupFactory)
 
     from time import sleep
     stateTracker.setUpcomingState('factorio')
