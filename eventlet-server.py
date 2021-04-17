@@ -14,6 +14,7 @@ if __name__ == '__main__':
     websocketRegistry.waitForAllSocketsReady()
     print("all needed sockets have been connected")
 
+    # now that we are guaranteed that the sockets are connected, we can use them
     observerSocketHookupFactory = ObserverSocketHookupFactory(websocketRegistry)
     stateTrackerFactory = StateTrackerFactory()
     stateTracker = stateTrackerFactory.createStateTracker(observerSocketHookupFactory)
