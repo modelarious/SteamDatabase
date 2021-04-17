@@ -2,7 +2,6 @@ from Server.SocketWrapper import SocketWrapper
 
 # Observer pattern, but sending updates over a socket
 class ObservedDataStructure:
-
     # func will be one of this class' methods
     def sendUpdateDecorator(func):
         # updates socket after performing an action
