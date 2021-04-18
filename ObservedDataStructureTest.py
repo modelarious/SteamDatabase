@@ -10,7 +10,7 @@ class ObservedDataStructureTest(unittest.TestCase):
             socketWrapper = SocketWrapper(None, None)
             observedDataStructure = ObservedDataStructure(socketWrapper)
 
-        mock_socket_send_message.assert_called_once_with(set())
+        mock_socket_send_message.assert_called_once_with([])
 
     def test_socket_update_called_on_add_to_observed_data_structure(self):
         valueToAdd = 1
@@ -20,13 +20,13 @@ class ObservedDataStructureTest(unittest.TestCase):
             observedDataStructure.add(valueToAdd)
         
         calls = [
-            call(set()), 
-            call(set([valueToAdd]))
+            call([]), 
+            call([valueToAdd])
         ]
         mock_socket_send_message.assert_has_calls(calls)
 
     def test_socket_update_called_on_remove_from_observed_data_structure(self):
-        valueToAdd = 1
+        valueToAdd = 'hello'
         with patch.object(SocketWrapper, 'send_message', return_value=None) as mock_socket_send_message:
             socketWrapper = SocketWrapper(None, None)
             observedDataStructure = ObservedDataStructure(socketWrapper)
@@ -34,25 +34,25 @@ class ObservedDataStructureTest(unittest.TestCase):
             observedDataStructure.remove(valueToAdd)
 
         calls = [
-            call(set()), 
-            call(set([valueToAdd])),
-            call(set()) 
+            call([]), 
+            call([valueToAdd]),
+            call([]) 
         ]
         mock_socket_send_message.assert_has_calls(calls)
 
     def test_socket_update_called_on_add_by_tag_and_remove_by_tag(self):
-        valueToAdd = 1
+        valueToAdd = 'another string'
         keyToUse = "test key"
         with patch.object(SocketWrapper, 'send_message', return_value=None) as mock_socket_send_message:
             socketWrapper = SocketWrapper(None, None)
             observedDataStructure = ObservedDataStructure(socketWrapper)
-            observedDataStructure.addByTag(keyToUse, valueToAdd)
-            observedDataStructure.removeByTag(keyToUse)
+            observedDataStructure.add(valueToAdd, keyToUse)
+            observedDataStructure.remove(keyToUse)
 
         calls = [
-            call(set()), 
-            call(set([valueToAdd])),
-            call(set()) 
+            call([]), 
+            call([valueToAdd]),
+            call([]) 
         ]
         mock_socket_send_message.assert_has_calls(calls)
 

@@ -7,28 +7,22 @@ class ObservedDataStructure:
         # updates socket after performing an action
         def update_sock(self, *args, **kwargs):
             func(self, *args, **kwargs)
-            self.socketToUpdate.send_message(self.set.copy())
+            messageToSend = list(self.dict.values())
+            sortedMessage = sorted(messageToSend)
+            self.socketToUpdate.send_message(sortedMessage)
         return update_sock
 
     @sendUpdateDecorator
     def __init__(self, socketToUpdate : SocketWrapper):
         self.socketToUpdate = socketToUpdate
-        self.set = set()
-        self.internalTag = dict()
+        self.dict = {}
     
     @sendUpdateDecorator
-    def add(self, value):
-        self.set.add(value)
+    def add(self, value, key=None):
+        if key == None:
+            key = value
+        self.dict[key] = value
 
     @sendUpdateDecorator
-    def remove(self, value):
-        self.set.remove(value)
-    
-    # these don't need the decorator because they don't update the set data structure directly
-    def removeByTag(self, tag):
-        value = self.internalTag[tag]
-        self.remove(value)
-
-    def addByTag(self, tag, value):
-        self.internalTag[tag] = value
-        self.add(value)
+    def remove(self, key):
+        del self.dict[key]

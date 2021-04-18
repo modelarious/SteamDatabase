@@ -39,19 +39,18 @@ class ObservedDataStructureTest(unittest.TestCase):
         possibleTitleMatch1 = "Hello, I'm a game title (tm)"
         possibleTitleMatch2 = "Hello, I'm a game title 2"
 
-
         stateTracker = StateTracker(observedDataStructures)
         stateTracker.setUpcomingState(gameTitle)
         upcomingSentMessagesMock = self.get_sent_messages_mock(observedDataStructures, UPCOMING_STATE)
         calls = [
-            call(set()), 
-            call(set([gameTitle]))
+            call([]), 
+            call([gameTitle])
         ]
         upcomingSentMessagesMock.assert_has_calls(calls)
 
         stateTracker.setFindingNameActiveState(gameTitle)
-        print(self.get_sent_messages_mock(observedDataStructures, UPCOMING_STATE))
-        print(self.get_sent_messages_mock(observedDataStructures, FINDING_NAME_ACTIVE_STATE))
+        # print(self.get_sent_messages_mock(observedDataStructures, UPCOMING_STATE))
+        # print(self.get_sent_messages_mock(observedDataStructures, FINDING_NAME_ACTIVE_STATE))
 
 
         possibleMatch1 = PossibleMatchQueueEntry(possibleTitleMatch1, "", 0.91)

@@ -32,7 +32,7 @@ class StateTracker:
     def setAwaitingUserInputState(self, userInputRequiredQueueEntry : UserInputRequiredQueueEntry):
         gameTitle = userInputRequiredQueueEntry.getGameName()
         self.findingNameActive.remove(gameTitle)
-        self.awaitingUser.addByTag(gameTitle, userInputRequiredQueueEntry.toDict())
+        self.awaitingUser.add(userInputRequiredQueueEntry.toDict(), gameTitle)
         self._trackCurrentState(self.awaitingUser, gameTitle)
     
     # XXX this needs to remove the value from awaitingUser state
@@ -48,7 +48,7 @@ class StateTracker:
         prevState = self._getPreviousState(gameTitle)
         prevState.remove(gameTitle)
 
-        self.queuedForInfoRetrieval.addByTag(gameTitle, matchQueueEntry.toDict())
+        self.queuedForInfoRetrieval.add(matchQueueEntry.toDict(), gameTitle)
         self._trackCurrentState(self.queuedForInfoRetrieval, gameTitle)
     
     def setInfoRetrievalActiveState(self):
