@@ -2,7 +2,7 @@ from typing import List
 from QueueEntries.PossibleMatchQueueEntry import PossibleMatchQueueEntry
 
 class UserInputRequiredQueueEntry:
-    def __init__(self, gameName, possibleMatchesList: List[PossibleMatchQueueEntry]):
+    def __init__(self, gameName: str, possibleMatchesList: List[PossibleMatchQueueEntry]):
         self.gameName = gameName
         self.possibleMatchesList = possibleMatchesList
     

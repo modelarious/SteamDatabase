@@ -2,6 +2,10 @@ import unittest
 from unittest.mock import patch, call, MagicMock
 from State.ObservedDataStructure import ObservedDataStructure
 from State.StateTracker import StateTracker
+from State.States import STATES, UPCOMING_STATE, FINDING_NAME_ACTIVE_STATE
+from Server.SocketWrapper import SocketWrapper
+from QueueEntries.PossibleMatchQueueEntry import PossibleMatchQueueEntry
+from QueueEntries.UserInputRequiredQueueEntry import UserInputRequiredQueueEntry
 
 class SomeClass:
     def method(self, a, b, c, key='hello'):
@@ -13,18 +17,52 @@ class SomeClass:
 
 class ObservedDataStructureTest(unittest.TestCase):
 
-    def test_socket_update_called_on_creation_with_blank_set(self):
+    def get_sent_messages_mock(self, observedDataStructures, state):
+        return observedDataStructures[state].socketToUpdate.send_message
+
+        # .assert_called_once()
+
+    def test_have_a_good_name(self):
         # integration test
-        real = SomeClass() 
-        real.method = MagicMock(name='method')
+        observedDataStructures = {}
+        for state in STATES:
+            # could create a seam by mocking ObservedDataStructure, but I care more about
+            # if the data is being sent through the socket when I use the StateTracker. This
+            # way I can check what is going to be sent from the sockets to the front end.
+            mockSocketWrapper = SocketWrapper(None, state)
+            mockSocketWrapper.send_message = MagicMock(name=state + " socketWrapperSendMessageMock")
+
+            observedDataStructures[state] = ObservedDataStructure(mockSocketWrapper)
 
 
-        real.method(3, 4, 5, key='value')
-        real.method(4, 5, 7, key='vasdfasddfalue')
-        print(real.method.mock_calls)
+        gameTitle = "Hello, I'm a game title"
+        possibleTitleMatch1 = "Hello, I'm a game title (tm)"
+        possibleTitleMatch2 = "Hello, I'm a game title 2"
 
 
-        stateTracker = StateTracker()
+        stateTracker = StateTracker(observedDataStructures)
+        stateTracker.setUpcomingState(gameTitle)
+        upcomingSentMessagesMock = self.get_sent_messages_mock(observedDataStructures, UPCOMING_STATE)
+        calls = [
+            call(set()), 
+            call(set([gameTitle]))
+        ]
+        upcomingSentMessagesMock.assert_has_calls(calls)
+
+        stateTracker.setFindingNameActiveState(gameTitle)
+        print(self.get_sent_messages_mock(observedDataStructures, UPCOMING_STATE))
+        print(self.get_sent_messages_mock(observedDataStructures, FINDING_NAME_ACTIVE_STATE))
+
+
+        possibleMatch1 = PossibleMatchQueueEntry(possibleTitleMatch1, "", 0.91)
+        possibleMatch2 = PossibleMatchQueueEntry(possibleTitleMatch2, "", 0.98)
+        possibleMatches = [
+            possibleMatch1, 
+            possibleMatch2
+        ]
+        userInputRequiredQueueEntry = UserInputRequiredQueueEntry(gameTitle, possibleMatches)
+        stateTracker.setAwaitingUserInputState(userInputRequiredQueueEntry)
+
     # def test_socket_update_called_on_add_to_observed_data_structure(self):
     #     valueToAdd = 1
     #     with patch.object(StateTracker, 'send_message', return_value=None) as mock_socket_send_message:

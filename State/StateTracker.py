@@ -29,7 +29,7 @@ class StateTracker:
         self.findingNameActive.add(gameTitle)
         self._trackCurrentState(self.findingNameActive, gameTitle)
     
-    def setAwaitingUserInputState(self, userInputRequiredEntry : UserInputRequiredQueueEntry):
+    def setAwaitingUserInputState(self, userInputRequiredQueueEntry : UserInputRequiredQueueEntry):
         gameTitle = userInputRequiredQueueEntry.getGameName()
         self.findingNameActive.remove(gameTitle)
         self.awaitingUser.addByTag(gameTitle, userInputRequiredQueueEntry.toJson())
