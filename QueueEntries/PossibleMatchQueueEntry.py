@@ -13,3 +13,4 @@ class PossibleMatchQueueEntry:
 
     def convertToMatchQueueEntry(self, gameNameOnDisk: str) -> MatchQueueEntry:
         return MatchQueueEntry(self.steamName, gameNameOnDisk, self.steamIDNumber)
+

@@ -11,3 +11,10 @@ class UserInputRequiredQueueEntry:
     
     def getPossibleMatchesList(self):
         return self.possibleMatchesList
+    
+    def toDict(self):
+        props = self.__dict__
+        # need to apply __dict__ to sub objects in the possibleMatchesList
+        props['possibleMatchesList'] = [x.__dict__ for x in self.possibleMatchesList]
+    
+        return props

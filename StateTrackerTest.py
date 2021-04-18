@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch, call, MagicMock
 from State.ObservedDataStructure import ObservedDataStructure
 from State.StateTracker import StateTracker
-from State.States import STATES, UPCOMING_STATE, FINDING_NAME_ACTIVE_STATE
+from State.States import STATES, UPCOMING_STATE, FINDING_NAME_ACTIVE_STATE, AWAITING_USER_STATE
 from Server.SocketWrapper import SocketWrapper
 from QueueEntries.PossibleMatchQueueEntry import PossibleMatchQueueEntry
 from QueueEntries.UserInputRequiredQueueEntry import UserInputRequiredQueueEntry
@@ -62,6 +62,8 @@ class ObservedDataStructureTest(unittest.TestCase):
         ]
         userInputRequiredQueueEntry = UserInputRequiredQueueEntry(gameTitle, possibleMatches)
         stateTracker.setAwaitingUserInputState(userInputRequiredQueueEntry)
+        print(self.get_sent_messages_mock(observedDataStructures, FINDING_NAME_ACTIVE_STATE).mock_calls)
+        print(self.get_sent_messages_mock(observedDataStructures, AWAITING_USER_STATE).mock_calls)
 
     # def test_socket_update_called_on_add_to_observed_data_structure(self):
     #     valueToAdd = 1
