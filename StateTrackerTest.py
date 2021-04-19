@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch, call, MagicMock
+from unittest.mock import call, MagicMock
 from State.ObservedDataStructure import ObservedDataStructure
 from State.StateTracker import StateTracker
 from State.States import STATES, UPCOMING_STATE, FINDING_NAME_ACTIVE_STATE, AWAITING_USER_STATE
@@ -7,24 +7,45 @@ from Server.SocketWrapper import SocketWrapper
 from QueueEntries.PossibleMatchQueueEntry import PossibleMatchQueueEntry
 from QueueEntries.UserInputRequiredQueueEntry import UserInputRequiredQueueEntry
 
-class SomeClass:
-    def method(self, a, b, c, key='hello'):
-        return 1
-
-
-
-
 
 class ObservedDataStructureTest(unittest.TestCase):
 
-    def get_sent_messages_mock(self, observedDataStructures, state):
-        return observedDataStructures[state].socketToUpdate.send_message
+    def get_sent_messages_mock(self, state):
+        return self.observedDataStructures[state].socketToUpdate.send_message
+    
+    def assert_correct_call_structure_after_adding_to_upcoming(self, gameTitle):
+        upcomingSentMessagesMock = self.get_sent_messages_mock(UPCOMING_STATE)
+        calls = [
+            call([]), 
+            call([gameTitle])
+        ]
+        upcomingSentMessagesMock.assert_has_calls(calls)
+        assert(len(upcomingSentMessagesMock.mock_calls) == 2)
+    
+    def assert_upcoming_had_correct_calls_after_moving_to_next_state(self, gameTitle):
+        upcomingSentMessagesMock = self.get_sent_messages_mock(UPCOMING_STATE)
 
-        # .assert_called_once()
+        calls = [
+            call([]), 
+            call([gameTitle]),
+            call([])
+        ]
+        upcomingSentMessagesMock.assert_has_calls(calls)
+        assert(len(upcomingSentMessagesMock.mock_calls) == 3)
+    
+    def assert_findingNameActive_correct_after_adding_to_findingNameActive(self, gameTitle):
+        findingNameActiveStateMock = self.get_sent_messages_mock(FINDING_NAME_ACTIVE_STATE)
+        calls = [
+            call([]), 
+            call([gameTitle])
+        ]
+        findingNameActiveStateMock.assert_has_calls(calls)
+        assert(len(findingNameActiveStateMock.mock_calls) == 2)
+
 
     def test_have_a_good_name(self):
         # integration test
-        observedDataStructures = {}
+        self.observedDataStructures = {}
         for state in STATES:
             # could create a seam by mocking ObservedDataStructure, but I care more about
             # if the data is being sent through the socket when I use the StateTracker. This
@@ -32,27 +53,23 @@ class ObservedDataStructureTest(unittest.TestCase):
             mockSocketWrapper = SocketWrapper(None, state)
             mockSocketWrapper.send_message = MagicMock(name=state + " socketWrapperSendMessageMock")
 
-            observedDataStructures[state] = ObservedDataStructure(mockSocketWrapper)
-
+            self.observedDataStructures[state] = ObservedDataStructure(mockSocketWrapper)
 
         gameTitle = "Hello, I'm a game title"
         possibleTitleMatch1 = "Hello, I'm a game title (tm)"
         possibleTitleMatch2 = "Hello, I'm a game title 2"
 
-        stateTracker = StateTracker(observedDataStructures)
+        stateTracker = StateTracker(self.observedDataStructures)
+
+        # set to upcoming state
         stateTracker.setUpcomingState(gameTitle)
-        upcomingSentMessagesMock = self.get_sent_messages_mock(observedDataStructures, UPCOMING_STATE)
-        calls = [
-            call([]), 
-            call([gameTitle])
-        ]
-        upcomingSentMessagesMock.assert_has_calls(calls)
+        self.assert_correct_call_structure_after_adding_to_upcoming(gameTitle)
 
+        # move to finding name active state
         stateTracker.setFindingNameActiveState(gameTitle)
-        # print(self.get_sent_messages_mock(observedDataStructures, UPCOMING_STATE))
-        # print(self.get_sent_messages_mock(observedDataStructures, FINDING_NAME_ACTIVE_STATE))
-
-
+        self.assert_upcoming_had_correct_calls_after_moving_to_next_state(gameTitle)
+        self.assert_findingNameActive_correct_after_adding_to_findingNameActive(gameTitle)
+        
         possibleMatch1 = PossibleMatchQueueEntry(possibleTitleMatch1, "", 0.91)
         possibleMatch2 = PossibleMatchQueueEntry(possibleTitleMatch2, "", 0.98)
         possibleMatches = [
@@ -61,52 +78,12 @@ class ObservedDataStructureTest(unittest.TestCase):
         ]
         userInputRequiredQueueEntry = UserInputRequiredQueueEntry(gameTitle, possibleMatches)
         stateTracker.setAwaitingUserInputState(userInputRequiredQueueEntry)
-        print(self.get_sent_messages_mock(observedDataStructures, FINDING_NAME_ACTIVE_STATE).mock_calls)
-        print(self.get_sent_messages_mock(observedDataStructures, AWAITING_USER_STATE).mock_calls)
+        print(self.get_sent_messages_mock(FINDING_NAME_ACTIVE_STATE).mock_calls)
+        print(self.get_sent_messages_mock(AWAITING_USER_STATE).mock_calls)
 
-    # def test_socket_update_called_on_add_to_observed_data_structure(self):
-    #     valueToAdd = 1
-    #     with patch.object(StateTracker, 'send_message', return_value=None) as mock_socket_send_message:
-    #         socketWrapper = SocketWrapper(None, None)
-    #         observedDataStructure = ObservedDataStructure(socketWrapper)
-    #         observedDataStructure.add(valueToAdd)
-        
-    #     calls = [
-    #         call(set()), 
-    #         call(set([valueToAdd]))
-    #     ]
-    #     mock_socket_send_message.assert_has_calls(calls)
 
-    # def test_socket_update_called_on_remove_from_observed_data_structure(self):
-    #     valueToAdd = 1
-    #     with patch.object(SocketWrapper, 'send_message', return_value=None) as mock_socket_send_message:
-    #         socketWrapper = SocketWrapper(None, None)
-    #         observedDataStructure = ObservedDataStructure(socketWrapper)
-    #         observedDataStructure.add(valueToAdd)
-    #         observedDataStructure.remove(valueToAdd)
-
-    #     calls = [
-    #         call(set()), 
-    #         call(set([valueToAdd])),
-    #         call(set()) 
-    #     ]
-    #     mock_socket_send_message.assert_has_calls(calls)
-
-    # def test_socket_update_called_on_add_by_tag_and_remove_by_tag(self):
-    #     valueToAdd = 1
-    #     keyToUse = "test key"
-    #     with patch.object(SocketWrapper, 'send_message', return_value=None) as mock_socket_send_message:
-    #         socketWrapper = SocketWrapper(None, None)
-    #         observedDataStructure = ObservedDataStructure(socketWrapper)
-    #         observedDataStructure.addByTag(keyToUse, valueToAdd)
-    #         observedDataStructure.removeByTag(keyToUse)
-
-    #     calls = [
-    #         call(set()), 
-    #         call(set([valueToAdd])),
-    #         call(set()) 
-    #     ]
-    #     mock_socket_send_message.assert_has_calls(calls)
+        # stateTracker.setInfoRetrievalActiveState()
+        # stateTracker.setStoredState()
 
 if __name__ == '__main__':
     unittest.main()
