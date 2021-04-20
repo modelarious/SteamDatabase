@@ -5,8 +5,12 @@ from typing import Dict
 from QueueEntries.UserInputRequiredQueueEntry import UserInputRequiredQueueEntry
 from QueueEntries.MatchQueueEntry import MatchQueueEntry
 from State.ObservedDataStructure import ObservedDataStructure
+from GameModel import Game
 
 # XXX concurrency, which should be handled in ObservedDataStructure
+
+# XXX This was only made to handle the case where you have unique games - if you have duplicates then this
+# XXX will break
 class StateTracker:
     def __init__(self, connections : Dict[StateStrType, ObservedDataStructure]):
 
@@ -20,47 +24,53 @@ class StateTracker:
         self.infoRetrievalActive = connections[INFO_RETRIEVAL_ACTIVE_STATE]
         self.stored = connections[STORED]
 
-    def setUpcomingState(self, gameTitle : str):
-        self.upcoming.add(gameTitle)
-        self._trackCurrentState(self.upcoming, gameTitle)
+    def setUpcomingState(self, gameTitleOnDisk : str):
+        self.upcoming.add(gameTitleOnDisk)
+        self._trackCurrentState(self.upcoming, gameTitleOnDisk)
     
-    def setFindingNameActiveState(self, gameTitle : str):
-        self.upcoming.remove(gameTitle)
-        self.findingNameActive.add(gameTitle)
-        self._trackCurrentState(self.findingNameActive, gameTitle)
+    def setFindingNameActiveState(self, gameTitleOnDisk : str):
+        self.upcoming.remove(gameTitleOnDisk)
+        self.findingNameActive.add(gameTitleOnDisk)
+        self._trackCurrentState(self.findingNameActive, gameTitleOnDisk)
     
     def setAwaitingUserInputState(self, userInputRequiredQueueEntry : UserInputRequiredQueueEntry):
-        gameTitle = userInputRequiredQueueEntry.getGameName()
-        self.findingNameActive.remove(gameTitle)
-        self.awaitingUser.add(userInputRequiredQueueEntry.toDict(), gameTitle)
-        self._trackCurrentState(self.awaitingUser, gameTitle)
+        gameTitleOnDisk = userInputRequiredQueueEntry.getGameName()
+        self.findingNameActive.remove(gameTitleOnDisk)
+        self.awaitingUser.add(userInputRequiredQueueEntry.toDict(), gameTitleOnDisk)
+        self._trackCurrentState(self.awaitingUser, gameTitleOnDisk)
     
-    # XXX this needs to remove the value from awaitingUser state
-    def rejectedByUser(self):
-        pass
+    def rejectedByUser(self, gameTitle: str):
+        self.awaitingUser.remove(gameTitle)
     
     def setQueuedForInfoRetrievalState(self, matchQueueEntry : MatchQueueEntry):
-        gameTitle = matchQueueEntry.getGameNameOnDisk()
+        gameTitleOnDisk = matchQueueEntry.getGameNameOnDisk()
 
         # Could have been a 100% name match in which case, previous state was FindingNameActiveState.
         # Also could have been only a partial match to a few names and the user had to select
         # the correct one, so the previous state was AwaitingUserInputState.
-        prevState = self._getPreviousState(gameTitle)
-        prevState.remove(gameTitle)
+        prevState = self._getPreviousState(gameTitleOnDisk)
+        prevState.remove(gameTitleOnDisk)
 
-        self.queuedForInfoRetrieval.add(matchQueueEntry.toDict(), gameTitle)
-        self._trackCurrentState(self.queuedForInfoRetrieval, gameTitle)
+        self.queuedForInfoRetrieval.add(matchQueueEntry.toDict(), gameTitleOnDisk)
+        self._trackCurrentState(self.queuedForInfoRetrieval, gameTitleOnDisk)
     
-    def setInfoRetrievalActiveState(self):
-        pass
+    def setInfoRetrievalActiveState(self, matchQueueEntry : MatchQueueEntry):
+        gameTitleOnDisk = matchQueueEntry.getGameNameOnDisk()
+        self.queuedForInfoRetrieval.remove(gameTitleOnDisk)
+
+        self.infoRetrievalActive.add(matchQueueEntry.toDict(), gameTitleOnDisk)
+        self._trackCurrentState(self.infoRetrievalActive, gameTitleOnDisk)
     
-    def setStoredState(self):
-        pass
+    def setStoredState(self, game : Game):
+        gameTitleOnDisk = game.name_on_harddrive
+        self.infoRetrievalActive.remove(gameTitleOnDisk)
+        self.stored.add(game.toDict(), gameTitleOnDisk)
+        self._trackCurrentState(self.stored, gameTitleOnDisk)
     
-    def _trackCurrentState(self, state: ObservedDataStructure, gameTitle: str):
-        self.previousState[gameTitle] = state
+    def _trackCurrentState(self, state: ObservedDataStructure, gameTitleOnDisk: str):
+        self.previousState[gameTitleOnDisk] = state
         
-    def _wasPreviousState(self, gameTitle: str):
-        return self.previousState[gameTitle]
+    def _getPreviousState(self, gameTitleOnDisk: str):
+        return self.previousState[gameTitleOnDisk]
 
     

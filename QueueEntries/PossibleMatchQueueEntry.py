@@ -1,4 +1,5 @@
 from QueueEntries.MatchQueueEntry import MatchQueueEntry
+
 class PossibleMatchQueueEntry:
     def __init__(self, steamName: str, steamIDNumber: str, matchScore: float):
         self.steamName = steamName
@@ -13,4 +14,7 @@ class PossibleMatchQueueEntry:
 
     def convertToMatchQueueEntry(self, gameNameOnDisk: str) -> MatchQueueEntry:
         return MatchQueueEntry(self.steamName, gameNameOnDisk, self.steamIDNumber)
+    
+    def toDict(self):
+        return self.__dict__.copy()
 

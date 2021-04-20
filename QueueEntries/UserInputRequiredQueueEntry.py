@@ -13,8 +13,8 @@ class UserInputRequiredQueueEntry:
         return self.possibleMatchesList
     
     def toDict(self):
-        props = self.__dict__
+        props = self.__dict__.copy()
         # need to apply __dict__ to sub objects in the possibleMatchesList
-        props['possibleMatchesList'] = [x.__dict__ for x in self.possibleMatchesList]
+        props['possibleMatchesList'] = [x.toDict() for x in self.possibleMatchesList]
     
         return props
