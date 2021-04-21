@@ -16,6 +16,7 @@ class WebsocketClientHandlerRegistry:
     def __init__(self):
         self.__socketWrappers = dict()
         self.__allSocketsReady = Event()
+        self._internalCheckAllSocketsReady()
 
     def waitForAllSocketsReady(self):
         self.__allSocketsReady.wait()
