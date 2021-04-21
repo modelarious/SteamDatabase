@@ -11,7 +11,7 @@ from GameModel import Game
 
 # XXX This was only made to handle the case where you have unique games - if you have duplicates then this
 # XXX will break
-class StateTracker:
+class StateCommunicator:
     def __init__(self, connections : Dict[StateStrType, ObservedDataStructure]):
 
         self.previousState = {}

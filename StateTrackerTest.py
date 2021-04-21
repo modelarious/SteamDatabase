@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import call, MagicMock
 from State.ObservedDataStructure import ObservedDataStructure
-from State.StateTracker import StateTracker
+from State.StateCommunicator import StateCommunicator
 from State.States import STATES, UPCOMING_STATE, FINDING_NAME_ACTIVE_STATE, AWAITING_USER_STATE, QUEUED_FOR_INFO_RETRIEVAL_STATE, INFO_RETRIEVAL_ACTIVE_STATE, STORED
 from Server.SocketWrapper import SocketWrapper
 from QueueEntries.PossibleMatchQueueEntry import PossibleMatchQueueEntry
@@ -37,13 +37,13 @@ def create_user_input_required_queue_entry():
     return UserInputRequiredQueueEntry(gameTitleOnDisk, possibleMatches)
 
 # integration test
-class StateTrackerTest(unittest.TestCase):
+class StateCommunicatorTest(unittest.TestCase):
     def setUp(self):
         
         self.observedDataStructures = {}
         for state in STATES:
             # could create a seam by mocking ObservedDataStructure, but I care more about
-            # if the data is being sent through the socket when I use the StateTracker. This
+            # if the data is being sent through the socket when I use the StateCommunicator. This
             # way I can check what is going to be sent from the sockets to the front end.
             mockSocketWrapper = SocketWrapper(None, state)
             mockSocketWrapper.send_message = MagicMock(name=state + " socketWrapperSendMessageMock")
@@ -76,65 +76,65 @@ class StateTrackerTest(unittest.TestCase):
     
     # several imperfect matches found - ask user for input
     def test_partial_match_flow(self):
-        stateTracker = StateTracker(self.observedDataStructures)
+        stateCommunicator = StateCommunicator(self.observedDataStructures)
 
         # set to upcoming state
-        stateTracker.setUpcomingState(gameTitleOnDisk)
+        stateCommunicator.setUpcomingState(gameTitleOnDisk)
         self.assert_correct_call_structure_after_adding(gameTitleOnDisk, UPCOMING_STATE)
 
         # move to finding name active state
-        stateTracker.setFindingNameActiveState(gameTitleOnDisk)
+        stateCommunicator.setFindingNameActiveState(gameTitleOnDisk)
         self.assert_correct_calls_after_moving_to_next_state(gameTitleOnDisk, UPCOMING_STATE)
         self.assert_correct_call_structure_after_adding(gameTitleOnDisk, FINDING_NAME_ACTIVE_STATE)
         
         # move to input required because multiple titles match closely but none exactly
         userInputRequiredQueueEntry = create_user_input_required_queue_entry()
-        stateTracker.setAwaitingUserInputState(userInputRequiredQueueEntry)
+        stateCommunicator.setAwaitingUserInputState(userInputRequiredQueueEntry)
         self.assert_correct_calls_after_moving_to_next_state(gameTitleOnDisk, FINDING_NAME_ACTIVE_STATE)
         self.assert_correct_call_structure_after_adding(userInputRequiredQueueEntry.toDict(), AWAITING_USER_STATE)
 
         # user selected an entry and we continue with processing
         matchQueueEntry = create_match_queue_entry()
-        stateTracker.setQueuedForInfoRetrievalState(matchQueueEntry)
+        stateCommunicator.setQueuedForInfoRetrievalState(matchQueueEntry)
         self.assert_correct_calls_after_moving_to_next_state(userInputRequiredQueueEntry.toDict(), AWAITING_USER_STATE)
         self.assert_correct_call_structure_after_adding(matchQueueEntry.toDict(), QUEUED_FOR_INFO_RETRIEVAL_STATE)
 
-        stateTracker.setInfoRetrievalActiveState(matchQueueEntry)
+        stateCommunicator.setInfoRetrievalActiveState(matchQueueEntry)
         self.assert_correct_calls_after_moving_to_next_state(matchQueueEntry.toDict(), QUEUED_FOR_INFO_RETRIEVAL_STATE)
         self.assert_correct_call_structure_after_adding(matchQueueEntry.toDict(), INFO_RETRIEVAL_ACTIVE_STATE)
 
         # persist the result 
         game = create_game()
-        stateTracker.setStoredState(game)
+        stateCommunicator.setStoredState(game)
         self.assert_correct_calls_after_moving_to_next_state(matchQueueEntry.toDict(), INFO_RETRIEVAL_ACTIVE_STATE)
         self.assert_correct_call_structure_after_adding(game.toDict(), STORED)
     
     # this one skips the phase where it requires user input
     def test_perfect_match_flow(self):
-        stateTracker = StateTracker(self.observedDataStructures)
+        stateCommunicator = StateCommunicator(self.observedDataStructures)
 
         # set to upcoming state
-        stateTracker.setUpcomingState(gameTitleOnDisk)
+        stateCommunicator.setUpcomingState(gameTitleOnDisk)
         self.assert_correct_call_structure_after_adding(gameTitleOnDisk, UPCOMING_STATE)
 
         # move to finding name active state
-        stateTracker.setFindingNameActiveState(gameTitleOnDisk)
+        stateCommunicator.setFindingNameActiveState(gameTitleOnDisk)
         self.assert_correct_calls_after_moving_to_next_state(gameTitleOnDisk, UPCOMING_STATE)
         self.assert_correct_call_structure_after_adding(gameTitleOnDisk, FINDING_NAME_ACTIVE_STATE)
         
         # perfect match found - move straight to retrieving info
         matchQueueEntry = create_match_queue_entry()
-        stateTracker.setQueuedForInfoRetrievalState(matchQueueEntry)
+        stateCommunicator.setQueuedForInfoRetrievalState(matchQueueEntry)
         self.assert_correct_calls_after_moving_to_next_state(gameTitleOnDisk, FINDING_NAME_ACTIVE_STATE)
         self.assert_correct_call_structure_after_adding(matchQueueEntry.toDict(), QUEUED_FOR_INFO_RETRIEVAL_STATE)
 
-        stateTracker.setInfoRetrievalActiveState(matchQueueEntry)
+        stateCommunicator.setInfoRetrievalActiveState(matchQueueEntry)
         self.assert_correct_calls_after_moving_to_next_state(matchQueueEntry.toDict(), QUEUED_FOR_INFO_RETRIEVAL_STATE)
         self.assert_correct_call_structure_after_adding(matchQueueEntry.toDict(), INFO_RETRIEVAL_ACTIVE_STATE)
 
         # persist the result 
         game = create_game()
-        stateTracker.setStoredState(game)
+        stateCommunicator.setStoredState(game)
         self.assert_correct_calls_after_moving_to_next_state(matchQueueEntry.toDict(), INFO_RETRIEVAL_ACTIVE_STATE)
         self.assert_correct_call_structure_after_adding(game.toDict(), STORED)
 
