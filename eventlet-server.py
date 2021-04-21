@@ -5,7 +5,9 @@ from multiprocessing.managers import BaseManager
 from State.StateCommunicatorFactory import StateCommunicatorFactory
 from State.ObserverSocketHookupFactory import ObserverSocketHookupFactory
 from State.StateCommunicator import StateCommunicator
-
+from State.StateCommunicatorInterface import StateCommunicatorInterface
+    
+#StateCommunicatorInterface
 class ServerProxyObject:
     def __init__(self):
         websocketRegistry = WebsocketClientHandlerRegistry()
@@ -30,19 +32,6 @@ class ServerProxyObject:
         self.stateCommunicator.setUpcomingState(string)
 
 if __name__ == '__main__':
-    # websocketRegistry = WebsocketClientHandlerRegistry()
-    # server = Server(websocketRegistry)
-    # server.startInThread()
-
-    # print("waiting on sockets")
-    # websocketRegistry.waitForAllSocketsReady()
-    # print("all needed sockets have been connected")
-
-    # # now that we are guaranteed that the sockets are connected, we can use them
-    # observerSocketHookupFactory = ObserverSocketHookupFactory(websocketRegistry)
-    # stateCommunicatorFactory = StateCommunicatorFactory()
-    # stateCommunicator = stateCommunicatorFactory.createStateCommunicator(observerSocketHookupFactory)
-
     class ShareObjectBetweenProcesses(BaseManager):  
         pass
   
