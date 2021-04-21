@@ -6,5 +6,8 @@ class Game:
         self.name_on_steam = name_on_steam
         self.avg_review_score = avg_review_score
         self.user_defined_tags = user_defined_tags
+    
+    def toDict(self):
+        return self.__dict__.copy()
 
     

@@ -1,10 +1,20 @@
+from typing import List
+from QueueEntries.PossibleMatchQueueEntry import PossibleMatchQueueEntry
+
 class UserInputRequiredQueueEntry:
-    def __init__(self, targetName, possibleMatchesList):
-        self.targetName = targetName
+    def __init__(self, gameName: str, possibleMatchesList: List[PossibleMatchQueueEntry]):
+        self.gameName = gameName
         self.possibleMatchesList = possibleMatchesList
     
-    def getTargetName(self):
-        return self.targetName
+    def getGameName(self):
+        return self.gameName
     
     def getPossibleMatchesList(self):
         return self.possibleMatchesList
+    
+    def toDict(self):
+        props = self.__dict__.copy()
+        # need to apply __dict__ to sub objects in the possibleMatchesList
+        props['possibleMatchesList'] = [x.toDict() for x in self.possibleMatchesList]
+    
+        return props

@@ -31,6 +31,23 @@ def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, user
         # didn't find the title in the quick map - this is fine
         pass
 
+    # XXX could refactor to the following which makes the game object smarter
+    # XXX Though this section could use optimization if anything - maybe refactoring to
+    # XXX use more objects would be a detriment
+    # possibleMatches = UserInputRequiredQueueEntry(targetGame)
+    # for game in steamGamesList:
+    #     score = game.calculateSimilarity(targetGame)
+    #     if score >= 0.7:
+    #         possibleMatches.trackCloseMatch(game, score)
+
+    #         # if perfect match
+    #         if score == 1.0:
+    #             queueLayer.addPerfectNameMatch(game, targetGame)
+    #             break
+    # else:
+    #     queueLayer.askUserForSelection(possibleMatches)
+    
+
     # fallback to the slow method
     possibleMatchesList = []
     for game in steamGamesList:
@@ -72,6 +89,7 @@ def minimumEditDistanceProcessing(userInputRequiredQueue, gameNameMatchesProcess
         # exhaust_iterable = deque(maxlen=0).extend
         # exhaust_iterable(futureMap)
 
+        # XXX gather queues up into one object: QueueLayer (https://github.com/modelarious/SteamDatabase/issues/17)
         futureMap = {
             MinimumEditDistanceProcessPool.submit(
                 apply_minimum_edit_distance, targetGame, gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList, quickSteamTitleMap

@@ -55,8 +55,9 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk):
     unmatchedGames = []
     uire = userInputRequiredQueue.get()
     while uire != END_OF_QUEUE:
-        nameOnDisk = uire.getTargetName()
+        nameOnDisk = uire.getGameName()
         for possibleMatch in uire.getPossibleMatchesList():
+            # XXX What are you doing to that poor possibleMatch object? Why are you grabbing internals?
             userInput = input(f"does it match '{possibleMatch.getSteamName()}' - {possibleMatch.steamIDNumber} - {possibleMatch.matchScore}? (y/n)")
             if userInput.lower() == 'y':
                 gameNameMatchesProcessingQueue.put(possibleMatch.convertToMatchQueueEntry(nameOnDisk)) 

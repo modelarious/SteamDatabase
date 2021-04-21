@@ -1,48 +1,33 @@
 from Server.WebsocketClientHandlerRegistry import WebsocketClientHandlerRegistry
 from Server.Server import Server
-from State.StateTracker import StateTracker
+
+from State.StateCommunicatorFactory import StateCommunicatorFactory
+from State.ObserverSocketHookupFactory import ObserverSocketHookupFactory
+from State.StateCommunicator import StateCommunicator
 
 if __name__ == '__main__':
-    websocketClientHandlerRegistry = WebsocketClientHandlerRegistry()
-    server = Server(websocketClientHandlerRegistry)
+    websocketRegistry = WebsocketClientHandlerRegistry()
+    server = Server(websocketRegistry)
     server.startInThread()
 
-    stateTracker = StateTracker(websocketClientHandlerRegistry)
+    print("waiting on sockets")
+    websocketRegistry.waitForAllSocketsReady()
+    print("all needed sockets have been connected")
+
+    # now that we are guaranteed that the sockets are connected, we can use them
+    observerSocketHookupFactory = ObserverSocketHookupFactory(websocketRegistry)
+    stateCommunicatorFactory = StateCommunicatorFactory()
+    stateCommunicator = stateCommunicatorFactory.createStateCommunicator(observerSocketHookupFactory)
 
     from time import sleep
-    stateTracker.setUpcomingState('factorio')
+    stateCommunicator.setUpcomingState('factorio')
     sleep(1)
-    stateTracker.setUpcomingState('satisfactory')
+    stateCommunicator.setUpcomingState('satisfactory')
     sleep(3)
-    stateTracker.setFindingNameActiveState('factorio')
+    stateCommunicator.setFindingNameActiveState('factorio')
     sleep(3)
-    stateTracker.setFindingNameActiveState('satisfactory')
+    stateCommunicator.setFindingNameActiveState('satisfactory')
     
-
-    # XXX all below is driver code
-    # from json import dumps
-    # input("tell me when you're connected")
-
-    # GAME_SOCKET = '/game'
-
-    # gameSock = websocketClientHandlerRegistry.get_socket(GAME_SOCKET)
-
-    # jsonMessage = dumps({
-    #     "games" : [
-    #         { 'steamID': 3, 'steamName': 'game 3' },
-    #         { 'steamID': 4, 'steamName': 'game 4' }
-    #     ]
-    # })
-    # gameSock.send_message(jsonMessage)
-
-    # jsonMessage = dumps({
-    #     "games" : [
-    #         { 'steamID': 5, 'steamName': 'game 5' }
-    #     ]
-    # })
-    # gameSock.send_message(jsonMessage)
-
-    # print(gameSock.get_message())
     
     print("waiting on server")
     server.join()
