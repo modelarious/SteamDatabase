@@ -1,3 +1,4 @@
+from State.StateCommunicatorInterface import StateCommunicatorInterface
 from ExternalDataFetchers.UserDefinedTagsFetcher import UserDefinedTagsFetcher
 from ExternalDataFetchers.SteamAPIDataFetcher import SteamAPIDataFetcher
 from minimumEditDistanceProcessing import minimumEditDistanceProcessing
@@ -20,8 +21,13 @@ def build_steam_title_map(steamGamesList):
 # XXX this is ripe for refactor.
 # XXX Go all Dependency Injection on it's ass.
 # XXX move UI handling into a dedicated function or class
-def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk):
+# class AddingGamesWorkflow:
+def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, stateCommunicator: StateCommunicatorInterface):
 
+    # XXX XXX XXX rough - should send these all out in one go
+    for gameTitle in gamesOnDisk:
+        stateCommunicator.setUpcomingState(gameTitle)
+    
     quickSteamTitleMap = build_steam_title_map(steamGamesList)
 
     print("creating manager and queues")
@@ -47,7 +53,7 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk):
     # This process goes through the steamGamesList and applies the min edit dist algo. (uses a pool of processes to accomplish this quicker)
     # adds matches that are 1.0 to the GamePerfectMatches queue, adds anything else UserInputRequired queue for user input process to consume
     print("launching minimum edit distance handling process")
-    MinimumEditDistanceProcess = Process(target=minimumEditDistanceProcessing, args=(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, quickSteamTitleMap))
+    MinimumEditDistanceProcess = Process(target=minimumEditDistanceProcessing, args=(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, quickSteamTitleMap, stateCommunicator))
     MinimumEditDistanceProcess.start()
     print("finished launching minimum edit distance handling process")
 
@@ -58,9 +64,17 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk):
         nameOnDisk = uire.getGameName()
         for possibleMatch in uire.getPossibleMatchesList():
             # XXX What are you doing to that poor possibleMatch object? Why are you grabbing internals?
-            userInput = input(f"does it match '{possibleMatch.getSteamName()}' - {possibleMatch.steamIDNumber} - {possibleMatch.matchScore}? (y/n)")
+            # userInput = input(f"does it match '{possibleMatch.getSteamName()}' - {possibleMatch.steamIDNumber} - {possibleMatch.matchScore}? (y/n)")
+            userInput = 'y'
             if userInput.lower() == 'y':
-                gameNameMatchesProcessingQueue.put(possibleMatch.convertToMatchQueueEntry(nameOnDisk)) 
+                mqe = possibleMatch.convertToMatchQueueEntry(nameOnDisk)
+
+                # XXX should pair putting an item on the queue with setting state in the communicator
+                print(mqe)
+                print(stateCommunicator)
+                print(dir(stateCommunicator))
+                stateCommunicator.setQueuedForInfoRetrievalState(mqe)
+                gameNameMatchesProcessingQueue.put(mqe) 
                 break
         else:
             unmatchedGames.append(nameOnDisk)

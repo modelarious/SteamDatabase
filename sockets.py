@@ -1,6 +1,10 @@
 from Server.ServerProxyObject import ServerProxyObject
 from multiprocessing.managers import BaseManager
 
+from SteamDatabase import match_steam_games_to_games_on_disk_and_store
+from ExternalDataFetchers.SteamGameListFetcherMOCKDATA import SteamGameListFetcherMOCKDATA
+from InternalDataFetchers.DirListFetcherMOCKDATA import DirListFetcherMOCKDATA
+
 if __name__ == '__main__':
     class ShareObjectBetweenProcesses(BaseManager):  
         pass
@@ -9,16 +13,14 @@ if __name__ == '__main__':
     shareObjectBetweenProcesses = ShareObjectBetweenProcesses()  
     shareObjectBetweenProcesses.start()  
     serverProxyObject = shareObjectBetweenProcesses.ServerProxyObject()
-    print(serverProxyObject)
 
-    from time import sleep
-    serverProxyObject.setUpcomingState('factorio')
-    sleep(1)
-    serverProxyObject.setUpcomingState('satisfactory')
-    sleep(3)
-    serverProxyObject.setFindingNameActiveState('factorio')
-    sleep(3)
-    serverProxyObject.setFindingNameActiveState('satisfactory')
-    
+    # XXX this is shared with the cli - use abstract factory pattern to make mock data
+    steamGameListFetcher = SteamGameListFetcherMOCKDATA()
+    steamGamesList = steamGameListFetcher.fetch_games_list()
+
+    dirListFetcher = DirListFetcherMOCKDATA()
+    gamesOnDisk = dirListFetcher.get_dirs("")
+
+    match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, serverProxyObject)
+
     shareObjectBetweenProcesses.join()
-

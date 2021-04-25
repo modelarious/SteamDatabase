@@ -1,8 +1,10 @@
+from dataclasses import dataclass
+
+@dataclass
 class MatchQueueEntry:
-    def __init__(self, gameNameFromSteam, gameNameOnDisk, steamIDNumber):
-        self.gameNameFromSteam = gameNameFromSteam
-        self.gameNameOnDisk = gameNameOnDisk
-        self.steamIDNumber = steamIDNumber
+    gameNameFromSteam: str
+    gameNameOnDisk: str
+    steamIDNumber: int
 
     def getGameNameFromSteam(self):
         return self.gameNameFromSteam

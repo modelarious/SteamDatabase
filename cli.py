@@ -4,11 +4,14 @@ from ExternalDataFetchers.SteamGameListFetcher import SteamGameListFetcher
 
 from ExternalDataFetchers.SteamGameListFetcherMOCKDATA import SteamGameListFetcherMOCKDATA
 from InternalDataFetchers.DirListFetcherMOCKDATA import DirListFetcherMOCKDATA
+from State.DummyStateCommunicator import DummyStateCommunicator
 
 import argh
 
 @argh.arg('pathToGamesFolder', help="Path to the directory where your games are stored")
 def cli(pathToGamesFolder: str):
+
+    dummyStateCommunicator = DummyStateCommunicator()
 
     # steamGameListFetcher = SteamGameListFetcher()
     steamGameListFetcher = SteamGameListFetcherMOCKDATA()
@@ -21,7 +24,7 @@ def cli(pathToGamesFolder: str):
     if gamesOnDisk == False:
         exit(f'no directories found at path {pathToGamesFolder}')
 
-    match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk)
+    match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, dummyStateCommunicator)
 
 if __name__ == '__main__':
     argh.dispatch_command(cli)

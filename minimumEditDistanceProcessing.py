@@ -16,7 +16,8 @@ def similarity(a, b):
 # applies minimum edit distance to find close matches into a list.
 # if it finds an exact match, it sends this off to the next step (gameNameMatchesProcessingQueue).
 # if it doesn't find an exact match, it sends the list off to get input from the user (userInputRequiredQueue).
-def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList, quickSteamTitleMap):
+def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList, quickSteamTitleMap, stateCommunicator):
+    stateCommunicator.setFindingNameActiveState(targetGame)
     print(targetGame)
 
     # try the fast method
@@ -25,7 +26,9 @@ def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, user
         game = quickSteamTitleMap[targetGame.lower()]
         steamIDNumber = game['appid']
         steamName = game['name']
-        gameNameMatchesProcessingQueue.put(MatchQueueEntry(steamName, targetGame, steamIDNumber))
+        mqe = MatchQueueEntry(steamName, targetGame, steamIDNumber)
+        stateCommunicator.setQueuedForInfoRetrievalState(mqe)
+        gameNameMatchesProcessingQueue.put(mqe)
         return
     except KeyError:
         # didn't find the title in the quick map - this is fine
@@ -58,17 +61,23 @@ def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, user
         if score >= 0.7:
             possibleMatchesList.append(PossibleMatchQueueEntry(steamName, steamIDNumber, score))
             if score == 1.0:
+                print("\n\n\n")
                 print(steamName, targetGame, "added immediately")
-                gameNameMatchesProcessingQueue.put(MatchQueueEntry(steamName, targetGame, steamIDNumber))
+                print("\n\n\n")
+                mqe = MatchQueueEntry(steamName, targetGame, steamIDNumber)
+                stateCommunicator.setQueuedForInfoRetrievalState(mqe)
+                gameNameMatchesProcessingQueue.put(mqe)
+                print("I'M STILL ALIVE")
                 break
     else:
         # sort by closest match first
         sortedMatches = sorted(possibleMatchesList, key=lambda x: x.getMatchScore(), reverse=True)
         uire = UserInputRequiredQueueEntry(targetGame, sortedMatches)
+        stateCommunicator.setAwaitingUserInputState(uire)
         userInputRequiredQueue.put(uire)
 
 
-def minimumEditDistanceProcessing(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, quickSteamTitleMap):
+def minimumEditDistanceProcessing(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, quickSteamTitleMap, stateCommunicator):
     # (in an ideal world)
     # one core for the gameLookupAndStorageProcess
     # one core for the user input process
@@ -92,7 +101,7 @@ def minimumEditDistanceProcessing(userInputRequiredQueue, gameNameMatchesProcess
         # XXX gather queues up into one object: QueueLayer (https://github.com/modelarious/SteamDatabase/issues/17)
         futureMap = {
             MinimumEditDistanceProcessPool.submit(
-                apply_minimum_edit_distance, targetGame, gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList, quickSteamTitleMap
+                apply_minimum_edit_distance, targetGame, gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList, quickSteamTitleMap, stateCommunicator
             ) : targetGame
             for targetGame in gamesOnDisk
         }

@@ -44,6 +44,8 @@ class StateCommunicator(StateCommunicatorInterface):
         self.awaitingUser.remove(gameTitle)
     
     def setQueuedForInfoRetrievalState(self, matchQueueEntry : MatchQueueEntry):
+        if not isinstance(matchQueueEntry, MatchQueueEntry):
+            raise Exception("WTF")
         gameTitleOnDisk = matchQueueEntry.getGameNameOnDisk()
 
         # Could have been a 100% name match in which case, previous state was FindingNameActiveState.

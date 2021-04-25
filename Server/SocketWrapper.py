@@ -35,7 +35,8 @@ class SocketWrapper:
     
     def send_message(self, content):
         json_message = dumps(content, cls=SetEncoder)
-        print(f"updating {self.socket_name} with {json_message}")
+        if self.socket_name != '/upcoming':
+            print(f"updating {self.socket_name} with {json_message}")
         self.socket.send(json_message)
     
     def connection_loop(self):
