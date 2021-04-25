@@ -19,5 +19,6 @@ if __name__ == '__main__':
     serverProxyObject.setFindingNameActiveState('factorio')
     sleep(3)
     serverProxyObject.setFindingNameActiveState('satisfactory')
+    
     shareObjectBetweenProcesses.join()
 

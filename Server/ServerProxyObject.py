@@ -29,7 +29,7 @@ class ServerProxyObject(StateCommunicatorInterface):
     # def getStateCommunicator(self) -> StateCommunicator:
     #     return self.stateCommunicator
     
-    # XXX This is not good - it's easy to make a mistake in this.
+    # XXX it would be easy to make a mistake writing this.
     # XXX Is there a different way to expose the self.stateCommunicator api directly?
     def setUpcomingState(self, gameTitleOnDisk : str):
         self.stateCommunicator.setUpcomingState(gameTitleOnDisk)
