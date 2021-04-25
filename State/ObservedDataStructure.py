@@ -8,8 +8,7 @@ class ObservedDataStructure:
         def update_sock(self, *args, **kwargs):
             func(self, *args, **kwargs)
             messageToSend = list(self.dict.values())
-            sortedMessage = sorted(messageToSend)
-            self.socketToUpdate.send_message(sortedMessage)
+            self.socketToUpdate.send_message(messageToSend)
         return update_sock
 
     @sendUpdateDecorator
