@@ -72,7 +72,7 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
                 print(mqe)
                 print(stateCommunicator)
                 print(dir(stateCommunicator))
-                stateCommunicator.setQueuedForInfoRetrievalState(mqe)
+                stateCommunicator.setQueuedForInfoRetrievalStateFromAwaitingUser(mqe)
                 # stateCommunicator.rejectedByUser(uire) # XXX XXX XXX XXX 
 
                 gameNameMatchesProcessingQueue.put(mqe) 

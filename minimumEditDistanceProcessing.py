@@ -27,7 +27,7 @@ def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, user
         steamIDNumber = game['appid']
         steamName = game['name']
         mqe = MatchQueueEntry(steamName, targetGame, steamIDNumber)
-        stateCommunicator.setQueuedForInfoRetrievalState(mqe)
+        stateCommunicator.setQueuedForInfoRetrievalStateFromFindingNameActive(mqe)
         gameNameMatchesProcessingQueue.put(mqe)
         return
     except KeyError:
@@ -65,7 +65,7 @@ def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, user
                 print(steamName, targetGame, "added immediately")
                 print("\n\n\n")
                 mqe = MatchQueueEntry(steamName, targetGame, steamIDNumber)
-                stateCommunicator.setQueuedForInfoRetrievalState(mqe)
+                stateCommunicator.setQueuedForInfoRetrievalStateFromFindingNameActive(mqe)
                 gameNameMatchesProcessingQueue.put(mqe)
                 print("I'M STILL ALIVE")
                 break

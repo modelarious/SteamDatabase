@@ -21,7 +21,11 @@ class StateCommunicatorInterface(ABC):
         pass
     
     @abstractmethod
-    def setQueuedForInfoRetrievalState(self, matchQueueEntry : MatchQueueEntry):
+    def setQueuedForInfoRetrievalStateFromFindingNameActive(self, matchQueueEntry : MatchQueueEntry):
+        pass
+
+    @abstractmethod
+    def setQueuedForInfoRetrievalStateFromAwaitingUser(self, matchQueueEntry : MatchQueueEntry):
         pass
     
     @abstractmethod

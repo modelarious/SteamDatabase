@@ -43,8 +43,11 @@ class ServerProxyObject(StateCommunicatorInterface):
     def rejectedByUser(self, userInputRequiredQueueEntry: UserInputRequiredQueueEntry):
         self.stateCommunicator.rejectedByUser(userInputRequiredQueueEntry)
     
-    def setQueuedForInfoRetrievalState(self, matchQueueEntry : MatchQueueEntry):
-        self.stateCommunicator.setQueuedForInfoRetrievalState(matchQueueEntry)
+    def setQueuedForInfoRetrievalStateFromFindingNameActive(self, matchQueueEntry : MatchQueueEntry):
+        self.stateCommunicator.setQueuedForInfoRetrievalStateFromFindingNameActive(matchQueueEntry)
+    
+    def setQueuedForInfoRetrievalStateFromAwaitingUser(self, matchQueueEntry : MatchQueueEntry):
+        self.stateCommunicator.setQueuedForInfoRetrievalStateFromAwaitingUser(matchQueueEntry)
     
     def setInfoRetrievalActiveState(self, matchQueueEntry : MatchQueueEntry):
         self.stateCommunicator.setInfoRetrievalActiveState(matchQueueEntry)
