@@ -88,6 +88,10 @@ def minimumEditDistanceProcessing(userInputRequiredQueue, gameNameMatchesProcess
     numDesignatedCores = max(1, availableCores)
     print(f"numDesignatedCores = {numDesignatedCores}")
 
+    from multiprocessing.pool import Pool
+    pool = Pool(numDesignatedCores)
+    pool.apply_async
+
     print("starting process pool executor")
     with ProcessPoolExecutor(max_workers=numDesignatedCores) as MinimumEditDistanceProcessPool:
         # future = MinimumEditDistanceProcessPool.submit(pow, 323, 1235)
@@ -97,6 +101,9 @@ def minimumEditDistanceProcessing(userInputRequiredQueue, gameNameMatchesProcess
         # https://code.activestate.com/lists/python-ideas/23364
         # exhaust_iterable = deque(maxlen=0).extend
         # exhaust_iterable(futureMap)
+
+
+
 
         # XXX gather queues up into one object: QueueLayer (https://github.com/modelarious/SteamDatabase/issues/17)
         futureMap = {
@@ -111,3 +118,4 @@ def minimumEditDistanceProcessing(userInputRequiredQueue, gameNameMatchesProcess
 
     # no more user input required after this
     userInputRequiredQueue.put(END_OF_QUEUE)
+    print("placed END OF QUEUE onto the user input required queue")

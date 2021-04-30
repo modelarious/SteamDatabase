@@ -8,6 +8,8 @@ class ObservedDataStructure:
         def update_sock(self, *args, **kwargs):
             func(self, *args, **kwargs)
             messageToSend = list(self.dict.values())
+            # XXX if you want to sort here, you'll need to be able to handle a list
+            # XXX of strings or a list of dicts (the models converted to dictionaries)
             self.socketToUpdate.send_message(messageToSend)
         return update_sock
 

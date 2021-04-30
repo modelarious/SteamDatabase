@@ -17,7 +17,7 @@ class StateCommunicatorInterface(ABC):
         pass
     
     @abstractmethod
-    def rejectedByUser(self, gameTitle: str):
+    def rejectedByUser(self, userInputRequiredQueueEntry: UserInputRequiredQueueEntry):
         pass
     
     @abstractmethod

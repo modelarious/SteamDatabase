@@ -40,12 +40,12 @@ class StateCommunicator(StateCommunicatorInterface):
         self.awaitingUser.add(userInputRequiredQueueEntry.toDict(), gameTitleOnDisk)
         self._trackCurrentState(self.awaitingUser, gameTitleOnDisk)
     
-    def rejectedByUser(self, gameTitle: str):
-        self.awaitingUser.remove(gameTitle)
+    def rejectedByUser(self, userInputRequiredQueueEntry: UserInputRequiredQueueEntry):
+        gameTitleOnDisk = userInputRequiredQueueEntry.getGameName()
+        self.awaitingUser.remove(gameTitleOnDisk)
+        self._trackCurrentState(None, gameTitleOnDisk)
     
     def setQueuedForInfoRetrievalState(self, matchQueueEntry : MatchQueueEntry):
-        if not isinstance(matchQueueEntry, MatchQueueEntry):
-            raise Exception("WTF")
         gameTitleOnDisk = matchQueueEntry.getGameNameOnDisk()
 
         # Could have been a 100% name match in which case, previous state was FindingNameActiveState.
@@ -69,6 +69,11 @@ class StateCommunicator(StateCommunicatorInterface):
         self.infoRetrievalActive.remove(gameTitleOnDisk)
         self.stored.add(game.toDict(), gameTitleOnDisk)
         self._trackCurrentState(self.stored, gameTitleOnDisk)
+    
+    # def storageFailed(self, game: Game):
+    #     gameTitleOnDisk = game.name_on_harddrive
+    #     self.stored.remove(gameTitleOnDisk)
+    #     self._trackCurrentState(None, gameTitleOnDisk)
     
     def _trackCurrentState(self, state: ObservedDataStructure, gameTitleOnDisk: str):
         self.previousState[gameTitleOnDisk] = state

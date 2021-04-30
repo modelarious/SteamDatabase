@@ -40,8 +40,8 @@ class ServerProxyObject(StateCommunicatorInterface):
     def setAwaitingUserInputState(self, userInputRequiredQueueEntry : UserInputRequiredQueueEntry):
         self.stateCommunicator.setAwaitingUserInputState(userInputRequiredQueueEntry)
     
-    def rejectedByUser(self, gameTitle: str):
-        self.stateCommunicator.rejectedByUser(gameTitle)
+    def rejectedByUser(self, userInputRequiredQueueEntry: UserInputRequiredQueueEntry):
+        self.stateCommunicator.rejectedByUser(userInputRequiredQueueEntry)
     
     def setQueuedForInfoRetrievalState(self, matchQueueEntry : MatchQueueEntry):
         self.stateCommunicator.setQueuedForInfoRetrievalState(matchQueueEntry)

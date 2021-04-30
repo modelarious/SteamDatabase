@@ -45,7 +45,7 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
 
     print("launching game storage process")
     # XXX gameLookupAndStorageProcess -> game_lookup_and_storage_process
-    GameLookupAndStorageProcess = Process(target=gameLookupAndStorageProcess, args=(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, steamAPIDataFetcher, pathOnDisk))
+    GameLookupAndStorageProcess = Process(target=gameLookupAndStorageProcess, args=(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, steamAPIDataFetcher, pathOnDisk, stateCommunicator))
     GameLookupAndStorageProcess.start()
     print("finished launching game storage process")
 
@@ -69,15 +69,18 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
             if userInput.lower() == 'y':
                 mqe = possibleMatch.convertToMatchQueueEntry(nameOnDisk)
 
-                # XXX should pair putting an item on the queue with setting state in the communicator
                 print(mqe)
                 print(stateCommunicator)
                 print(dir(stateCommunicator))
                 stateCommunicator.setQueuedForInfoRetrievalState(mqe)
+                # stateCommunicator.rejectedByUser(uire) # XXX XXX XXX XXX 
+
                 gameNameMatchesProcessingQueue.put(mqe) 
                 break
         else:
+            stateCommunicator.rejectedByUser(uire)
             unmatchedGames.append(nameOnDisk)
+        print("Grabbing another thing off the user input required queue")
         uire = userInputRequiredQueue.get()
     print("finished user input handling")
 
