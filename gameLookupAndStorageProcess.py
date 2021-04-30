@@ -2,11 +2,12 @@ from GameModel import Game
 from Constants import END_OF_QUEUE
 from psycopg2.errors import UniqueViolation
 
-def gameLookupAndStorageProcess(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, steamAPIDataFetcher, pathOnDisk, stateCommunicator):
+def gameLookupAndStorageProcess(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, steamAPIDataFetcher, pathOnDisk, stateCommunicator, lock):
     unableToInsert = []
     gnmpe = gameNameMatchesProcessingQueue.get()
     while gnmpe != END_OF_QUEUE:
-        stateCommunicator.setInfoRetrievalActiveState(gnmpe)
+        with lock:
+            stateCommunicator.setInfoRetrievalActiveState(gnmpe)
 
         gameNameOnDisk = gnmpe.getGameNameOnDisk()
         steamIDNumber = gnmpe.getSteamIDNumber()
@@ -25,7 +26,8 @@ def gameLookupAndStorageProcess(gameNameMatchesProcessingQueue, gameDAO, userDef
         # YYY on exceptions, should I be tracking a state change to error?
         try:
             gameDAO.commitGame(game)
-            stateCommunicator.setStoredState(game)
+            with lock:
+                stateCommunicator.setStoredState(game)
         except UniqueViolation:
             unableToInsert.append(gameNameOnDisk)
         
