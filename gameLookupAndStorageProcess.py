@@ -24,6 +24,7 @@ def gameLookupAndStorageProcess(gameNameMatchesProcessingQueue, gameDAO, userDef
         )
 
         # YYY on exceptions, should I be tracking a state change to error?
+        # XXX commit should be wrapped in a transaction!
         try:
             gameDAO.commitGame(game)
             with lock:
