@@ -2,12 +2,11 @@ from GameModel import Game
 from Constants import END_OF_QUEUE
 from psycopg2.errors import UniqueViolation
 
-def gameLookupAndStorageProcess(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, steamAPIDataFetcher, pathOnDisk, stateCommunicator, lock):
+def gameLookupAndStorageProcess(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, steamAPIDataFetcher, pathOnDisk, stateCommunicator):
     unableToInsert = []
     gnmpe = gameNameMatchesProcessingQueue.get()
     while gnmpe != END_OF_QUEUE:
-        with lock:
-            stateCommunicator.setInfoRetrievalActiveState(gnmpe)
+        stateCommunicator.setInfoRetrievalActiveState(gnmpe)
 
         gameNameOnDisk = gnmpe.getGameNameOnDisk()
         steamIDNumber = gnmpe.getSteamIDNumber()
@@ -27,8 +26,7 @@ def gameLookupAndStorageProcess(gameNameMatchesProcessingQueue, gameDAO, userDef
         # XXX commit should be wrapped in a transaction!
         try:
             gameDAO.commitGame(game)
-            with lock:
-                stateCommunicator.setStoredState(game)
+            stateCommunicator.setStoredState(game)
         except UniqueViolation:
             unableToInsert.append(gameNameOnDisk)
         

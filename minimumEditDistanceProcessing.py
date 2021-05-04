@@ -1,6 +1,7 @@
 from difflib import SequenceMatcher
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from multiprocessing import cpu_count
+from typing import Match
 
 from QueueEntries.MatchQueueEntry import MatchQueueEntry
 from QueueEntries.PossibleMatchQueueEntry import PossibleMatchQueueEntry
@@ -12,17 +13,24 @@ from Constants import END_OF_QUEUE
 def similarity(a, b):
     return SequenceMatcher(a=a, b=b).ratio()
 
+def setAwaitingUserInputState(userInputRequiredQueueEntry: UserInputRequiredQueueEntry):
+    stateCommunicatorGLOBAL.setAwaitingUserInputState(userInputRequiredQueueEntry)
+
+def setFindingNameActiveState(targetGameNameOnDisk: str):
+    stateCommunicatorGLOBAL.setFindingNameActiveState(targetGameNameOnDisk)
+
+def setQueuedForInfoRetrievalStateFromFindingNameActive(matchQueueEntry: MatchQueueEntry):
+    stateCommunicatorGLOBAL.setQueuedForInfoRetrievalStateFromFindingNameActive(matchQueueEntry)
+
+def init_globals(stateCommunicator):
+    global stateCommunicatorGLOBAL
+    stateCommunicatorGLOBAL = stateCommunicator
 
 # applies minimum edit distance to find close matches into a list.
 # if it finds an exact match, it sends this off to the next step (gameNameMatchesProcessingQueue).
 # if it doesn't find an exact match, it sends the list off to get input from the user (userInputRequiredQueue).
-def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList, quickSteamTitleMap, stateCommunicator, lock):
-    print("acquiring lock 1")
-    with lock:
-        print("ACQUIRED")
-        stateCommunicator.setFindingNameActiveState(targetGame)
-    print("DROPPED")
-
+def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList, quickSteamTitleMap):
+    setFindingNameActiveState(targetGame)
     print(targetGame)
 
     # try the fast method
@@ -32,12 +40,7 @@ def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, user
         steamIDNumber = game['appid']
         steamName = game['name']
         mqe = MatchQueueEntry(steamName, targetGame, steamIDNumber)
-
-        print("acquiring lock 2")
-        with lock:
-            print("ACQUIRED")
-            stateCommunicator.setQueuedForInfoRetrievalStateFromFindingNameActive(mqe)
-        print("DROPPED")
+        setQueuedForInfoRetrievalStateFromFindingNameActive(mqe)
         gameNameMatchesProcessingQueue.put(mqe)
         return
     except KeyError:
@@ -75,8 +78,7 @@ def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, user
                 print(steamName, targetGame, "added immediately")
                 print("\n\n\n")
                 mqe = MatchQueueEntry(steamName, targetGame, steamIDNumber)
-                with lock:
-                    stateCommunicator.setQueuedForInfoRetrievalStateFromFindingNameActive(mqe)
+                setQueuedForInfoRetrievalStateFromFindingNameActive(mqe)
                 gameNameMatchesProcessingQueue.put(mqe)
                 print("I'M STILL ALIVE")
                 break
@@ -84,12 +86,10 @@ def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, user
         # sort by closest match first
         sortedMatches = sorted(possibleMatchesList, key=lambda x: x.getMatchScore(), reverse=True)
         uire = UserInputRequiredQueueEntry(targetGame, sortedMatches)
-        with lock:
-            stateCommunicator.setAwaitingUserInputState(uire)
+        setAwaitingUserInputState(uire)
         userInputRequiredQueue.put(uire)
 
-
-def minimumEditDistanceProcessing(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, quickSteamTitleMap, stateCommunicator, lock):
+def minimumEditDistanceProcessing(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, quickSteamTitleMap, stateCommunicator):
     # (in an ideal world)
     # one core for the gameLookupAndStorageProcess
     # one core for the user input process
@@ -105,7 +105,7 @@ def minimumEditDistanceProcessing(userInputRequiredQueue, gameNameMatchesProcess
     pool.apply_async
 
     print("starting process pool executor")
-    with ProcessPoolExecutor(max_workers=numDesignatedCores) as MinimumEditDistanceProcessPool:
+    with ProcessPoolExecutor(max_workers=4, initializer=init_globals, initargs=(stateCommunicator,)) as MinimumEditDistanceProcessPool:
         # future = MinimumEditDistanceProcessPool.submit(pow, 323, 1235)
         # executor.map(is_prime, PRIMES)
 
@@ -120,7 +120,7 @@ def minimumEditDistanceProcessing(userInputRequiredQueue, gameNameMatchesProcess
         # XXX gather queues up into one object: QueueLayer (https://github.com/modelarious/SteamDatabase/issues/17)
         futureMap = {
             MinimumEditDistanceProcessPool.submit(
-                apply_minimum_edit_distance, targetGame, gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList, quickSteamTitleMap, stateCommunicator, lock
+                apply_minimum_edit_distance, targetGame, gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList, quickSteamTitleMap,
             ) : targetGame
             for targetGame in gamesOnDisk
         }

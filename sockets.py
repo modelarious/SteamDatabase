@@ -1,5 +1,8 @@
-from Server.ServerProxyObject import ServerProxyObject
-from multiprocessing.managers import BaseManager
+from Server.WebsocketClientHandlerRegistry import WebsocketClientHandlerRegistry
+from Server.Server import Server
+
+from State.StateCommunicatorFactory import StateCommunicatorFactory
+from State.ObserverSocketHookupFactory import ObserverSocketHookupFactory
 
 from multiprocessing import Manager
 
@@ -8,17 +11,21 @@ from ExternalDataFetchers.SteamGameListFetcherMOCKDATA import SteamGameListFetch
 from InternalDataFetchers.DirListFetcherMOCKDATA import DirListFetcherMOCKDATA
 
 if __name__ == '__main__':
-    class ShareObjectBetweenProcesses(BaseManager):  
-        pass
-  
-    ShareObjectBetweenProcesses.register('ServerProxyObject', ServerProxyObject) 
-    shareObjectBetweenProcesses = ShareObjectBetweenProcesses()  
-    shareObjectBetweenProcesses.start()  
-    serverProxyObject = shareObjectBetweenProcesses.ServerProxyObject()
-
     m = Manager()
-    lock = m.Lock()
 
+    websocketRegistry = WebsocketClientHandlerRegistry()
+    server = Server(websocketRegistry)
+    server.startInThread()
+
+    print("waiting on sockets")
+    websocketRegistry.waitForAllSocketsReady()
+    print("all needed sockets have been connected")
+
+    # now that we are guaranteed that the sockets are connected, we can use them
+    observerSocketHookupFactory = ObserverSocketHookupFactory(websocketRegistry, m)
+    stateCommunicatorFactory = StateCommunicatorFactory()
+    stateCommunicator = stateCommunicatorFactory.createStateCommunicator(observerSocketHookupFactory)
+    
     # XXX this is shared with the cli - use abstract factory pattern to make mock data
     steamGameListFetcher = SteamGameListFetcherMOCKDATA()
     steamGamesList = steamGameListFetcher.fetch_games_list()
@@ -36,7 +43,9 @@ if __name__ == '__main__':
     #     all
 
     # XXX Are there duplicate steam titles in the list? The fast map might need to be updated!
-    match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, serverProxyObject, lock)
+    match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, stateCommunicator)
 
+    
+    server.join()
     m.join()
-    shareObjectBetweenProcesses.join()
+
