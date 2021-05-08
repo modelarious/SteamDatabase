@@ -8,20 +8,17 @@ class ObservedDataStructure:
     def sendUpdateDecorator(func):
         # updates socket after performing an action
         def update_sock(self, *args, **kwargs):
-            with self.lock:
-                print("acquired", self.socketToUpdate.socket_name)
-                func(self, *args, **kwargs)
-                messageToSend = list(self.dict.values())
-                # if you want to sort here, you'll need to be able to handle a list
-                # of strings or a list of dicts (the models converted to dictionaries)
-                self.socketToUpdate.send_message(messageToSend)
-                print("unacquiring", self.socketToUpdate.socket_name)
+            func(self, *args, **kwargs)
+            messageToSend = list(self.dict.values())
+            # if you want to sort here, you'll need to be able to handle a list
+            # of strings or a list of dicts (the models converted to dictionaries)
+            self.socketToUpdate.send_message(messageToSend)
         return update_sock
 
-    def __init__(self, socketToUpdate : SocketWrapper, managerInstance: Manager):
+    @sendUpdateDecorator
+    def __init__(self, socketToUpdate : SocketWrapper):
         self.socketToUpdate = socketToUpdate
-        self.dict = managerInstance.dict()
-        self.lock = managerInstance.Lock()
+        self.dict = {}
     
     @sendUpdateDecorator
     def add(self, value, key=None):
