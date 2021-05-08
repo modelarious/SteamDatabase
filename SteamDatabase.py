@@ -1,8 +1,8 @@
 from State.StateCommunicatorInterface import StateCommunicatorInterface
 from ExternalDataFetchers.UserDefinedTagsFetcher import UserDefinedTagsFetcher
 from ExternalDataFetchers.SteamAPIDataFetcher import SteamAPIDataFetcher
-from minimumEditDistanceProcessing import minimumEditDistanceProcessing
-from gameLookupAndStorageProcess import gameLookupAndStorageProcess
+from minimum_edit_distance_processing import minimum_edit_distance_processing
+from game_lookup_and_storage_process import game_lookup_and_storage_process
 from Constants import END_OF_QUEUE
 from Database.PostgresGameDAOFactory import PostgresGameDAOFactory
 
@@ -43,22 +43,20 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
     print("finished constructing necessary objects")
 
     print("launching game storage process")
-    # XXX gameLookupAndStorageProcess -> game_lookup_and_storage_process
-    GameLookupAndStorageProcess = Process(target=gameLookupAndStorageProcess, args=(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, steamAPIDataFetcher, pathOnDisk, stateCommunicator))
+    GameLookupAndStorageProcess = Process(target=game_lookup_and_storage_process, args=(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, steamAPIDataFetcher, pathOnDisk, stateCommunicator))
     GameLookupAndStorageProcess.start()
     print("finished launching game storage process")
     
-
     for name, ods in stateCommunicator.__dict__.items():
         print(name)
         print(ods.__dict__)
     print(userInputRequiredQueue, gameNameMatchesProcessingQueue, stateCommunicator.__dict__)
-    minimumEditDistanceProcessing(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, quickSteamTitleMap, stateCommunicator)
+    minimum_edit_distance_processing(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, quickSteamTitleMap, stateCommunicator)
 
     # This process goes through the steamGamesList and applies the min edit dist algo. (uses a pool of processes to accomplish this quicker)
     # adds matches that are 1.0 to the GamePerfectMatches queue, adds anything else UserInputRequired queue for user input process to consume
     # print("launching minimum edit distance handling process")
-    # MinimumEditDistanceProcess = Process(target=minimumEditDistanceProcessing, args=(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, quickSteamTitleMap, stateCommunicator))
+    # MinimumEditDistanceProcess = Process(target=minimum_edit_distance_processing, args=(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, quickSteamTitleMap, stateCommunicator))
     # MinimumEditDistanceProcess.start()
     # print("finished launching minimum edit distance handling process")
 
@@ -85,7 +83,8 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
 
     # this process will signal to the user input process that it is finished by putting END_OF_QUEUE
     # on the userInputRequiredQueue
-    MinimumEditDistanceProcess.join()
+    # XXX YYY XXX YYY
+    # MinimumEditDistanceProcess.join()
     print("finished processing games on the harddrive")
 
     # by this point there is nothing that will write to the gameNameMatchesProcessingQueue (that is being read by GameLookupAndStorageProcess)
@@ -100,4 +99,3 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
 # One process for going through the steamGamesList and applying the min edit dist algo - adds matches that are 1.0 to the GamePerfectMatches queue, adds anything else UserInputRequired queue for user input process to consume
 # Main process for user input - allow user to make decisions about the games that don't have a 1.0 score - adds to the GamePerfectMatches queue
 # One process for GameData - fetches from GamePerfectMatches queue to get the steam id and fetches from appreviews and appdetails - writes result to database
-
