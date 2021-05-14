@@ -47,9 +47,6 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
     GameLookupAndStorageProcess.start()
     print("finished launching game storage process")
     
-    for name, ods in stateCommunicator.__dict__.items():
-        print(name)
-        print(ods.__dict__)
     print(userInputRequiredQueue, gameNameMatchesProcessingQueue, stateCommunicator.__dict__)
     minimum_edit_distance_processing(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, quickSteamTitleMap, stateCommunicator)
 
