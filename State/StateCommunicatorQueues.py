@@ -1,19 +1,11 @@
-# THE WAY TO DO THIS
-# create a stateCommunicatorQueue (pick a better name) and when they call 
-# stateCommunicator.setUpcomingState(x), you add x to a Manager() Queue.
-# That queue has a thread that reads from it and applies the changes on a local stateCommunicator
-
-# if that doesn't work - make a state tracking micro service and communicate via kafka queue
-import queue
 from State.StateCommunicatorInterface import StateCommunicatorInterface
 from threading import Thread
 from Constants import END_OF_QUEUE
 
-
+#type hints
 from typing import Any
 from QueueEntries.UserInputRequiredQueueEntry import UserInputRequiredQueueEntry
 from QueueEntries.MatchQueueEntry import MatchQueueEntry
-from State.ObservedDataStructure import ObservedDataStructure
 from GameModel import Game
 from queue import Queue
 
@@ -66,7 +58,7 @@ class StateCommunicationQueueWriter(StateCommunicatorInterface):
 class StateCommunicationQueueReader:
     # can't find a way to express this properly in type checking. 
     # Technically, queue is a multiprocessing.managers.AutoProxy[Queue]
-    def __init__(self, stateCommunicator: StateCommunicatorInterface, queue):
+    def __init__(self, stateCommunicator: StateCommunicatorInterface, queue: Queue):
         self.stateCommunicator = stateCommunicator
         self.queue = queue
     
