@@ -1,4 +1,6 @@
 from Server.SocketWrapper import SocketWrapper
+from multiprocessing import Manager
+
 
 # Observer pattern, but sending updates over a socket
 class ObservedDataStructure:
@@ -8,8 +10,9 @@ class ObservedDataStructure:
         def update_sock(self, *args, **kwargs):
             func(self, *args, **kwargs)
             messageToSend = list(self.dict.values())
-            sortedMessage = sorted(messageToSend)
-            self.socketToUpdate.send_message(sortedMessage)
+            # if you want to sort here, you'll need to be able to handle a list
+            # of strings or a list of dicts (the models converted to dictionaries)
+            self.socketToUpdate.send_message(messageToSend)
         return update_sock
 
     @sendUpdateDecorator

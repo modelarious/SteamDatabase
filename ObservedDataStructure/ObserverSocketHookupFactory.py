@@ -1,5 +1,5 @@
 from Server.WebsocketClientHandlerRegistry import WebsocketClientHandlerRegistry
-from State.ObservedDataStructure import ObservedDataStructure
+from ObservedDataStructure.ObservedDataStructure import ObservedDataStructure
 
 class ObserverSocketHookupFactory:
     def __init__(self, websocketRegistry: WebsocketClientHandlerRegistry):

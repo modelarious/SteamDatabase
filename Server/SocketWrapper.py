@@ -1,17 +1,6 @@
 from queue import Queue
 from json import dumps, loads
 
-# SetEncoder adapted from https://stackoverflow.com/a/8230505/7520564
-# Clean way to encode sets into json objects by transforming them into a list.
-# Also handles sorting the list here because it needs to be sorted before it is
-# sent.
-import json
-class SetEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, set):
-            return sorted(list(obj))
-        return json.JSONEncoder.default(self, obj)
-
 # provides an interface to access the socket
 class SocketWrapper:
     def __init__(self, socket, socket_name):
@@ -34,8 +23,10 @@ class SocketWrapper:
         return self.received_message_queue.get()
     
     def send_message(self, content):
-        json_message = dumps(content, cls=SetEncoder)
-        print(f"updating {self.socket_name} with {json_message}")
+        json_message = dumps(content)
+        
+        # if self.socket_name != '/upcoming':
+        #     print(f"updating {self.socket_name} with {json_message}")
         self.socket.send(json_message)
     
     def connection_loop(self):
