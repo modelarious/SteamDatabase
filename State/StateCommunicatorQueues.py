@@ -4,104 +4,84 @@
 # That queue has a thread that reads from it and applies the changes on a local stateCommunicator
 
 # if that doesn't work - make a state tracking micro service and communicate via kafka queue
+import queue
 from State.StateCommunicatorInterface import StateCommunicatorInterface
 from threading import Thread
 from Constants import END_OF_QUEUE
 
 
-from typing import Dict
+from typing import Any
 from QueueEntries.UserInputRequiredQueueEntry import UserInputRequiredQueueEntry
 from QueueEntries.MatchQueueEntry import MatchQueueEntry
 from State.ObservedDataStructure import ObservedDataStructure
 from GameModel import Game
 from queue import Queue
 
-import inspect
-# XXX This is the least DRY class in the whole project :(
-class StateCommunicationQueueWriter(StateCommunicatorInterface):  
+from dataclasses import dataclass
+@dataclass
+class QueueItem:
+    functionName: str
+    payload: Any
 
+import inspect
+class StateCommunicationQueueWriter(StateCommunicatorInterface): 
     # can't find a way to express this properly in type checking. 
-    # Technically, queues is a dict of str : multiprocessing.managers.AutoProxy[Queue]
-    # the str portion is the name of the function (like "setFindingNameActiveState")
-    def __init__(self, queues: Dict[str, Queue]):
-        self.queues = queues
-    
+    # Technically, queue is a multiprocessing.managers.AutoProxy[Queue]
+    def __init__(self, queue: Queue):
+        self.queue = queue
+
+    def putOnQueue(self, payload: Any):
+        funcName = self._determine_function_name()
+        queueItem = QueueItem(funcName, payload)
+        self.queue.put(queueItem)
+
     def setUpcomingState(self, gameTitleOnDisk : str):
-        queueName = self._determine_function_name()
-        self.queues[queueName].put(gameTitleOnDisk)
+        self.putOnQueue(gameTitleOnDisk)
   
     def setFindingNameActiveState(self, gameTitleOnDisk : str):
-        queueName = self._determine_function_name()
-        self.queues[queueName].put(gameTitleOnDisk)
+        self.putOnQueue(gameTitleOnDisk)
     
     def setAwaitingUserInputState(self, userInputRequiredQueueEntry : UserInputRequiredQueueEntry):
-        queueName = self._determine_function_name()
-        self.queues[queueName].put(userInputRequiredQueueEntry)
+        self.putOnQueue(userInputRequiredQueueEntry)
     
     def rejectedByUser(self, userInputRequiredQueueEntry: UserInputRequiredQueueEntry):
-        queueName = self._determine_function_name()
-        self.queues[queueName].put(userInputRequiredQueueEntry)
+        self.putOnQueue(userInputRequiredQueueEntry)
     
     def setQueuedForInfoRetrievalStateFromFindingNameActive(self, matchQueueEntry : MatchQueueEntry):
-        queueName = self._determine_function_name()
-        self.queues[queueName].put(matchQueueEntry)
+        self.putOnQueue(matchQueueEntry)
 
     def setQueuedForInfoRetrievalStateFromAwaitingUser(self, matchQueueEntry : MatchQueueEntry):
-        queueName = self._determine_function_name()
-        self.queues[queueName].put(matchQueueEntry)
+        self.putOnQueue(matchQueueEntry)
     
     def setInfoRetrievalActiveState(self, matchQueueEntry : MatchQueueEntry):
-        queueName = self._determine_function_name()
-        self.queues[queueName].put(matchQueueEntry)
+        self.putOnQueue(matchQueueEntry)
     
     def setStoredState(self, game : Game):
-        queueName = self._determine_function_name()
-        self.queues[queueName].put(game)
+        self.putOnQueue(game)
     
     def _determine_function_name(self):
-        return inspect.stack()[1][3]
-
-
-
-
-# class StateCommunicationQueueWriter:
-#     def __init__(self, upcomingQueue):
-#         self.upcomingQueue = upcomingQueue
-    
-#     def setUpcomingState(self, x):
-#         self.upcomingQueue.put(x)
+        return inspect.stack()[2][3]
 
 
 class StateCommunicationQueueReader:
     # can't find a way to express this properly in type checking. 
-    # Technically, queues is a dict of str : multiprocessing.managers.AutoProxy[Queue]
-    # the str portion is the name of the function (like "setFindingNameActiveState")
-    def __init__(self, stateCommunicator: StateCommunicatorInterface, queues):
-        self.queueToStateCommunicatorFunctionAssociation = []
-        for methodName, queue in queues.items():
-            instance_method = getattr(stateCommunicator, methodName)
-            self.queueToStateCommunicatorFunctionAssociation.append(
-                [queue, instance_method]
-            )
-            
-        # self.queueToStateCommunicatorFunctionAssociation = [
-        #     [upcomingQueue, stateCommunicator.setUpcomingState]
-        # ]
+    # Technically, queue is a multiprocessing.managers.AutoProxy[Queue]
+    def __init__(self, stateCommunicator: StateCommunicatorInterface, queue):
+        self.stateCommunicator = stateCommunicator
+        self.queue = queue
     
     def start(self):
-        self.threads = []
-        for queue, func in self.queueToStateCommunicatorFunctionAssociation:
-            t = Thread(target=self._apply_func_to_queue_items, args=(queue, func))
-            t.start()
-            self.threads.append(t)
+        self.thread = Thread(target=self._queue_fetch_loop)
+        self.thread.start()
     
     def join(self):
-        for thread in self.threads:
-            thread.join()
+        self.thread.join()
 
-    def _apply_func_to_queue_items(self, queue, func):
-        entry = queue.get()
-        while entry != END_OF_QUEUE:
-            func(entry)
-            entry = queue.get()
+    def _queue_fetch_loop(self):
+        queueItem = self.queue.get()
+        while queueItem != END_OF_QUEUE:
+            funcName = queueItem.functionName
+            instance_method = getattr(self.stateCommunicator, funcName)
+            instance_method(queueItem.payload)
+            queueItem = self.queue.get()
             

@@ -32,14 +32,9 @@ def hit_dat_upcoming_state(writer, textToWrite):
 
 if __name__ == '__main__':
     m = Manager()
-    # XXX this is going to have to change, because you'll 
-    # need one for each function in the StateCommunicationInterface
-    # which will get out of hand!
-    # consider a "StateCommunicatorQueueContainerFactory" which takes an instance of the manager and creates a
-    # queue for each function of a StateCommunicatorInterface, storing them in a StateCommunicatorQueueContainer that can be passed around
-    stateQueueFactory = StateCommunicatorQueueContainerFactory(m)
-    queues = stateQueueFactory.create()
-    writer = StateCommunicationQueueWriter(queues)
+
+    queue = m.Queue()
+    writer = StateCommunicationQueueWriter(queue)
 
     websocketRegistry = WebsocketClientHandlerRegistry()
     server = Server(websocketRegistry)
@@ -60,9 +55,8 @@ if __name__ == '__main__':
 
     dirListFetcher = DirListFetcherMOCKDATA()
     gamesOnDisk = dirListFetcher.get_dirs("")
-    
 
-    reader = StateCommunicationQueueReader(stateCommunicator, queues)
+    reader = StateCommunicationQueueReader(stateCommunicator, queue)
     reader.start()
     # writer.setUpcomingState("hello world")
     
