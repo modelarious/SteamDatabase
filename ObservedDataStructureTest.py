@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, call
 from Server.SocketWrapper import SocketWrapper
-from State.ObservedDataStructure import ObservedDataStructure
+from ObservedDataStructure.ObservedDataStructure import ObservedDataStructure
 
 class ObservedDataStructureTest(unittest.TestCase):
 

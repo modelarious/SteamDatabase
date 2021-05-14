@@ -2,7 +2,7 @@ from Server.WebsocketClientHandlerRegistry import WebsocketClientHandlerRegistry
 from Server.Server import Server
 
 from State.StateCommunicatorFactory import StateCommunicatorFactory
-from State.ObserverSocketHookupFactory import ObserverSocketHookupFactory
+from ObservedDataStructure.ObserverSocketHookupFactory import ObserverSocketHookupFactory
 
 from multiprocessing import Manager
 

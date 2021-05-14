@@ -5,7 +5,7 @@ from State.StateCommunicatorInterface import StateCommunicatorInterface
 from typing import Dict
 from QueueEntries.UserInputRequiredQueueEntry import UserInputRequiredQueueEntry
 from QueueEntries.MatchQueueEntry import MatchQueueEntry
-from State.ObservedDataStructure import ObservedDataStructure
+from ObservedDataStructure.ObservedDataStructure import ObservedDataStructure
 from GameModel import Game
 
 # XXX concurrency, which should be handled in ObservedDataStructure

@@ -25,6 +25,7 @@ class StateCommunicationQueueWriter(StateCommunicatorInterface):
     def putOnQueue(self, payload: Any):
         funcName = self._determine_function_name()
         queueItem = QueueItem(funcName, payload)
+        print(f"[{funcName}] - {payload}")
         self.queue.put(queueItem)
 
     def setUpcomingState(self, gameTitleOnDisk : str):

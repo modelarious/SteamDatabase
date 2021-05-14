@@ -8,7 +8,6 @@ from Database.PostgresGameDAOFactory import PostgresGameDAOFactory
 
 from multiprocessing import Process, Manager
 
-
 def build_steam_title_map(steamGamesList):
     steamTitleMap = dict()
     for gameObj in steamGamesList:
@@ -16,11 +15,9 @@ def build_steam_title_map(steamGamesList):
         steamTitleMap[gameTitle] = gameObj
     return steamTitleMap
 
-
 # XXX this is ripe for refactor.
 # XXX Go all Dependency Injection on it's ass.
 # XXX move UI handling into a dedicated function or class
-# class AddingGamesWorkflow:
 def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, stateCommunicator: StateCommunicatorInterface):
 
     # XXX XXX XXX rough - should send these all out in one go
@@ -30,32 +27,30 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
     quickSteamTitleMap = build_steam_title_map(steamGamesList)
 
     print("creating manager and queues")
+    # XXX do these need to be manager queues anymore or could they be multiprocessing queues now?
     m = Manager()
     gameNameMatchesProcessingQueue = m.Queue()
     userInputRequiredQueue = m.Queue()
     print("created manager and queues")
 
     print("constructing necessary objects")
-    gameDAO = PostgresGameDAOFactory.createGameDAO()
+    gameDAO = PostgresGameDAOFactory.createGameDAO() # XXX don't just make one class static
     userDefinedTagsFetcher = UserDefinedTagsFetcher()
     steamAPIDataFetcher = SteamAPIDataFetcher()
     pathOnDisk = "/Volumes/babyBlue/Games/PC/"
     print("finished constructing necessary objects")
 
     print("launching game storage process")
-    GameLookupAndStorageProcess = Process(target=game_lookup_and_storage_process, args=(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, steamAPIDataFetcher, pathOnDisk, stateCommunicator))
-    GameLookupAndStorageProcess.start()
+    gameLookupAndStorageProcess = Process(target=game_lookup_and_storage_process, args=(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, steamAPIDataFetcher, pathOnDisk, stateCommunicator))
+    gameLookupAndStorageProcess.start()
     print("finished launching game storage process")
     
-    print(userInputRequiredQueue, gameNameMatchesProcessingQueue, stateCommunicator.__dict__)
-    minimum_edit_distance_processing(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, quickSteamTitleMap, stateCommunicator)
-
     # This process goes through the steamGamesList and applies the min edit dist algo. (uses a pool of processes to accomplish this quicker)
     # adds matches that are 1.0 to the GamePerfectMatches queue, adds anything else UserInputRequired queue for user input process to consume
-    # print("launching minimum edit distance handling process")
-    # MinimumEditDistanceProcess = Process(target=minimum_edit_distance_processing, args=(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, quickSteamTitleMap, stateCommunicator))
-    # MinimumEditDistanceProcess.start()
-    # print("finished launching minimum edit distance handling process")
+    print("launching minimum edit distance handling process")
+    minimumEditDistanceProcess = Process(target=minimum_edit_distance_processing, args=(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, quickSteamTitleMap, stateCommunicator))
+    minimumEditDistanceProcess.start()
+    print("finished launching minimum edit distance handling process")
 
     print("launching user input handling")
     unmatchedGames = []
@@ -74,22 +69,21 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
         else:
             stateCommunicator.rejectedByUser(uire)
             unmatchedGames.append(nameOnDisk)
-        print("Grabbing another thing off the user input required queue")
         uire = userInputRequiredQueue.get()
     print("finished user input handling")
 
     # this process will signal to the user input process that it is finished by putting END_OF_QUEUE
     # on the userInputRequiredQueue
     # XXX YYY XXX YYY
-    # MinimumEditDistanceProcess.join()
+    minimumEditDistanceProcess.join()
     print("finished processing games on the harddrive")
 
-    # by this point there is nothing that will write to the gameNameMatchesProcessingQueue (that is being read by GameLookupAndStorageProcess)
+    # by this point there is nothing that will write to the gameNameMatchesProcessingQueue (that is being read by gameLookupAndStorageProcess)
     gameNameMatchesProcessingQueue.put(END_OF_QUEUE)
 
-    unableToInsert = GameLookupAndStorageProcess.join()
-    m.join()
+    unableToInsert = gameLookupAndStorageProcess.join()
     print(f"unmatchedGames={unmatchedGames}, unableToInsert={unableToInsert}")
+    m.join()
     
 
 

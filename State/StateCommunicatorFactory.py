@@ -2,7 +2,7 @@ from State.States import STATES
 from State.StateCommunicator import StateCommunicator
 
 # type hints
-from State.ObserverSocketHookupFactory import ObserverSocketHookupFactory
+from ObservedDataStructure.ObserverSocketHookupFactory import ObserverSocketHookupFactory
 
 class StateCommunicatorFactory:
     def createStateCommunicator(self, observerSocketHookupFactory : ObserverSocketHookupFactory):

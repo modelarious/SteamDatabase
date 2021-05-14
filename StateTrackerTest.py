@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import call, MagicMock
-from State.ObservedDataStructure import ObservedDataStructure
+from ObservedDataStructure.ObservedDataStructure import ObservedDataStructure
 from State.StateCommunicator import StateCommunicator
 from State.States import STATES, UPCOMING_STATE, FINDING_NAME_ACTIVE_STATE, AWAITING_USER_STATE, QUEUED_FOR_INFO_RETRIEVAL_STATE, INFO_RETRIEVAL_ACTIVE_STATE, STORED
 from Server.SocketWrapper import SocketWrapper

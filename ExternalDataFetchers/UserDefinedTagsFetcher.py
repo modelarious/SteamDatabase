@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup as Soup
 
 class UserDefinedTagsFetcher:
     def getTags(self, steamID):
-        print(f"https://store.steampowered.com/app/{steamID}")
         # it will let you just put in id and it will fill it in for you
         steamPage = get(f"https://store.steampowered.com/app/{steamID}").content
         # steamPage = get('https://store.steampowered.com/app/427520/Factorio/').content

@@ -93,11 +93,11 @@ def similarity(a, b):
 def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList, quickSteamTitleMap, stateCommunicator):
     try:
         stateCommunicator.setFindingNameActiveState(targetGame)
-        print(targetGame)
 
         # try the fast method
         try:
-            # XXX encapsulate the data access in an object - this logic should be paired with build_steam_title_map
+            # XXX encapsulate the data access in an object - this logic should be paired with build_steam_title_map.
+            # XXX We shouldn't have to know to pass it in lower case, for example.
             game = quickSteamTitleMap[targetGame.lower()]
             steamIDNumber = game['appid']
             steamName = game['name']
@@ -134,18 +134,11 @@ def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, user
             # XXX encapsulate the data access in an object
             steamName = game['name']
             steamIDNumber = game['appid']
-            # returnQueue = Queue()
-            # process = Process(target=similarity, args=(steamName.lower(), targetGame.lower(), returnQueue))
-            # process.start()
-            # process.join()
-            # score = returnQueue.get()
             score = similarity(steamName.lower(), targetGame.lower())
             if score >= 0.7:
                 possibleMatchesList.append(PossibleMatchQueueEntry(steamName, steamIDNumber, score))
                 if score == 1.0:
-                    print("\n\n\n")
                     print(steamName, targetGame, "added immediately")
-                    print("\n\n\n")
                     mqe = MatchQueueEntry(steamName, targetGame, steamIDNumber)
                     stateCommunicator.setQueuedForInfoRetrievalStateFromFindingNameActive(mqe)
                     gameNameMatchesProcessingQueue.put(mqe)
@@ -227,7 +220,6 @@ def minimum_edit_distance_processing(userInputRequiredQueue, gameNameMatchesProc
             for targetGame in gamesOnDisk
         }
         print("submitted all the needed jobs")
-        print(futureMap)
 
         for future in as_completed(futureMap):
             result = future.result() # unused

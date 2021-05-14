@@ -2,7 +2,7 @@ from Server.WebsocketClientHandlerRegistry import WebsocketClientHandlerRegistry
 from Server.Server import Server
 
 from State.StateCommunicatorFactory import StateCommunicatorFactory
-from State.ObserverSocketHookupFactory import ObserverSocketHookupFactory
+from ObservedDataStructure.ObserverSocketHookupFactory import ObserverSocketHookupFactory
 from State.DummyStateCommunicator import DummyStateCommunicator
 
 
@@ -60,27 +60,11 @@ if __name__ == '__main__':
 
     reader = StateCommunicationQueueReader(stateCommunicator, queue)
     reader.start()
-    # writer.setUpcomingState("hello world")
-    
-    # from concurrent.futures import ProcessPoolExecutor
-    # futures = []
-    # with ProcessPoolExecutor(max_workers=6) as executor:
-    #     for textToWrite in testStr.split():
-    #         future = executor.submit(hit_dat_upcoming_state, writer, textToWrite)
-    #         futures.append(future)
-    
-    # for future in futures:
-    #     print(future.result())
-
-    # from time import sleep
-
-    # sleep(12)
-
 
     # XXX Are there duplicate steam titles in the list? The fast map might need to be changed!
     match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, writer)
 
-    # XXX if you want the reader to join properly, you're going to have to tell the queues to shutdown
+    # XXX if you want this to join properly, you're going to have to tell the queues to shutdown
     reader.join()
 
     server.join()
