@@ -216,6 +216,11 @@ def minimum_edit_distance_processing(userInputRequiredQueue, gameNameMatchesProc
         # exhaust_iterable = deque(maxlen=0).extend
         # exhaust_iterable(futureMap)
 
+        # XXX due to a bug in python3 up to 3.8 (and eventlet requires 3.7 specifically), 
+        # process pools will hang if they fail to serialize something. Apparently one of those
+        # things that won't serialize are queues based on manager object, which makes NO sense
+        # because I've been happily using them so far
+        #
         # XXX gather queues up into one object: QueueLayer (https://github.com/modelarious/SteamDatabase/issues/17)
         futureMap = {
             MinimumEditDistanceProcessPool.submit(
