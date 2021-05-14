@@ -10,6 +10,9 @@ from GameModel import Game
 from queue import Queue
 
 from dataclasses import dataclass
+
+# XXX note that it would be great to be able to define type of 
+# payload as "Queuable" instead of "Any"
 @dataclass
 class QueueItem:
     functionName: str

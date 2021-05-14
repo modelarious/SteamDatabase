@@ -1,27 +1,39 @@
 from State.StateCommunicatorInterface import StateCommunicatorInterface
+import inspect
 from QueueEntries.UserInputRequiredQueueEntry import UserInputRequiredQueueEntry
 from QueueEntries.MatchQueueEntry import MatchQueueEntry
 from GameModel import Game
+from typing import Any
 
 class DummyStateCommunicator(StateCommunicatorInterface):
+    def show(self, payload: Any):
+        funcName = self._determine_function_name()
+        print(f"[{funcName}] - {payload}")
+
     def setUpcomingState(self, gameTitleOnDisk : str):
-        pass
-    
+        self.show(gameTitleOnDisk)
+  
     def setFindingNameActiveState(self, gameTitleOnDisk : str):
-        pass
+        self.show(gameTitleOnDisk)
     
     def setAwaitingUserInputState(self, userInputRequiredQueueEntry : UserInputRequiredQueueEntry):
-        pass
+        self.show(userInputRequiredQueueEntry)
     
-    def rejectedByUser(self, gameTitle: str):
-        pass
+    def rejectedByUser(self, userInputRequiredQueueEntry: UserInputRequiredQueueEntry):
+        self.show(userInputRequiredQueueEntry)
     
-    def setQueuedForInfoRetrievalState(self, matchQueueEntry : MatchQueueEntry):
-        pass
+    def setQueuedForInfoRetrievalStateFromFindingNameActive(self, matchQueueEntry : MatchQueueEntry):
+        self.show(matchQueueEntry)
+
+    def setQueuedForInfoRetrievalStateFromAwaitingUser(self, matchQueueEntry : MatchQueueEntry):
+        self.show(matchQueueEntry)
     
     def setInfoRetrievalActiveState(self, matchQueueEntry : MatchQueueEntry):
-        pass
+        self.show(matchQueueEntry)
     
     def setStoredState(self, game : Game):
-        pass
+        self.show(game)
+    
+    def _determine_function_name(self):
+        return inspect.stack()[2][3]
     
