@@ -3,6 +3,8 @@ from Server.Server import Server
 
 from State.StateCommunicatorFactory import StateCommunicatorFactory
 from State.ObserverSocketHookupFactory import ObserverSocketHookupFactory
+from State.DummyStateCommunicator import DummyStateCommunicator
+
 
 from State.StateCommunicatorInterface import StateCommunicatorInterface
 
