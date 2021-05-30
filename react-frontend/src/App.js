@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import { w3cwebsocket as W3CWebSocket } from "websocket";
+import SocketContainer from "./SocketContainer.js";
+
 const autoBind = require('auto-bind');
+
 
 const upcomingSocket = new W3CWebSocket('ws://127.0.0.1:3091/upcoming');
 const findingNameActiveSocket = new W3CWebSocket('ws://127.0.0.1:3091/findingNameActive');
@@ -41,6 +44,22 @@ class App extends Component {
         findingNameActive: receivedMessage
       });
     };
+
+		const endpoints = [
+			"/infoRetrievalActive",
+			"/stored",
+			"/command",
+			"/awaitingUser",
+			"/queuedForInfoRetrieval"
+		];
+		const socketContainer = new SocketContainer(endpoints);
+		// console.log(socketContainer.sockets);
+		// console.log("clearing socket states");
+		// this.socketStates = Object.fromEntries( 
+		//   endpoints.map( name => [name, []]) 
+		// );
+		// console.log("Cleared socket states")
+		// console.log(this.socketStates)
   }
   
   render() {
