@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { w3cwebsocket as W3CWebSocket } from "websocket";
+const autoBind = require('auto-bind');
 
-const upcomingSocket = new W3CWebSocket('ws://127.0.0.1:3091/awaitingUser');
+const upcomingSocket = new W3CWebSocket('ws://127.0.0.1:3091/upcoming');
 const findingNameActiveSocket = new W3CWebSocket('ws://127.0.0.1:3091/findingNameActive');
 class App extends Component {
   constructor() {
@@ -9,6 +10,7 @@ class App extends Component {
     this.state = {}
     this.state.awaitingUser = [];
     this.state.findingNameActive = [];
+		autoBind(this);
   }
   
   componentDidMount() {
