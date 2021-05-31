@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import SocketContainer from "./SocketContainer.js";
-import { FINDING_NAME_ACTIVE_STATE, UPCOMING_STATE } from './States.js';
+import { FINDING_NAME_ACTIVE_STATE, STATES, UPCOMING_STATE } from './States.js';
 
 const autoBind = require('auto-bind');
 
@@ -12,55 +12,23 @@ class App extends Component {
   constructor() {
     super()
     this.state = {}
-    this.state.upcoming = [];
+    this.state[UPCOMING_STATE] = [];
     this.state.findingNameActive = [];
 		autoBind(this);
   }
   
   componentDidMount() {
-    // upcomingSocket.onopen = () => {
-    //   console.log("/upcoming open")
-    // };
-    // upcomingSocket.onclose = () => {
-    //   console.log("/upcoming close")
-    // }
-    // upcomingSocket.onmessage = (message) => {
-    //   console.log(message.data);
-    //   const receivedMessage = JSON.parse(message.data);
-    //   this.setState({
-    //     upcoming: receivedMessage
-    //   });
-    // };
-
-    // findingNameActiveSocket.onopen = () => {
-    //   console.log("/findingNameActive open")
-    // };
-    // findingNameActiveSocket.onclose = () => {
-    //   console.log("/upfindingNameActivecoming close")
-    // }
-    // findingNameActiveSocket.onmessage = (message) => {
-    //   console.log(message.data);
-    //   const receivedMessage = JSON.parse(message.data);
-    //   this.setState({
-    //     findingNameActive: receivedMessage
-    //   });
-    // };
-
-		const endpoints = [
-			"/upcoming",
-			"/findingNameActive",
-			"/infoRetrievalActive",
-			"/stored",
+		const endpoints = STATES.concat([
 			"/command",
-			"/awaitingUser",
-			"/queuedForInfoRetrieval"
-		];
+		]);
+
 		const socketContainer = new SocketContainer(endpoints);
+		
 		socketContainer.sockets[UPCOMING_STATE].onmessage = (message) => {
       console.log(message.data);
       const receivedMessage = JSON.parse(message.data);
       this.setState({
-        upcoming: receivedMessage
+        [UPCOMING_STATE]: receivedMessage
       });
     };
 
@@ -101,7 +69,7 @@ class App extends Component {
         Upcoming
       </div>
       <div>
-      {this.state.upcoming.map(title => (
+      {this.state[UPCOMING_STATE].map(title => (
         <p key={title}>{title}</p>
       ))}
       </div>
