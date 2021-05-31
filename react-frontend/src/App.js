@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import SocketContainer from "./SocketContainer.js";
+import { FINDING_NAME_ACTIVE_STATE } from './States.js';
 
 const autoBind = require('auto-bind');
 
 
 const upcomingSocket = new W3CWebSocket('ws://127.0.0.1:3091/upcoming');
-const findingNameActiveSocket = new W3CWebSocket('ws://127.0.0.1:3091/findingNameActive');
+// const findingNameActiveSocket = new W3CWebSocket('ws://127.0.0.1:3091/findingNameActive');
 class App extends Component {
   constructor() {
     super()
@@ -31,21 +32,22 @@ class App extends Component {
       });
     };
 
-    findingNameActiveSocket.onopen = () => {
-      console.log("/findingNameActive open")
-    };
-    findingNameActiveSocket.onclose = () => {
-      console.log("/upfindingNameActivecoming close")
-    }
-    findingNameActiveSocket.onmessage = (message) => {
-      console.log(message.data);
-      const receivedMessage = JSON.parse(message.data);
-      this.setState({
-        findingNameActive: receivedMessage
-      });
-    };
+    // findingNameActiveSocket.onopen = () => {
+    //   console.log("/findingNameActive open")
+    // };
+    // findingNameActiveSocket.onclose = () => {
+    //   console.log("/upfindingNameActivecoming close")
+    // }
+    // findingNameActiveSocket.onmessage = (message) => {
+    //   console.log(message.data);
+    //   const receivedMessage = JSON.parse(message.data);
+    //   this.setState({
+    //     findingNameActive: receivedMessage
+    //   });
+    // };
 
 		const endpoints = [
+			"/findingNameActive",
 			"/infoRetrievalActive",
 			"/stored",
 			"/command",
@@ -53,6 +55,13 @@ class App extends Component {
 			"/queuedForInfoRetrieval"
 		];
 		const socketContainer = new SocketContainer(endpoints);
+		socketContainer.sockets[FINDING_NAME_ACTIVE_STATE].onmessage = (message) => {
+      console.log(message.data);
+      const receivedMessage = JSON.parse(message.data);
+      this.setState({
+        findingNameActive: receivedMessage
+      });
+    };
 		// console.log(socketContainer.sockets);
 		// console.log("clearing socket states");
 		// this.socketStates = Object.fromEntries( 

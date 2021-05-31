@@ -1,6 +1,4 @@
 import { w3cwebsocket as W3CWebSocket } from "websocket";
-const { STATES } = require("./States.js");
-
 const { SocketLinkBuilder } = require('./SocketLinkBuilder.js');
 const autoBind = require('auto-bind');
 
