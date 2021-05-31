@@ -13,7 +13,7 @@ class App extends Component {
     super()
     this.state = {}
     this.state[UPCOMING_STATE] = [];
-    this.state.findingNameActive = [];
+    this.state[FINDING_NAME_ACTIVE_STATE] = [];
 		autoBind(this);
   }
   
@@ -42,7 +42,7 @@ class App extends Component {
       console.log(message.data);
       const receivedMessage = JSON.parse(message.data);
       this.setState({
-        findingNameActive: receivedMessage
+        [FINDING_NAME_ACTIVE_STATE]: receivedMessage
       });
     };
 
@@ -78,7 +78,7 @@ class App extends Component {
         FindingNameActive
       </div>
       <div>
-        {this.state.findingNameActive.map(title => (
+        {this.state[FINDING_NAME_ACTIVE_STATE].map(title => (
           <p key={title}>{title}</p>
         ))}
       </div>
