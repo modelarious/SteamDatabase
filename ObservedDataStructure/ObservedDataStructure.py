@@ -22,10 +22,19 @@ class ObservedDataStructure:
     
     @sendUpdateDecorator
     def add(self, value, key=None):
-        if key == None:
-            key = value
-        self.dict[key] = value
+        self._add(value, key)
 
     @sendUpdateDecorator
     def remove(self, key):
         del self.dict[key]
+    
+    @sendUpdateDecorator
+    def batch_add(self, values):
+        for value in values:
+            self._add(value)
+
+    def _add(self, value, key=None):
+        if key == None:
+            key = value
+        self.dict[key] = value
+    

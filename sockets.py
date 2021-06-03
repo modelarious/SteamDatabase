@@ -2,35 +2,15 @@ from Server.WebsocketClientHandlerRegistry import WebsocketClientHandlerRegistry
 from Server.Server import Server
 
 from State.StateCommunicatorFactory import StateCommunicatorFactory
+from State.StateCommunicatorQueues import StateCommunicationQueueWriter, StateCommunicationQueueReader
+
 from ObservedDataStructure.ObserverSocketHookupFactory import ObserverSocketHookupFactory
-from State.DummyStateCommunicator import DummyStateCommunicator
-
-
-from State.StateCommunicatorInterface import StateCommunicatorInterface
-
-from multiprocessing import Manager
-
 from SteamDatabase import match_steam_games_to_games_on_disk_and_store
+
 from ExternalDataFetchers.SteamGameListFetcherMOCKDATA import SteamGameListFetcherMOCKDATA
 from InternalDataFetchers.DirListFetcherMOCKDATA import DirListFetcherMOCKDATA
 
-from State.StateCommunicatorQueues import StateCommunicationQueueWriter, StateCommunicationQueueReader
-
-class StateCommunicatorQueueContainerFactory:
-    def __init__(self, managerInstance: Manager):
-        self.manager = managerInstance
-        self.queues = {}
-    
-    def create(self):
-        self.queues = {}
-        stateCommunicatorPublicMethods = [methodName for methodName in dir(StateCommunicatorInterface) if not methodName.startswith('_')]
-        for methodName in stateCommunicatorPublicMethods:
-            # XXX need to be joined or terminated in some way
-            self.queues[methodName] = self.manager.Queue()
-        return self.queues
-
-def hit_dat_upcoming_state(writer, textToWrite):
-    writer.setUpcomingState(textToWrite)
+from multiprocessing import Manager
 
 if __name__ == '__main__':
     m = Manager()

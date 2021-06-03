@@ -3,15 +3,16 @@ import inspect
 from QueueEntries.UserInputRequiredQueueEntry import UserInputRequiredQueueEntry
 from QueueEntries.MatchQueueEntry import MatchQueueEntry
 from GameModel import Game
-from typing import Any
+from typing import Any, List
 
 class DummyStateCommunicator(StateCommunicatorInterface):
     def show(self, payload: Any):
         funcName = self._determine_function_name()
         print(f"[{funcName}] - {payload}")
 
-    def setUpcomingState(self, gameTitleOnDisk : str):
-        self.show(gameTitleOnDisk)
+    def batchSetUpcomingState(self, gameTitlesOnDisk : List[str]):
+        for gameTitle in gameTitlesOnDisk:
+            self.show(gameTitle)
   
     def setFindingNameActiveState(self, gameTitleOnDisk : str):
         self.show(gameTitleOnDisk)
