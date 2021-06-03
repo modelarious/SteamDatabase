@@ -19,10 +19,7 @@ def build_steam_title_map(steamGamesList):
 # XXX Go all Dependency Injection on it's ass.
 # XXX move UI handling into a dedicated function or class
 def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, stateCommunicator: StateCommunicatorInterface):
-
-    # XXX XXX XXX rough - should send these all out in one go
-    for gameTitle in gamesOnDisk:
-        stateCommunicator.setUpcomingState(gameTitle)
+    stateCommunicator.batchSetUpcomingState(gamesOnDisk)
     
     quickSteamTitleMap = build_steam_title_map(steamGamesList)
 
