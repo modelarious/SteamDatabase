@@ -5,16 +5,13 @@ import { FINDING_NAME_ACTIVE_STATE, STATES, UPCOMING_STATE, translate_state_to_t
 
 const autoBind = require('auto-bind');
 
-
-// const upcomingSocket = new W3CWebSocket('ws://127.0.0.1:3091/upcoming');
-// const findingNameActiveSocket = new W3CWebSocket('ws://127.0.0.1:3091/findingNameActive');
 class App extends Component {
   constructor() {
-    super()
-    this.state = {}
-    this.state.tracking = {}
-    this.state[UPCOMING_STATE] = [];
-    this.state[FINDING_NAME_ACTIVE_STATE] = [];
+    super();
+    this.state = {};
+    for (const state of STATES) {
+      this.state[state] = [];
+    }
     autoBind(this);
   }
   
@@ -24,40 +21,22 @@ class App extends Component {
     ]);
 
     const socketContainer = new SocketContainer(endpoints);
-    
-    socketContainer.sockets[UPCOMING_STATE].onmessage = (message) => {
-      const receivedMessage = JSON.parse(message.data);
-      this.setState({
-        [UPCOMING_STATE]: receivedMessage
-      });
-    };
-
-    socketContainer.sockets[UPCOMING_STATE].onopen = () => {
-      console.log("/UPCOMING_STATE open")
-    };
-    socketContainer.sockets[UPCOMING_STATE].onclose = () => {
-      console.log("/UPCOMING_STATE close")
+    const sockets = Object.entries(socketContainer.get_sockets())
+    for (const [state, sock] of sockets) {
+      sock.onmessage = (message) => {
+        const receivedMessage = JSON.parse(message.data);
+        this.setState({
+          [state]: receivedMessage
+        });
+      };
+  
+      sock.onopen = () => {
+        console.log(`${state} open`);
+      };
+      sock.onclose = () => {
+        console.log(`${state} close`);
+      }
     }
-    socketContainer.sockets[FINDING_NAME_ACTIVE_STATE].onmessage = (message) => {
-      const receivedMessage = JSON.parse(message.data);
-      this.setState({
-        [FINDING_NAME_ACTIVE_STATE]: receivedMessage
-      });
-    };
-
-    socketContainer.sockets[FINDING_NAME_ACTIVE_STATE].onopen = () => {
-      console.log("/FINDING_NAME_ACTIVE_STATE open")
-    };
-    socketContainer.sockets[FINDING_NAME_ACTIVE_STATE].onclose = () => {
-      console.log("/FINDING_NAME_ACTIVE_STATE close")
-    }
-    // console.log(socketContainer.sockets);
-    // console.log("clearing socket states");
-    // this.socketStates = Object.fromEntries( 
-    //   endpoints.map( name => [name, []]) 
-    // );
-    // console.log("Cleared socket states")
-    // console.log(this.socketStates)
   }
   
   render() {
@@ -89,13 +68,9 @@ class App extends Component {
     		cards: cards
     	})
     }
-
-    console.log(lanes)
     const d = {
     	'lanes': lanes
     }
-
-    console.log(d);
     
     return (
 

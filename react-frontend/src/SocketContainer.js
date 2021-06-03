@@ -13,4 +13,8 @@ export default class SocketContainer {
 
     autoBind(this);
   }
+
+  get_sockets() {
+      return this.sockets;
+  }
 }
