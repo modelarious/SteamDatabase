@@ -19,41 +19,42 @@ class QueueItem:
     payload: Any
 
 import inspect
+from typing import List
 class StateCommunicationQueueWriter(StateCommunicatorInterface): 
     # can't find a way to express this properly in type checking. 
     # Technically, queue is a multiprocessing.managers.AutoProxy[Queue]
     def __init__(self, queue: Queue):
         self.queue = queue
 
-    def putOnQueue(self, payload: Any):
+    def _putOnQueue(self, payload: Any):
         funcName = self._determine_function_name()
         queueItem = QueueItem(funcName, payload)
         print(f"[{funcName}] - {payload}")
         self.queue.put(queueItem)
 
-    def setUpcomingState(self, gameTitleOnDisk : str):
-        self.putOnQueue(gameTitleOnDisk)
+    def batchSetUpcomingState(self, gameTitlesOnDisk : List[str]):
+        self._putOnQueue(gameTitlesOnDisk)
   
     def setFindingNameActiveState(self, gameTitleOnDisk : str):
-        self.putOnQueue(gameTitleOnDisk)
+        self._putOnQueue(gameTitleOnDisk)
     
     def setAwaitingUserInputState(self, userInputRequiredQueueEntry : UserInputRequiredQueueEntry):
-        self.putOnQueue(userInputRequiredQueueEntry)
+        self._putOnQueue(userInputRequiredQueueEntry)
     
     def rejectedByUser(self, userInputRequiredQueueEntry: UserInputRequiredQueueEntry):
-        self.putOnQueue(userInputRequiredQueueEntry)
+        self._putOnQueue(userInputRequiredQueueEntry)
     
     def setQueuedForInfoRetrievalStateFromFindingNameActive(self, matchQueueEntry : MatchQueueEntry):
-        self.putOnQueue(matchQueueEntry)
+        self._putOnQueue(matchQueueEntry)
 
     def setQueuedForInfoRetrievalStateFromAwaitingUser(self, matchQueueEntry : MatchQueueEntry):
-        self.putOnQueue(matchQueueEntry)
+        self._putOnQueue(matchQueueEntry)
     
     def setInfoRetrievalActiveState(self, matchQueueEntry : MatchQueueEntry):
-        self.putOnQueue(matchQueueEntry)
+        self._putOnQueue(matchQueueEntry)
     
     def setStoredState(self, game : Game):
-        self.putOnQueue(game)
+        self._putOnQueue(game)
     
     def _determine_function_name(self):
         return inspect.stack()[2][3]

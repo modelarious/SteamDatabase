@@ -2,10 +2,11 @@ from abc import ABC, abstractmethod
 from QueueEntries.UserInputRequiredQueueEntry import UserInputRequiredQueueEntry
 from QueueEntries.MatchQueueEntry import MatchQueueEntry
 from GameModel import Game
+from typing import List
 
 class StateCommunicatorInterface(ABC):
     @abstractmethod
-    def setUpcomingState(self, gameTitleOnDisk : str):
+    def batchSetUpcomingState(self, gameTitlesOnDisk : List[str]):
         pass
     
     @abstractmethod

@@ -7,23 +7,23 @@ from QueueEntries.UserInputRequiredQueueEntry import UserInputRequiredQueueEntry
 from QueueEntries.MatchQueueEntry import MatchQueueEntry
 from ObservedDataStructure.ObservedDataStructure import ObservedDataStructure
 from GameModel import Game
-
-# XXX concurrency, which should be handled in ObservedDataStructure
+from typing import List
 
 # XXX This was only made to handle the case where you have unique games - if you have duplicates then this
-# XXX will break
+# XXX will break. This is because the observedDataStructure is powered by a data structure
+# that assumes the titles are unique within a batch
 class StateCommunicator(StateCommunicatorInterface):
-    def __init__(self, connections : Dict[StateStrType, ObservedDataStructure]):
+    def __init__(self, observedDataStructures : Dict[StateStrType, ObservedDataStructure]):
         # doing this with helpful names so accesses in member functions are easy to read
-        self.upcoming  = connections[UPCOMING_STATE]
-        self.findingNameActive = connections[FINDING_NAME_ACTIVE_STATE]
-        self.awaitingUser = connections[AWAITING_USER_STATE]
-        self.queuedForInfoRetrieval = connections[QUEUED_FOR_INFO_RETRIEVAL_STATE]
-        self.infoRetrievalActive = connections[INFO_RETRIEVAL_ACTIVE_STATE]
-        self.stored = connections[STORED]
+        self.upcoming  = observedDataStructures[UPCOMING_STATE]
+        self.findingNameActive = observedDataStructures[FINDING_NAME_ACTIVE_STATE]
+        self.awaitingUser = observedDataStructures[AWAITING_USER_STATE]
+        self.queuedForInfoRetrieval = observedDataStructures[QUEUED_FOR_INFO_RETRIEVAL_STATE]
+        self.infoRetrievalActive = observedDataStructures[INFO_RETRIEVAL_ACTIVE_STATE]
+        self.stored = observedDataStructures[STORED]
 
-    def setUpcomingState(self, gameTitleOnDisk : str):
-        self.upcoming.add(gameTitleOnDisk)
+    def batchSetUpcomingState(self, gameTitlesOnDisk : List[str]):
+        self.upcoming.batch_add(gameTitlesOnDisk)
     
     def setFindingNameActiveState(self, gameTitleOnDisk : str):
         self.upcoming.remove(gameTitleOnDisk)
