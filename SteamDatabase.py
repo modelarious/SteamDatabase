@@ -49,6 +49,9 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
     minimumEditDistanceProcess.start()
     print("finished launching minimum edit distance handling process")
 
+    from time import sleep
+    from random import randint
+
     print("launching user input handling")
     unmatchedGames = []
     uire = userInputRequiredQueue.get()
@@ -57,6 +60,7 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
         for possibleMatch in uire.getPossibleMatchesList():
             # XXX What are you doing to that poor possibleMatch object? Why are you grabbing internals?
             # userInput = input(f"does it match '{possibleMatch.getSteamName()}' - {possibleMatch.steamIDNumber} - {possibleMatch.matchScore}? (y/n)")
+            sleep(randint(1, 10))
             userInput = 'y'
             if userInput.lower() == 'y':
                 mqe = possibleMatch.convertToMatchQueueEntry(nameOnDisk)
