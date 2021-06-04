@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Board from 'react-trello'
+// import Board from 'react-trello'
 import SocketContainer from "./SocketContainer.js";
 import {STATES, 
   translate_state_to_title, 
@@ -10,6 +10,14 @@ import {STATES,
   INFO_RETRIEVAL_ACTIVE_STATE,
   STORED
 } from './States.js';
+import {
+  ChakraProvider,
+  Container,
+  List,
+  ListItem,
+  Text,
+  SimpleGrid
+} from '@chakra-ui/react'
 
 const autoBind = require('auto-bind');
 
@@ -37,7 +45,7 @@ class App extends Component {
           [state]: receivedMessage
         });
       };
-  
+
       sock.onopen = () => {
         console.log(`${state} open`);
       };
@@ -48,6 +56,10 @@ class App extends Component {
   }
   
   render() {
+    // for using the trello board plugin - but the render performance is poor for
+    // large lists. Unfortunately, our expected input size makes the render performance poor.
+    // however, the reason that it has poor rendering speed may be because the backend is
+    // using up all available CPU (as it's designed to do) 
     // var lanes = [];
     // for (const [stateName, currentSocketArray] of Object.entries({
     // 	[UPCOMING_STATE]: this.state[UPCOMING_STATE],
@@ -80,6 +92,7 @@ class App extends Component {
     // 	'lanes': lanes
     // }
     
+    // XXX Improve this by generalizing the object sent through sockets
     return (
 
     <div>
@@ -93,7 +106,7 @@ class App extends Component {
       </div>
       <hr></hr>
       <div>
-        FindingNameActive
+        Finding Name Active
       </div>
       <div>
         {this.state[FINDING_NAME_ACTIVE_STATE].map(title => (
@@ -137,6 +150,58 @@ class App extends Component {
         ))}
       </div>
       {/* <Board data={d}/> */}
+      <ChakraProvider resetCSS>
+        <SimpleGrid columns={6} spacingX={1} spacingY={1}>
+          <Container>
+            <Text>Upcoming</Text>
+            <List>
+              <ListItem>list</ListItem>
+              <ListItem>list</ListItem>
+              <ListItem>list</ListItem>
+            </List>
+          </Container>
+          <Container>
+            <Text>Finding Name Active</Text>
+            <List>
+              <ListItem>list</ListItem>
+              <ListItem>list</ListItem>
+              <ListItem>list</ListItem>
+            </List>
+          </Container>
+          <Container>
+            <Text>Awaiting User</Text>
+            <List>
+              <ListItem>list</ListItem>
+              <ListItem>list</ListItem>
+              <ListItem>list</ListItem>
+            </List>
+          </Container>
+          <Container>
+            <Text>Queued for Info Retrieval</Text>
+            <List>
+              <ListItem>list</ListItem>
+              <ListItem>list</ListItem>
+              <ListItem>list</ListItem>
+            </List>
+          </Container>
+          <Container>
+            <Text>Info Retrieval Active</Text>
+            <List>
+              <ListItem>list</ListItem>
+              <ListItem>list</ListItem>
+              <ListItem>list</ListItem>
+            </List>
+          </Container>
+          <Container>
+            <Text>Stored</Text>
+            <List>
+              <ListItem>list</ListItem>
+              <ListItem>list</ListItem>
+              <ListItem>list</ListItem>
+            </List>
+          </Container>
+        </SimpleGrid>
+      </ChakraProvider>
     </div>
 
 
