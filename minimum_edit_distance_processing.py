@@ -118,7 +118,7 @@ def minimum_edit_distance_processing(userInputRequiredQueue, gameNameMatchesProc
         print("submitted all the needed jobs")
 
         for future in as_completed(futureMap):
-            result = future.result() # unused
+            result = future.result() # unused, but needed to ensure the jobs finish
 
     # no more user input required after this
     userInputRequiredQueue.put(END_OF_QUEUE)
