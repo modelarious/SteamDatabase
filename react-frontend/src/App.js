@@ -75,13 +75,11 @@ portalZIndex	number	undefined	common z-index to use for Portal
     <Tabs renderActiveTabContentOnly={true}>
       <TabLink to="tab1">Games</TabLink>
       <TabLink to="tab2">User Input</TabLink>
-      <TabLink to="tab3">Search</TabLink>
-      <TabLink to="tab4" default>Debug</TabLink>
+      <TabLink to="tab3" default>Debug</TabLink>
     
       <TabContent for="tab1"> "games view"</TabContent>
       <TabContent for="tab2">"user input view"</TabContent>
-      <TabContent for="tab3">"search view"</TabContent>
-      <TabContent for="tab4">
+      <TabContent for="tab3">
         <div>
           <ChakraProvider resetCSS>
             <SimpleGrid columns={6} spacingX={1} spacingY={1}>
