@@ -2,7 +2,7 @@ from GameModel import Game
 from Constants import END_OF_QUEUE
 from psycopg2.errors import UniqueViolation
 
-def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, steamAPIDataFetcher, pathOnDisk, stateCommunicator):
+def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, userDefinedGenresFetcher, steamAPIDataFetcher, pathOnDisk, stateCommunicator):
     unableToInsert = []
     gnmpe = gameNameMatchesProcessingQueue.get()
     while gnmpe != END_OF_QUEUE:
@@ -10,7 +10,7 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
 
         gameNameOnDisk = gnmpe.getGameNameOnDisk()
         steamIDNumber = gnmpe.getSteamIDNumber()
-        userTags = userDefinedTagsFetcher.getTags(steamIDNumber)
+        userGenres = userDefinedGenresFetcher.getGenres(steamIDNumber)
         reviewScore = steamAPIDataFetcher.getAvgReviewScore(steamIDNumber)
         
         game = Game(
@@ -19,7 +19,7 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
             path_on_harddrive=pathOnDisk + gameNameOnDisk, 
             name_on_steam=gnmpe.getGameNameFromSteam(), 
             avg_review_score=reviewScore,
-            user_defined_tags=userTags
+            user_defined_genres=userGenres
         )
 
         # YYY on exceptions, should I be tracking a state change to error?
