@@ -1,5 +1,5 @@
 from State.StateCommunicatorInterface import StateCommunicatorInterface
-from ExternalDataFetchers.UserDefinedTagsFetcher import UserDefinedTagsFetcher
+from ExternalDataFetchers.UserDefinedGenresFetcher import UserDefinedGenresFetcher
 from ExternalDataFetchers.SteamAPIDataFetcher import SteamAPIDataFetcher
 from minimum_edit_distance_processing import minimum_edit_distance_processing
 from game_lookup_and_storage_process import game_lookup_and_storage_process
@@ -32,13 +32,13 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
 
     print("constructing necessary objects")
     gameDAO = PostgresGameDAOFactory.createGameDAO() # XXX don't just make one class static
-    userDefinedTagsFetcher = UserDefinedTagsFetcher()
+    userDefinedGenresFetcher = UserDefinedGenresFetcher()
     steamAPIDataFetcher = SteamAPIDataFetcher()
     pathOnDisk = "/Volumes/babyBlue/Games/PC/"
     print("finished constructing necessary objects")
 
     print("launching game storage process")
-    gameLookupAndStorageProcess = Process(target=game_lookup_and_storage_process, args=(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, steamAPIDataFetcher, pathOnDisk, stateCommunicator))
+    gameLookupAndStorageProcess = Process(target=game_lookup_and_storage_process, args=(gameNameMatchesProcessingQueue, gameDAO, userDefinedGenresFetcher, steamAPIDataFetcher, pathOnDisk, stateCommunicator))
     gameLookupAndStorageProcess.start()
     print("finished launching game storage process")
     

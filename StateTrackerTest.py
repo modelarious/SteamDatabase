@@ -21,7 +21,7 @@ def create_game():
         path_on_harddrive = "hello", 
         name_on_steam = "hi there", 
         avg_review_score = 9.4,
-        user_defined_tags = ['genre1', 'genre2']
+        user_defined_genres = ['genre1', 'genre2']
     )
 
 def create_match_queue_entry():
