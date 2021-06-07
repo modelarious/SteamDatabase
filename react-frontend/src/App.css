@@ -36,3 +36,12 @@
     transform: rotate(360deg);
   }
 }
+
+/* 
+not sure how to get this working - wouldn't apply to .li items that I'd created
+.li {
+  display: 'flex';
+  border-radius: '25px';
+  justify-content:'center';
+  align-items:'center';
+} */
