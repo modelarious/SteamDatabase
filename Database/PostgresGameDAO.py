@@ -19,18 +19,6 @@ class PostgresGameDAO:
             
             tagData = tuple(zip(steamIDIter, gameModel.user_defined_tags, rank))
             cur.executemany(insertTags, tagData)
-
-
-# from GameModel import Game
-
-# gameDAO = PostgresGameDAOFactory.createGameDAO()
-# x = Game(12345, 'stuff', 'more stuff', 'steam name', 7, ['tag1', 'tag2', 'tag3'])
-# gameDAO.commitGame(x)
-
-
-# x = '''
-# INSERT INTO Games (steam_id, name_on_harddrive, path_on_harddrive, name_on_steam, avg_review_score) VALUES
-#     (1976647, 'Tampopo', 'String', '1985-02-10', 5.4),
-#     (2658854, 'Factorio', '/Volumes/GameDrive/Factorio', 'Factorio', 9.2);
-# '''
-# cursor.execute(x)
+            
+            conn.commit()
+        conn.close()
