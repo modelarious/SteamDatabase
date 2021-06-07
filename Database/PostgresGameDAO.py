@@ -19,4 +19,6 @@ class PostgresGameDAO:
             
             tagData = tuple(zip(steamIDIter, gameModel.user_defined_tags, rank))
             cur.executemany(insertTags, tagData)
+            
+            conn.commit()
         conn.close()
