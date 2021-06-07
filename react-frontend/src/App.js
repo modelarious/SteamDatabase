@@ -59,97 +59,99 @@ class App extends Component {
     }
   }
   
-  /*
-ChakraProvider Props#
-Name	Type	Default	Description
-resetCSS	boolean	true	automatically includes <CSSReset />
-theme	Theme	@chakra-ui/theme	optional custom theme
-colorModeManager	StorageManager	localStorageManager	manager to persist a users color mode preference in
-portalZIndex	number	undefined	common z-index to use for Portal
-*/
   render() {
-    // XXX Improve this by generalizing the object sent through sockets so that the accesses
-    // aren't all different (ex: title -> title, ob -> ob.gameName, ob -> ob.gameNameFromSteam)
-    return (
+    var debugBoardNeededStateData = {}
+    for (const stateName of STATES) {
+      debugBoardNeededStateData[stateName] = this.state[stateName];
+    }
 
-    <Tabs renderActiveTabContentOnly={true}>
-      <TabLink to="tab1">Games</TabLink>
-      <TabLink to="tab2">User Input</TabLink>
-      <TabLink to="tab3" default>Debug</TabLink>
-    
-      <TabContent for="tab1"> "games view"</TabContent>
-      <TabContent for="tab2">"user input view"</TabContent>
-      <TabContent for="tab3">
-        <div>
-          <ChakraProvider resetCSS>
-            <SimpleGrid columns={6} spacingX={1} spacingY={1}>
-              <Container>
-                <Text>Upcoming</Text>
-                <br></br>
-                <List>
-                  {this.state[UPCOMING_STATE].map(title => (
-                    <ListItem border="1px solid red" style={{display: 'flex',  borderRadius: '25px', justifyContent:'center', alignItems:'center'}}>{title}</ListItem>
-                  ))}
-                </List>
-              </Container>
-              
-              <Container>
-                <Text>Finding Name Active</Text>
-                <br></br>
-                <List>
-                  {this.state[FINDING_NAME_ACTIVE_STATE].map(title => (
-                    <ListItem>{title}</ListItem>
-                  ))}
-                </List>
-              </Container>
-              
-              <Container>
-                <Text>Awaiting User</Text>
-                <br></br>
-                <List>
-                  {this.state[AWAITING_USER_STATE].map(ob => (
-                    <ListItem>{ob.gameName}</ListItem>
-                  ))}
-                </List>
-              </Container>
-              
-              <Container>
-                <Text>Queued for Info Retrieval</Text>
-                <br></br>
-                <List>
-                  {this.state[QUEUED_FOR_INFO_RETRIEVAL_STATE].map(ob => (
-                    <ListItem>{ob.gameNameFromSteam}</ListItem>
-                  ))}
-                </List>
-              </Container>
-              
-              <Container>
-                <Text>Info Retrieval Active</Text>
-                <br></br>
-                <List>
-                  {this.state[INFO_RETRIEVAL_ACTIVE_STATE].map(ob => (
-                    <ListItem>{ob.gameNameFromSteam}</ListItem>
-                  ))}
-                </List>
-              </Container>
-              
-              <Container>
-                <Text>Stored</Text>
-                <br></br>
-                <List>
-                  {this.state[STORED].map(ob => (
-                    <ListItem>{ob.name_on_steam}</ListItem>
-                  ))}
-                </List>
-              </Container>
-            </SimpleGrid>
-          </ChakraProvider>
-        </div>
-      </TabContent>
-    </Tabs>
-    
+    return (
+      <Tabs renderActiveTabContentOnly={true}>
+        <TabLink to="tab1">Games</TabLink>
+        <TabLink to="tab2">User Input</TabLink>
+        <TabLink to="tab3" default>Debug</TabLink>
+      
+        <TabContent for="tab1"> "games view"</TabContent>
+        <TabContent for="tab2">"user input view"</TabContent>
+        <TabContent for="tab3">
+          <DebugBoard stateData={debugBoardNeededStateData}/>
+        </TabContent>
+      </Tabs>
     );
   }
+}
+
+
+
+
+// XXX improve this by generalizing how data is stored in the objects in each of the queues
+// XXX to make sure that something like gameNameOnDisk is present in every object
+function DebugBoard(props) {
+  return <div>
+  <ChakraProvider>
+    <SimpleGrid columns={6} spacingX={1} spacingY={1}>
+      <Container>
+        <Text>Upcoming</Text>
+        <br></br>
+        <List>
+          {props.stateData[UPCOMING_STATE].map(title => (
+            <ListItem border="1px solid red" style={{display: 'flex',  borderRadius: '25px', justifyContent:'center', alignItems:'center'}}>{title}</ListItem>
+          ))}
+        </List>
+      </Container>
+      
+      <Container>
+        <Text>Finding Name Active</Text>
+        <br></br>
+        <List>
+          {props.stateData[FINDING_NAME_ACTIVE_STATE].map(title => (
+            <ListItem>{title}</ListItem>
+          ))}
+        </List>
+      </Container>
+      
+      <Container>
+        <Text>Awaiting User</Text>
+        <br></br>
+        <List>
+          {props.stateData[AWAITING_USER_STATE].map(ob => (
+            <ListItem>{ob.gameName}</ListItem>
+          ))}
+        </List>
+      </Container>
+      
+      <Container>
+        <Text>Queued for Info Retrieval</Text>
+        <br></br>
+        <List>
+          {props.stateData[QUEUED_FOR_INFO_RETRIEVAL_STATE].map(ob => (
+            <ListItem>{ob.gameNameFromSteam}</ListItem>
+          ))}
+        </List>
+      </Container>
+      
+      <Container>
+        <Text>Info Retrieval Active</Text>
+        <br></br>
+        <List>
+          {props.stateData[INFO_RETRIEVAL_ACTIVE_STATE].map(ob => (
+            <ListItem>{ob.gameNameFromSteam}</ListItem>
+          ))}
+        </List>
+      </Container>
+      
+      <Container>
+        <Text>Stored</Text>
+        <br></br>
+        <List>
+          {props.stateData[STORED].map(ob => (
+            <ListItem>{ob.name_on_steam}</ListItem>
+          ))}
+        </List>
+      </Container>
+    </SimpleGrid>
+  </ChakraProvider>
+</div>
 }
 
 export default App;
