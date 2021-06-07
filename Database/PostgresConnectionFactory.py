@@ -6,5 +6,6 @@ class PostgresConnectionFactory:
     conn = psycopg2.connect(
       database="postgres", user='postgres', password='password', host='127.0.0.1', port= '5432'
     )
-    conn.autocommit = True
+    # NO conn.autocommit = True - we handle transactions by ourself because we want
+    # to ensure several tables get updated, or everything is not committed.
     return conn

@@ -12,25 +12,12 @@ class PostgresGameDAO:
             gameData = (gameModel.steam_id, gameModel.name_on_harddrive, gameModel.path_on_harddrive, gameModel.name_on_steam, gameModel.avg_review_score)
             cur.execute(insertGame, gameData) # doing it this way prevents sql injection
 
-            # these are similar to genres as defined by users
-            insertTags = "INSERT INTO UserDefinedGenres (steam_id, genre_name, rank) VALUES (%s, %s, %s);"
+            insertGenres = "INSERT INTO UserDefinedGenres (steam_id, genre_name, rank) VALUES (%s, %s, %s);"
             steamIDIter = repeat(gameModel.steam_id)
-            rank = range(1, (len(gameModel.user_defined_tags) + 1))
-            
-            tagData = tuple(zip(steamIDIter, gameModel.user_defined_tags, rank))
-            cur.executemany(insertTags, tagData)
+            rank = range(1, (len(gameModel.user_defined_genres) + 1))
+            genreData = tuple(zip(steamIDIter, gameModel.user_defined_genres, rank))
+            cur.executemany(insertGenres, genreData)
 
-
-# from GameModel import Game
-
-# gameDAO = PostgresGameDAOFactory.createGameDAO()
-# x = Game(12345, 'stuff', 'more stuff', 'steam name', 7, ['tag1', 'tag2', 'tag3'])
-# gameDAO.commitGame(x)
-
-
-# x = '''
-# INSERT INTO Games (steam_id, name_on_harddrive, path_on_harddrive, name_on_steam, avg_review_score) VALUES
-#     (1976647, 'Tampopo', 'String', '1985-02-10', 5.4),
-#     (2658854, 'Factorio', '/Volumes/GameDrive/Factorio', 'Factorio', 9.2);
-# '''
-# cursor.execute(x)
+            # commit the game and tags to persistent storage
+            conn.commit()
+        conn.close()
