@@ -12,12 +12,11 @@ class PostgresGameDAO:
             gameData = (gameModel.steam_id, gameModel.name_on_harddrive, gameModel.path_on_harddrive, gameModel.name_on_steam, gameModel.avg_review_score)
             cur.execute(insertGame, gameData) # doing it this way prevents sql injection
 
-            insertGenres = "INSERT INTO UserDefinedGenres (steam_id, genre_name, rank) VALUES (%s, %s, %s);"
+            # these are similar to genres as defined by users
+            insertTags = "INSERT INTO UserDefinedGenres (steam_id, genre_name, rank) VALUES (%s, %s, %s);"
             steamIDIter = repeat(gameModel.steam_id)
-            rank = range(1, (len(gameModel.user_defined_genres) + 1))
-            genreData = tuple(zip(steamIDIter, gameModel.user_defined_genres, rank))
-            cur.executemany(insertGenres, genreData)
-
-            # commit the game and tags to persistent storage
-            conn.commit()
+            rank = range(1, (len(gameModel.user_defined_tags) + 1))
+            
+            tagData = tuple(zip(steamIDIter, gameModel.user_defined_tags, rank))
+            cur.executemany(insertTags, tagData)
         conn.close()
