@@ -1,6 +1,5 @@
 from Database.PostgresGameDAO import PostgresGameDAO
 from Database.PostgresConnectionFactory import PostgresConnectionFactory
 class PostgresGameDAOFactory:
-    @staticmethod
-    def createGameDAO():
+    def createGameDAO(self):
         return PostgresGameDAO(PostgresConnectionFactory)

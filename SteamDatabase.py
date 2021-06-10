@@ -31,7 +31,8 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
     print("created manager and queues")
 
     print("constructing necessary objects")
-    gameDAO = PostgresGameDAOFactory.createGameDAO() # XXX don't just make one class static
+    postgresGameDAOFactory = PostgresGameDAOFactory()
+    gameDAO = postgresGameDAOFactory.createGameDAO()
     userDefinedGenresFetcher = UserDefinedGenresFetcher()
     steamAPIDataFetcher = SteamAPIDataFetcher()
     pathOnDisk = "/Volumes/babyBlue/Games/PC/"
