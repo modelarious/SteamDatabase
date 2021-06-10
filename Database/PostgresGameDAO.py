@@ -1,5 +1,7 @@
-
 from itertools import repeat
+from dataclasses import dataclass
+from typing import List
+
 
 class PostgresGameDAO:
     def __init__(self, connectionFactory):
@@ -22,3 +24,15 @@ class PostgresGameDAO:
             
             conn.commit()
         conn.close()
+    
+    def get_paths_of_all_stored_games(self) -> List[str]:
+        conn = self.connectionFactory.createConnection()
+        query_returns = []
+        with conn.cursor() as cur:
+            get_game_titles_query = "SELECT path_on_harddrive from Games"
+            cur.execute(get_game_titles_query)
+            query_returns = cur.fetchall()
+        
+        paths = [ret[0] for ret in query_returns]
+        return paths
+        

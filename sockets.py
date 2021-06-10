@@ -13,6 +13,11 @@ from InternalDataFetchers.DirListFetcherMOCKDATA import DirListFetcherMOCKDATA
 from multiprocessing import Manager
 
 if __name__ == '__main__':
+    from Database.PostgresGameDAOFactory import PostgresGameDAOFactory
+    postgresGameDAOFactory = PostgresGameDAOFactory()
+    gameDAO = postgresGameDAOFactory.createGameDAO()
+    print(gameDAO.get_paths_of_all_stored_games())
+
     m = Manager()
 
     queue = m.Queue()
