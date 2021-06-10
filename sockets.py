@@ -1,6 +1,5 @@
-from CommandDispatch.CommandDispatch import CommandDispatch
-from CommandDispatch.CommandFactory import CommandFactory
-from Server.WebsocketClientHandlerRegistry import WebsocketClientHandlerRegistry, COMMAND
+from CommandDispatch.CommandDispatchFactory import CommandDispatchFactory
+from Server.WebsocketClientHandlerRegistry import WebsocketClientHandlerRegistry
 from Server.Server import Server
 
 from State.StateCommunicatorFactory import StateCommunicatorFactory
@@ -35,9 +34,8 @@ if __name__ == '__main__':
     reader.start()
 
     # command dispatch
-    command_socket = websocketRegistry.get_socket(COMMAND)
-    command_factory = CommandFactory(writer)
-    command_dispatch = CommandDispatch(command_socket, command_factory)
+    command_dispatch_factory = CommandDispatchFactory()
+    command_dispatch = command_dispatch_factory.create(websocketRegistry, writer)
     command_dispatch.command_loop()
 
     # XXX if you want this to join properly, you're going to have to tell the queues to shutdown
@@ -45,3 +43,5 @@ if __name__ == '__main__':
 
     server.join()
     m.join()
+
+
