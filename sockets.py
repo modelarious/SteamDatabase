@@ -1,4 +1,4 @@
-from Server.WebsocketClientHandlerRegistry import WebsocketClientHandlerRegistry
+from Server.WebsocketClientHandlerRegistry import WebsocketClientHandlerRegistry, COMMAND
 from Server.Server import Server
 
 from State.StateCommunicatorFactory import StateCommunicatorFactory
@@ -30,6 +30,10 @@ if __name__ == '__main__':
     print("waiting on sockets")
     websocketRegistry.waitForAllSocketsReady()
     print("all needed sockets have been connected")
+
+    command_socket = websocketRegistry.get_socket(COMMAND)
+    print("awaiting command")
+    print(command_socket.get_message())
 
     # now that we are guaranteed that the sockets are connected, we can use them
     observerSocketHookupFactory = ObserverSocketHookupFactory(websocketRegistry)

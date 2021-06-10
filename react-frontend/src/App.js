@@ -21,9 +21,10 @@ class App extends Component {
   }
   
   componentDidMount() {
-    const endpoints = STATES.concat([
-      "/command",
-    ]);
+    // const endpoints = STATES.concat([
+    //   "/command",
+    // ]);
+    const endpoints = STATES;
 
     const socketContainer = new SocketContainer(endpoints);
     const sockets = Object.entries(socketContainer.get_sockets())
