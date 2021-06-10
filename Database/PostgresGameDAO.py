@@ -1,5 +1,4 @@
 from itertools import repeat
-from dataclasses import dataclass
 from typing import List
 
 
