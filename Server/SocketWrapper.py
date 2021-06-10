@@ -1,5 +1,6 @@
 from queue import Queue
 from json import dumps, loads
+from typing import Any, Dict
 
 # provides an interface to access the socket
 class SocketWrapper:
@@ -19,14 +20,11 @@ class SocketWrapper:
         
         return received_message
 
-    def get_message(self):
+    def get_message(self) -> Dict[str, Any]:
         return self.received_message_queue.get()
     
     def send_message(self, content):
         json_message = dumps(content)
-        
-        # if self.socket_name != '/upcoming':
-        #     print(f"updating {self.socket_name} with {json_message}")
         self.socket.send(json_message)
     
     def connection_loop(self):

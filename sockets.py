@@ -1,3 +1,4 @@
+from CommandDispatch.CommandDispatchFactory import CommandDispatchFactory
 from Server.WebsocketClientHandlerRegistry import WebsocketClientHandlerRegistry
 from Server.Server import Server
 
@@ -5,11 +6,6 @@ from State.StateCommunicatorFactory import StateCommunicatorFactory
 from State.StateCommunicatorQueues import StateCommunicationQueueWriter, StateCommunicationQueueReader
 
 from ObservedDataStructure.ObserverSocketHookupFactory import ObserverSocketHookupFactory
-from SteamDatabase import match_steam_games_to_games_on_disk_and_store
-
-from ExternalDataFetchers.SteamGameListFetcherMOCKDATA import SteamGameListFetcherMOCKDATA
-from InternalDataFetchers.DirListFetcherMOCKDATA import DirListFetcherMOCKDATA
-
 from multiprocessing import Manager
 
 if __name__ == '__main__':
@@ -17,11 +13,6 @@ if __name__ == '__main__':
     postgresGameDAOFactory = PostgresGameDAOFactory()
     gameDAO = postgresGameDAOFactory.createGameDAO()
     print(gameDAO.get_paths_of_all_stored_games())
-
-    m = Manager()
-
-    queue = m.Queue()
-    writer = StateCommunicationQueueWriter(queue)
 
     websocketRegistry = WebsocketClientHandlerRegistry()
     server = Server(websocketRegistry)
@@ -36,25 +27,21 @@ if __name__ == '__main__':
     stateCommunicatorFactory = StateCommunicatorFactory()
     stateCommunicator = stateCommunicatorFactory.createStateCommunicator(observerSocketHookupFactory)
     
-    # XXX this is shared with the cli - use abstract factory pattern to make mock data
-    steamGameListFetcher = SteamGameListFetcherMOCKDATA()
-    steamGamesList = steamGameListFetcher.fetch_games_list()
-
-    dirListFetcher = DirListFetcherMOCKDATA()
-    gamesOnDisk = dirListFetcher.get_dirs("")
-
+    m = Manager()
+    queue = m.Queue()
+    writer = StateCommunicationQueueWriter(queue)
     reader = StateCommunicationQueueReader(stateCommunicator, queue)
     reader.start()
 
-    # XXX Are there duplicate steam titles in the list? The fast map might need to be changed!
-    match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, writer)
+    # command dispatch
+    command_dispatch_factory = CommandDispatchFactory()
+    command_dispatch = command_dispatch_factory.create(websocketRegistry, writer)
+    command_dispatch.command_loop()
 
     # XXX if you want this to join properly, you're going to have to tell the queues to shutdown
     reader.join()
 
     server.join()
     m.join()
-
-
 
 
