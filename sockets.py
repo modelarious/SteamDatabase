@@ -40,10 +40,15 @@ class StartGameMatchCommand(Command):
         self.path_on_disk = message['path_on_disk']
     
     def execute(self):
-        print("IT WORKED!!")
-        from time import sleep
-        sleep(10)
-        pass
+        # XXX this is shared with the cli - use abstract factory pattern to make mock data
+        steamGameListFetcher = SteamGameListFetcherMOCKDATA()
+        steamGamesList = steamGameListFetcher.fetch_games_list()
+
+        dirListFetcher = DirListFetcherMOCKDATA()
+        gamesOnDisk = dirListFetcher.get_dirs(self.path_on_disk)
+
+        # XXX Are there duplicate steam titles in the list? The fast map might need to be changed!
+        match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, self.state_communicator)
 
 class ShutdownCommand(Command):
     def execute(self):
@@ -63,7 +68,7 @@ class CommandFactory:
     def create(self, message: Dict[str, Any]):
         string_command = message[COMMAND_NAME]
         if string_command not in self.command_type_map:
-            raise InvalidCommand(f"{string_command} not present in {self.command_type_map.keys()}")
+            raise InvalidCommand(f"\n'{string_command}' is not one of the available commands.\nAvailable commands: {list(self.command_type_map.keys())}")
         command_class = self.command_type_map[string_command]
         return command_class(message, self.writer)
 
@@ -74,6 +79,7 @@ class CommandDispatch:
 
     def command_loop(self):
         while True:
+            print("awaiting command")
             message = self.command_socket.get_message()
             command = self.command_factory.create(message)
 
@@ -97,12 +103,6 @@ if __name__ == '__main__':
     websocketRegistry.waitForAllSocketsReady()
     print("all needed sockets have been connected")
 
-    command_socket = websocketRegistry.get_socket(COMMAND)
-    # print("awaiting command")
-    # print(command_socket.get_message())
-
-
-
     # now that we are guaranteed that the sockets are connected, we can use them
     observerSocketHookupFactory = ObserverSocketHookupFactory(websocketRegistry)
     stateCommunicatorFactory = StateCommunicatorFactory()
@@ -114,27 +114,14 @@ if __name__ == '__main__':
     reader = StateCommunicationQueueReader(stateCommunicator, queue)
     reader.start()
 
-    # XXX this is shared with the cli - use abstract factory pattern to make mock data
-    steamGameListFetcher = SteamGameListFetcherMOCKDATA()
-    steamGamesList = steamGameListFetcher.fetch_games_list()
-
-    dirListFetcher = DirListFetcherMOCKDATA()
-    gamesOnDisk = dirListFetcher.get_dirs("")
-
-
+    # command dispatch
+    command_socket = websocketRegistry.get_socket(COMMAND)
     command_factory = CommandFactory(writer)
     command_dispatch = CommandDispatch(command_socket, command_factory)
     command_dispatch.command_loop()
-
-
-    # XXX Are there duplicate steam titles in the list? The fast map might need to be changed!
-    match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, writer)
 
     # XXX if you want this to join properly, you're going to have to tell the queues to shutdown
     reader.join()
 
     server.join()
     m.join()
-
-        
-
