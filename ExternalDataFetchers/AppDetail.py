@@ -45,11 +45,9 @@ class AppDetailFactory:
     def _get_screenshot_urls(self, app_detail_response) -> List[ScreenshotURL]:
         screenshot_urls = []
         for screenshot_object in app_detail_response['screenshots']:
-            thumbnail_url = screenshot_object['path_thumbnail']
-            fullsize_url = screenshot_object['path_full']
             screenshot_url = ScreenshotURL(
-                thumbnail_url=thumbnail_url, 
-                fullsize_url=fullsize_url
+                thumbnail_url=screenshot_object['path_thumbnail'], 
+                fullsize_url=screenshot_object['path_full']
             )
             screenshot_urls.append(screenshot_url)
         return screenshot_urls
