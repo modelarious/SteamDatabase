@@ -53,7 +53,7 @@ class GameORM(ObjectRelationalMapperInterface):
     def needs_multiple_statements(self) -> bool:
         return False
     
-    def get_all_values(self) -> tuple:
+    # def get_all_values(self) -> tuple:
         
 
 class UserDefinedGenresORM(ObjectRelationalMapperInterface):
@@ -83,8 +83,8 @@ class PostgresGameDAO:
         conn = self.connectionFactory.createConnection()
         with conn.cursor() as cur:
             insertions = [
-                GameInsertStatementBuilder(),
-                UserDefinedGenresInsertStatementBuilder()
+                GameORM(),
+                UserDefinedGenresORM()
             ]
 
             for statement_builder in insertions:
