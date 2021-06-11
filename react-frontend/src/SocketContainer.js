@@ -15,6 +15,11 @@ export default class SocketContainer {
   }
 
   get_sockets() {
-      return this.sockets;
+    return this.sockets;
   }
+
+  get_socket(socketName) {
+    return this.sockets[socketName];
+  }
+
 }
