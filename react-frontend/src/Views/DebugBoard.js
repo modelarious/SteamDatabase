@@ -14,33 +14,7 @@ import {
   Text,
   SimpleGrid
 } from '@chakra-ui/react';
-import React, { Component } from 'react';
-
-
-const autoBind = require('auto-bind');
-class CommandButton extends Component {
-  constructor(props) {
-    super();
-    this.commandSocket = props.commandSocket;
-    autoBind(this);
-  }
-  
-  send_command() {
-    const command = {
-      'command_name' : 'start game match',
-      'path_on_disk' : '/path/on/disk'
-    }
-
-    this.commandSocket.send(JSON.stringify(command))
-  }
-  
-  render() {
-    if (this.commandSocket) {
-      return <button onClick={this.send_command}>Start game matching</button>
-    }
-    return <div/>
-  }
-}
+import CommandButton from '../Interactions/CommandButton';
 
 // XXX improve this by generalizing how data is stored in the objects in each of the queues
 // XXX to make sure that something like gameNameOnDisk is present in every object
