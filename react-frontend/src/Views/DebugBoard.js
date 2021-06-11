@@ -14,12 +14,14 @@ import {
   Text,
   SimpleGrid
 } from '@chakra-ui/react';
+import CommandButton from '../Interactions/CommandButton';
 
 // XXX improve this by generalizing how data is stored in the objects in each of the queues
 // XXX to make sure that something like gameNameOnDisk is present in every object
 function DebugBoard(props) {
   return <div>
     <ChakraProvider>
+      <CommandButton commandSocket={props.commandSocket}/>
       <SimpleGrid columns={6} spacingX={1} spacingY={1}>
         <Container>
           <Text>Upcoming</Text>

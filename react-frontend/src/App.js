@@ -9,6 +9,14 @@ import {
 import DebugBoard from './Views/DebugBoard';
 
 const autoBind = require('auto-bind');
+const COMMAND = "/command";
+const endpoints = STATES.concat([
+  COMMAND,
+]);
+
+// XXX I really don't like this being global - but it seems to be the only way to
+// establish these connections before the first render call triggers
+const socketContainer = new SocketContainer(endpoints);
 
 class App extends Component {
   constructor() {
@@ -17,15 +25,11 @@ class App extends Component {
     for (const state of STATES) {
       this.state[state] = [];
     }
+    this.socketContainer = socketContainer;
     autoBind(this);
   }
   
   componentDidMount() {
-    const endpoints = STATES.concat([
-      "/command",
-    ]);
-
-    const socketContainer = new SocketContainer(endpoints);
     const sockets = Object.entries(socketContainer.get_sockets())
     for (const [state, sock] of sockets) {
       sock.onmessage = (message) => {
@@ -50,6 +54,11 @@ class App extends Component {
       debugBoardNeededStateData[stateName] = this.state[stateName];
     }
 
+    let commandSocket;
+    if (this.socketContainer) {
+      commandSocket = this.socketContainer.get_socket(COMMAND)
+    }
+
     return (
       <Tabs renderActiveTabContentOnly={true}>
         <TabLink to="tab1">Games</TabLink>
@@ -59,7 +68,7 @@ class App extends Component {
         <TabContent for="tab1"> "games view"</TabContent>
         <TabContent for="tab2">"user input view"</TabContent>
         <TabContent for="tab3">
-          <DebugBoard stateData={debugBoardNeededStateData}/>
+          <DebugBoard stateData={debugBoardNeededStateData} commandSocket={commandSocket}/>
         </TabContent>
       </Tabs>
     );
