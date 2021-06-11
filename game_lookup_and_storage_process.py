@@ -12,6 +12,7 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
         steamIDNumber = gnmpe.getSteamIDNumber()
         userGenres = userDefinedGenresFetcher.getGenres(steamIDNumber)
         reviewScore = steamAPIDataFetcher.getAvgReviewScore(steamIDNumber)
+        app_details = steamAPIDataFetcher.get_app_details()
         
         game = Game(
             steam_id=steamIDNumber, 
@@ -19,7 +20,8 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
             path_on_harddrive=pathOnDisk + gameNameOnDisk, 
             name_on_steam=gnmpe.getGameNameFromSteam(), 
             avg_review_score=reviewScore,
-            user_defined_genres=userGenres
+            user_defined_genres=userGenres,
+            app_details=app_details
         )
 
         # YYY on exceptions, should I be tracking a state change to error?
