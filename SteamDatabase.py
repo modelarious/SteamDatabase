@@ -1,6 +1,6 @@
 from State.StateCommunicatorInterface import StateCommunicatorInterface
 from ExternalDataFetchers.UserDefinedGenresFetcher import UserDefinedGenresFetcher
-from ExternalDataFetchers.SteamAPIDataFetcher import SteamAPIDataFetcher
+from ExternalDataFetchers.SteamAPIDataFetcher import AppDetailFactory, SteamAPIDataFetcher
 from minimum_edit_distance_processing import minimum_edit_distance_processing
 from game_lookup_and_storage_process import game_lookup_and_storage_process
 from Constants import END_OF_QUEUE
@@ -34,7 +34,8 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
     postgresGameDAOFactory = PostgresGameDAOFactory()
     gameDAO = postgresGameDAOFactory.createGameDAO()
     userDefinedGenresFetcher = UserDefinedGenresFetcher()
-    steamAPIDataFetcher = SteamAPIDataFetcher()
+    app_detail_factory = AppDetailFactory()
+    steamAPIDataFetcher = SteamAPIDataFetcher(app_detail_factory)
     pathOnDisk = "/Volumes/babyBlue/Games/PC/"
     print("finished constructing necessary objects")
 
