@@ -8,11 +8,12 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
     while gnmpe != END_OF_QUEUE:
         stateCommunicator.setInfoRetrievalActiveState(gnmpe)
 
+        # XXX factory
         gameNameOnDisk = gnmpe.getGameNameOnDisk()
         steamIDNumber = gnmpe.getSteamIDNumber()
         userGenres = userDefinedGenresFetcher.getGenres(steamIDNumber)
         reviewScore = steamAPIDataFetcher.getAvgReviewScore(steamIDNumber)
-        app_details = steamAPIDataFetcher.get_app_details()
+        app_detail = steamAPIDataFetcher.get_app_detail(steamIDNumber)
         
         game = Game(
             steam_id=steamIDNumber, 
@@ -21,11 +22,10 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
             name_on_steam=gnmpe.getGameNameFromSteam(), 
             avg_review_score=reviewScore,
             user_defined_genres=userGenres,
-            app_details=app_details
+            app_detail=app_detail
         )
 
         # YYY on exceptions, should I be tracking a state change to error?
-        # XXX commit should be wrapped in a transaction!
         try:
             gameDAO.commitGame(game)
             stateCommunicator.setStoredState(game)

@@ -7,7 +7,7 @@ class ScreenshotURL:
     fullsize_url: str
 
 @dataclass
-class AppDetails:
+class AppDetail:
     detailed_description: str
     about_the_game: str
     short_description: str
@@ -20,10 +20,35 @@ class AppDetails:
     screenshot_urls: List[ScreenshotURL]
     background_image_url: str
 
+from dataclasses import asdict
+
+
+
+# maps the response from appdetails endpoint to an AppDetail object
 class AppDetailFactory:
-    def _get_screenshot_urls(self, app_details_response) -> List[ScreenshotURL]:
+    def create_app_detail(self, steam_response) -> AppDetail:
+        app_id = list(steam_response.keys())[0]
+        app_detail_response = steam_response[app_id]['data']
+        screenshot_urls = self._get_screenshot_urls(app_detail_response)
+        genres = self._get_genres(app_detail_response)
+        metacritic_score = self._get_metacritic_score(app_detail_response)
+        return AppDetail(
+            detailed_description=app_detail_response['detailed_description'],
+            about_the_game=app_detail_response['about_the_game'],
+            short_description=app_detail_response['short_description'],
+            header_image_url=app_detail_response['header_image'],
+            developers=app_detail_response['developers'],
+            publishers=app_detail_response['publishers'],
+            controller_support="controller_support" in app_detail_response,
+            genres=genres,
+            screenshot_urls=screenshot_urls,
+            background_image_url=app_detail_response['background'],
+            metacritic_score=metacritic_score
+        )
+
+    def _get_screenshot_urls(self, app_detail_response) -> List[ScreenshotURL]:
         screenshot_urls = []
-        for screenshot_object in app_details_response['screenshots']:
+        for screenshot_object in app_detail_response['screenshots']:
             thumbnail_url = screenshot_object['path_thumbnail']
             fullsize_url = screenshot_object['path_full']
             screenshot_url = ScreenshotURL(
@@ -33,37 +58,51 @@ class AppDetailFactory:
             screenshot_urls.append(screenshot_url)
         return screenshot_urls
     
-    def _get_genres(self, app_details_response) -> List[str]:
+    def _get_genres(self, app_detail_response) -> List[str]:
         genres = []
-        for genre_object in app_details_response['genres']:
+        for genre_object in app_detail_response['genres']:
             genres.append(genre_object['description'])
         return genres
     
-    def _get_metacritic_score(self, app_details_response) -> Optional[int]:
-        if 'metacritic' in app_details_response:
-            if 'score' in app_details_response['metacritic']:
-                return app_details_response['metacritic']['score']
+    def _get_metacritic_score(self, app_detail_response) -> Optional[int]:
+        if 'metacritic' in app_detail_response:
+            if 'score' in app_detail_response['metacritic']:
+                return app_detail_response['metacritic']['score']
         return None
 
-    def create_app_details(self, steam_response) -> AppDetails:
-        app_id = list(steam_response.keys())[0]
-        app_details_response = steam_response[app_id]['data']
-        screenshot_urls = self._get_screenshot_urls(app_details_response)
-        genres = self._get_genres(app_details_response)
-        metacritic_score = self._get_metacritic_score(app_details_response)
-        return AppDetails(
-            detailed_description=app_details_response['detailed_description'],
-            about_the_game=app_details_response['about_the_game'],
-            short_description=app_details_response['short_description'],
-            header_image_url=app_details_response['header_image'],
-            developers=app_details_response['developers'],
-            publishers=app_details_response['publishers'],
-            controller_support="controller_support" in app_details_response,
-            genres=genres,
-            screenshot_urls=screenshot_urls,
-            background_image_url=app_details_response['background'],
-            metacritic_score=metacritic_score
-        )
+
+
+# from dataclasses import dataclass
+# # from ExternalDataFetchers.AppDetail import AppDetailFactory, AppDetail
+# import requests
+
+# @dataclass
+# class SteamAPIDataFetcher:
+#     app_detail_factory: AppDetailFactory
+    
+#     def getAvgReviewScore(self, steam_id: int) -> int:
+#         # https://partner.steamgames.com/doc/store/getreviews
+#         URL = f"https://store.steampowered.com/appreviews/{steam_id}?json=1 "
+
+#         requestReturn = requests.get(url = URL) 
+#         gamesObject = requestReturn.json()
+#         reviewValues = gamesObject['query_summary']
+#         # if reviewValues['num_reviews'] > 0:
+#         #     pprint(reviewValues['review_score'])
+#         return reviewValues['review_score']
+    
+#     def get_app_detail(self, steam_id: int) -> AppDetail:
+#         URL = f"https://store.steampowered.com/api/appdetails?appids={steam_id}"
+#         request_return = requests.get(url = URL)
+#         steam_response = request_return.json()
+#         app_detail = self.app_detail_factory.create_app_detail(steam_response)
+#         return app_detail
+
+# app_detail_factory = AppDetailFactory()
+# steamAPIDataFetcher = SteamAPIDataFetcher(app_detail_factory)
+# app_detail = steamAPIDataFetcher.get_app_detail(570940)
+# app_detail_dict = asdict(app_detail)
+# print(app_detail_dict)
 
 # {
 #    "427520":{

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from ExternalDataFetchers.AppDetails import AppDetailFactory, AppDetails
+from ExternalDataFetchers.AppDetail import AppDetailFactory, AppDetail
 import requests
 
 @dataclass
@@ -17,12 +17,12 @@ class SteamAPIDataFetcher:
         #     pprint(reviewValues['review_score'])
         return reviewValues['review_score']
     
-    def get_app_details(self, steam_id: int) -> AppDetails:
+    def get_app_detail(self, steam_id: int) -> AppDetail:
         URL = f"https://store.steampowered.com/api/appdetails?appids={steam_id}"
         request_return = requests.get(url = URL)
         steam_response = request_return.json()
-        app_details = self.app_detail_factory.create_app_details(steam_response)
-        return app_details
+        app_detail = self.app_detail_factory.create_app_detail(steam_response)
+        return app_detail
 
 #---------------------------------------------------------------------------------------
 # https://store.steampowered.com/appreviews/2028850?json=1  
