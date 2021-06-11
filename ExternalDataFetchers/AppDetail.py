@@ -20,10 +20,6 @@ class AppDetail:
     screenshot_urls: List[ScreenshotURL]
     background_image_url: str
 
-from dataclasses import asdict
-
-
-
 # maps the response from appdetails endpoint to an AppDetail object
 class AppDetailFactory:
     def create_app_detail(self, steam_response) -> AppDetail:
@@ -69,40 +65,6 @@ class AppDetailFactory:
             if 'score' in app_detail_response['metacritic']:
                 return app_detail_response['metacritic']['score']
         return None
-
-
-
-# from dataclasses import dataclass
-# # from ExternalDataFetchers.AppDetail import AppDetailFactory, AppDetail
-# import requests
-
-# @dataclass
-# class SteamAPIDataFetcher:
-#     app_detail_factory: AppDetailFactory
-    
-#     def getAvgReviewScore(self, steam_id: int) -> int:
-#         # https://partner.steamgames.com/doc/store/getreviews
-#         URL = f"https://store.steampowered.com/appreviews/{steam_id}?json=1 "
-
-#         requestReturn = requests.get(url = URL) 
-#         gamesObject = requestReturn.json()
-#         reviewValues = gamesObject['query_summary']
-#         # if reviewValues['num_reviews'] > 0:
-#         #     pprint(reviewValues['review_score'])
-#         return reviewValues['review_score']
-    
-#     def get_app_detail(self, steam_id: int) -> AppDetail:
-#         URL = f"https://store.steampowered.com/api/appdetails?appids={steam_id}"
-#         request_return = requests.get(url = URL)
-#         steam_response = request_return.json()
-#         app_detail = self.app_detail_factory.create_app_detail(steam_response)
-#         return app_detail
-
-# app_detail_factory = AppDetailFactory()
-# steamAPIDataFetcher = SteamAPIDataFetcher(app_detail_factory)
-# app_detail = steamAPIDataFetcher.get_app_detail(570940)
-# app_detail_dict = asdict(app_detail)
-# print(app_detail_dict)
 
 # {
 #    "427520":{
