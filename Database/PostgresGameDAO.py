@@ -1,11 +1,47 @@
+from dataclasses import dataclass
 from itertools import repeat
-from typing import List
+from typing import List, ClassVar
 from GameModel import Game
 from abc import ABC, abstractmethod
 
-class ObjectRelationalMapperInterface(ABC):
+@dataclass
+class TestClass:
+    siteID: int
+    in1: int
+    in2: str
+
+# create:
+#     names of collumns
+#     types of columns
+#     table name
+
+# insert:
+#     (map Game object to database column - assume name is the same )
+#     names of columns
+#     table name
+
+
+class ormInterface(ABC):
+    def __init__(self, instance_to_insert: Game, typed_dataclass_instance, index_column: str = "site_id"):
+        self.instance_to_insert = instance_to_insert
+        self.typed_dataclass_instance =typed_dataclass_instance
+        self.index_column = index_column
+    
+    def store_no_commit(self, cur, game_model: Game):
+        sql = self.get_insert_statement()
+        insertion_data = self.get_insertion_data(game_model)
+        non_commit_insertion_func = cur.execute
+        if self.needs_multiple_statements():
+            non_commit_insertion_func = cur.executemany
+        non_commit_insertion_func(sql, insertion_data)
+
+    # for use when selecting all values from database
     @abstractmethod
-    def get_sql_statement(self) -> str:
+    def retrieve_all(self, cur) -> tuple:
+        pass
+
+    @abstractmethod
+    def get_insert_statement(self) -> str:
         pass
 
     # return data that will be inserted by the sql statement
@@ -18,19 +54,42 @@ class ObjectRelationalMapperInterface(ABC):
     def needs_multiple_statements(self) -> bool:
         pass
 
-    # @abstractmethod
-    # def store(self, cur):
-    #     pass
 
-    # # for use when selecting all values from database
+
+
+class ObjectRelationalMapperInterface(ABC):
+    def store_no_commit(self, cur, game_model: Game):
+        sql = self.get_insert_statement()
+        insertion_data = self.get_insertion_data(game_model)
+        non_commit_insertion_func = cur.execute
+        if self.needs_multiple_statements():
+            non_commit_insertion_func = cur.executemany
+        non_commit_insertion_func(sql, insertion_data)
+
+    # for use when selecting all values from database
     # @abstractmethod
     # def retrieve_all(self, cur) -> tuple:
     #     pass
 
+    @abstractmethod
+    def get_insert_statement(self) -> str:
+        pass
+
+    # return data that will be inserted by the sql statement
+    @abstractmethod
+    def get_insertion_data(self, game_model: Game) -> tuple:
+        pass
+    
+    # indicate if we are storing a list of values
+    @abstractmethod
+    def needs_multiple_statements(self) -> bool:
+        pass
+
+
 # XXX this has a super bad name, it seems like this is the only ORM you would need
 # but in reality you need many more
 class GameORM(ObjectRelationalMapperInterface):
-    def get_sql_statement(self) -> str:
+    def get_insert_statement(self) -> str:
         return """
             INSERT INTO Games (
                 steam_id, 
@@ -57,7 +116,7 @@ class GameORM(ObjectRelationalMapperInterface):
         
 
 class UserDefinedGenresORM(ObjectRelationalMapperInterface):
-    def get_sql_statement(self) -> str:
+    def get_insert_statement(self) -> str:
         return """
             INSERT INTO UserDefinedGenres (
                 steam_id, 
@@ -78,22 +137,20 @@ class UserDefinedGenresORM(ObjectRelationalMapperInterface):
 class PostgresGameDAO:
     def __init__(self, connectionFactory):
         self.connectionFactory = connectionFactory
+    
+    def _store_game_no_commit(self, cur, game_model: Game, object_relation_mappers: List[ObjectRelationalMapperInterface]):
+        for object_relation_mapper in object_relation_mappers:
+            object_relation_mapper.store_no_commit(cur, game_model)
 
     def commitGame(self, game_model: Game):
         conn = self.connectionFactory.createConnection()
         with conn.cursor() as cur:
-            insertions = [
+            object_relation_mappers = [
                 GameORM(),
                 UserDefinedGenresORM()
             ]
 
-            for statement_builder in insertions:
-                sql = statement_builder.get_sql_statement()
-                insertion_data = statement_builder.get_insertion_data(game_model)
-                non_commit_insertion_func = cur.execute
-                if statement_builder.needs_multiple_statements():
-                    non_commit_insertion_func = cur.executemany
-                non_commit_insertion_func(sql, insertion_data)
+            self._store_game_no_commit(cur, game_model, object_relation_mappers)
 
             # app detail
             # ---------------------------
