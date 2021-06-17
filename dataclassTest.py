@@ -1,106 +1,18 @@
+from GameModel import Game
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, fields
-from typing import Dict, List, Tuple
-from GameModel import Game
+from typing import Callable, Dict, List, Tuple, get_type_hints
 
-# CREATE TABLE IF NOT EXISTS AppDetail (
-#   steam_id int UNIQUE NOT NULL,
-#   detailed_description VARCHAR ( 1000 ) UNIQUE NOT NULL,
-#   about_the_game VARCHAR ( 1000 ) UNIQUE NOT NULL,
-#   short_description VARCHAR ( 1000 ) UNIQUE NOT NULL,
-#   header_image_url VARCHAR ( 1000 ) UNIQUE NOT NULL,
-#   metacritic_score int NOT NULL,
-#   controller_support boolean NOT NULL,
-#   background_image_url VARCHAR ( 1000 ) UNIQUE NOT NULL,
-#   FOREIGN KEY (steam_id) REFERENCES Games(steam_id),
-#   PRIMARY KEY (steam_id)
-# );
-# AppDetail:
-#     steam_id: int
-#     detailed_description: str
-#     about_the_game: str
-#     short_description: str
-#     header_image_url: str
-#     metacritic_score: int, Null
-#     controller_support: bool
-#     background_image_url: str
-
-# CREATE TABLE IF NOT EXISTS Developers (
-#   steam_id int NOT NULL,
-#   developer VARCHAR ( 1000 ) NOT NULL,
-#   FOREIGN KEY (steam_id) REFERENCES Games(steam_id)
-# );
-# # many
-# developers:
-#     steam_id: int
-#     developer: str
-
-# CREATE TABLE IF NOT EXISTS Publishers (
-#   steam_id int NOT NULL,
-#   publisher VARCHAR ( 1000 ) NOT NULL,
-#   FOREIGN KEY (steam_id) REFERENCES Games(steam_id)
-# );
-# # many
-# publishers:
-#     steam_id: int
-#     publisher: str
-
-# CREATE TABLE IF NOT EXISTS Genres (
-#   steam_id int NOT NULL,
-#   genre VARCHAR ( 1000 ) NOT NULL,
-#   FOREIGN KEY (steam_id) REFERENCES Games(steam_id)
-# );
-# # many
-# genres:
-#     steam_id: int
-#     genre: str
-
-# CREATE TABLE IF NOT EXISTS ScreenshotURLs (
-#   steam_id int NOT NULL,
-#   thumbnail_url VARCHAR ( 1000 ) UNIQUE NOT NULL,
-#   fullsize_url VARCHAR ( 1000 ) UNIQUE NOT NULL,
-#   FOREIGN KEY (steam_id) REFERENCES Games(steam_id)
-# );
-# # many
-# screenshot_urls:
-#     steam_id: int
-#     thumbnail_url: str
-#     fullsize_url: str
-
-
-
-
-# CREATE TABLE IF NOT EXISTS AppDetail (
-#   steam_id int UNIQUE NOT NULL,
-#   detailed_description VARCHAR ( 1000 ) UNIQUE NOT NULL,
-#   about_the_game VARCHAR ( 1000 ) UNIQUE NOT NULL,
-#   short_description VARCHAR ( 1000 ) UNIQUE NOT NULL,
-#   header_image_url VARCHAR ( 1000 ) UNIQUE NOT NULL,
-#   metacritic_score int NOT NULL,
-#   controller_support boolean NOT NULL,
-#   background_image_url VARCHAR ( 1000 ) UNIQUE NOT NULL,
-#   FOREIGN KEY (steam_id) REFERENCES Games(steam_id),
-#   PRIMARY KEY (steam_id)
-# );
-# CREATE TABLE IF NOT EXISTS ScreenshotURLs (
-#   steam_id int NOT NULL,
-#   thumbnail_url VARCHAR ( 1000 ) UNIQUE NOT NULL,
-#   fullsize_url VARCHAR ( 1000 ) UNIQUE NOT NULL,
-#   FOREIGN KEY (steam_id) REFERENCES Games(steam_id)
-# );
-# CREATE TABLE IF NOT EXISTS Games (
-#   steam_id int NOT NULL,
-#   name_on_harddrive VARCHAR ( 1000 ) UNIQUE NOT NULL,
-#   path_on_harddrive VARCHAR ( 1000 ) UNIQUE NOT NULL,
-#   name_on_steam VARCHAR ( 1000 ) UNIQUE NOT NULL,
-#   avg_review_score DOUBLE PRECISION NOT NULL,
-#   PRIMARY KEY (steam_id)
-# );
 class ORMAbstractBase(ABC):
     @staticmethod
     @abstractmethod
     def get_table_name() -> str:
         return ""
+
+    @staticmethod
+    @abstractmethod
+    def get_insertion_data() -> tuple:
+        return ()
 
     # return a tuple of names of columns that are part of primary key 
     @staticmethod
@@ -274,9 +186,34 @@ class ORMGame(ORMAbstractBase):
         return 'Games'
 
     @staticmethod
+    def get_insertion_data(game_model: Game) -> tuple:
+        return (
+            game_model.steam_id, 
+            game_model.name_on_harddrive, 
+            game_model.path_on_harddrive, 
+            game_model.name_on_steam, 
+            game_model.avg_review_score
+        )
+
+    @staticmethod
+    def needs_multiple_statements() -> bool:
+        return False
+
+    @staticmethod
     def get_primary_key() -> Tuple[str]:
         return ('steam_id')
+    
 
+python_to_postrgres_type_map = {
+    str: "VARCHAR ( 1000 )",
+    int: "int",
+    bool: "boolean"
+}
+
+class StatementCreator(ABC):
+    @abstractmethod
+    def create(ORMObjectClass: ORMAbstractBase) -> str:
+        pass
 
 # CREATE TABLE IF NOT EXISTS AppDetail (
 #   steam_id int UNIQUE NOT NULL,
@@ -290,22 +227,11 @@ class ORMGame(ORMAbstractBase):
 #   FOREIGN KEY (steam_id) REFERENCES Games(steam_id),
 #   PRIMARY KEY (steam_id)
 # );
-python_to_postrgres_type_map = {
-    str: "VARCHAR ( 1000 )",
-    int: "int",
-    bool: "boolean"
-}
-
-class StatementCreator(ABC):
-    @abstractmethod
-    def create(ORMObjectClass: ORMAbstractBase) -> str:
-        pass
-
 # no user input here - no need to worry about injection attacks
 class TableCreatorPostgres(StatementCreator):
     def create(self, ORMObjectClass: ORMAbstractBase) -> str:
         orm_column_title_name_to_type_map = {}
-        for f in fields(ORMObjectClass):
+        for f in fields(ORMObjectClass): # XXX get_type_hints
             orm_column_title_name_to_type_map[f.name] = f.type
         return self._get_create_table_statement(orm_column_title_name_to_type_map, ORMObjectClass)
 
@@ -350,11 +276,12 @@ class TableSelectPostgres(StatementCreator):
     def create(self, ORMObjectClass: ORMAbstractBase):
         return f"SELECT *\nFROM {ORMObjectClass.get_table_name()};"
 
-class ORMMapperPostgres:
-    def __init__(self, table_creator: TableCreatorPostgres, table_inserter: TableInserterPostgres, table_select: TableSelectPostgres):
-        self.table_creator = table_creator
-        self.table_inserter = table_inserter
-        self.table_select = table_select
+@dataclass
+# class ORMMapperPostgres:
+class StatementCreationFacadePostgres:
+    table_creator: TableCreatorPostgres
+    table_inserter: TableInserterPostgres
+    table_select: TableSelectPostgres
     
     def create_table_statement(self, ORMObjectClass: ORMAbstractBase) -> str:
         return self.table_creator.create(ORMObjectClass)
@@ -365,21 +292,41 @@ class ORMMapperPostgres:
     def get_select_statement(self, ORMObjectClass: ORMAbstractBase):
         return self.table_select.create(ORMObjectClass)
 
+class StatementCreationFacadePostgresFactory:
+    def create(self) -> StatementCreationFacadePostgres:
+        table_creator = TableCreatorPostgres()
+        table_inserter = TableInserterPostgres()
+        table_select = TableSelectPostgres()
+        orm_mapper = StatementCreationFacadePostgres(table_creator, table_inserter, table_select)
+        return orm_mapper
 
-table_creator = TableCreatorPostgres()
-table_inserter = TableInserterPostgres()
-table_select = TableSelectPostgres()
-orm_mapper = ORMMapperPostgres(table_creator, table_inserter, table_select)
-ORMClasses = [
-    ORMGame,
-    ORMUserDefinedGenres,
-    ORMAppDetail,
-    ORMPublishers,
-    ORMDevelopers,
-    ORMGenres,
-    ORMScreenshotURLS
-]
-for ORMClass in ORMClasses:
-    print(orm_mapper.create_table_statement(ORMClass))
-    # print(orm_mapper.get_insert_data_statement(ORMClass))
-    # print(orm_mapper.get_select_statement(ORMClass))
+class ORMMapper:
+    def __init__(self, statement_creation_facade: StatementCreationFacadePostgres):
+        self.statement_creation = statement_creation_facade
+        self.ORMClasses = [
+            ORMGame,
+            ORMUserDefinedGenres,
+            ORMAppDetail,
+            ORMPublishers,
+            ORMDevelopers,
+            ORMGenres,
+            ORMScreenshotURLS
+        ]
+
+    def create_tables(self, database_interaction_func: Callable):
+        for ORMClass in self.ORMClasses:
+            table_create_statement = self.statement_creation.create_table_statement(ORMClass)
+            database_interaction_func(table_create_statement)
+    
+    def insert_game(self, database_interaction_func: Callable):
+        for ORMClass in self.ORMClasses:
+            insert_statement = self.statement_creation.get_insert_data_statement(ORMClass)
+            database_interaction_func(insert_statement, ORMClass.)
+
+f = StatementCreationFacadePostgresFactory()
+o = ORMMapper(f.create())
+o.create_tables(print)
+# statement_creation_facade_postrgres_factory = StatementCreationFacadePostgresFactory()
+# statement_creation_facade = statement_creation_facade_postrgres_factory.create()
+
+print(get_type_hints(ORMDevelopers))

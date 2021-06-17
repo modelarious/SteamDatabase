@@ -4,10 +4,6 @@ from GameModel import Game
 from abc import ABC, abstractmethod
 
 class ObjectRelationalMapperInterface(ABC):
-    @abstractmethod
-    def get_sql_statement(self) -> str:
-        pass
-
     # return data that will be inserted by the sql statement
     @abstractmethod
     def get_insertion_data(self, game_model: Game) -> tuple:
@@ -78,9 +74,15 @@ class UserDefinedGenresORM(ObjectRelationalMapperInterface):
 class PostgresGameDAO:
     def __init__(self, connectionFactory):
         self.connectionFactory = connectionFactory
+    
+    def _get_connection(self):
+        return self.connectionFactory.createConnection()
+    
+    def create_tables(self):
+        conn = self._get_connection()
 
-    def commitGame(self, game_model: Game):
-        conn = self.connectionFactory.createConnection()
+    def commit_game(self, game_model: Game):
+        conn = self._get_connection()
         with conn.cursor() as cur:
             insertions = [
                 GameORM(),
@@ -94,50 +96,6 @@ class PostgresGameDAO:
                 if statement_builder.needs_multiple_statements():
                     non_commit_insertion_func = cur.executemany
                 non_commit_insertion_func(sql, insertion_data)
-
-            # app detail
-            # ---------------------------
-            insert_app_detail = """
-                INSERT INTO AppDetail (
-                    steam_id,
-                    detailed_description,
-                    about_the_game,
-                    short_description,
-                    header_image_url,
-                    metacritic_score,
-                    controller_support,
-                    background_image_url
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
-            """
-            # many
-            insert_developer = """
-                INSERT INTO developers (
-                    steam_id,
-                    developer
-                ) VALUES (%s, %s);
-            """
-            # many
-            insert_publisher = """
-                INSERT INTO publishers (
-                    steam_id,
-                    publisher
-                ) VALUES (%s, %s);
-            """
-            # many
-            insert_genre = """
-                INSERT INTO genres (
-                    steam_id,
-                    genre
-                ) VALUES (%s, %s);
-            """
-            # many
-            insert_screenshot = """
-                INSERT INTO screenshots (
-                    steam_id,
-                    thumbnail_url,
-                    fullsize_url
-                ) VALUES (%s, %s, %s);
-            """
             
             conn.commit()
         conn.close()
