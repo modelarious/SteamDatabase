@@ -1,3 +1,4 @@
+from dataclassTest import ORMMapper, StatementCreationFacadePostgresFactory
 from itertools import repeat
 from typing import List
 from GameModel import Game
@@ -74,6 +75,10 @@ class UserDefinedGenresORM(ObjectRelationalMapperInterface):
 class PostgresGameDAO:
     def __init__(self, connectionFactory):
         self.connectionFactory = connectionFactory
+
+        f = StatementCreationFacadePostgresFactory()
+        self.o = ORMMapper(f.create())
+        
     
     def _get_connection(self):
         return self.connectionFactory.createConnection()
@@ -82,6 +87,7 @@ class PostgresGameDAO:
         conn = self._get_connection()
 
     def commit_game(self, game_model: Game):
+        # self.o.insert_game(print, print, game_model)
         conn = self._get_connection()
         with conn.cursor() as cur:
             insertions = [
@@ -137,6 +143,7 @@ class PostgresGameDAO:
 #     steam_id: int
 #     genre: str
 
+# # many
 # screenshot_urls:
 #     steam_id: int
 #     thumbnail_url: str

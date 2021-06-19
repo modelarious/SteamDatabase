@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 from ExternalDataFetchers.AppDetail import AppDetailFactory, AppDetail
 import requests
 
@@ -17,11 +18,15 @@ class SteamAPIDataFetcher:
         #     pprint(reviewValues['review_score'])
         return reviewValues['review_score']
     
-    def get_app_detail(self, steam_id: int) -> AppDetail:
+    def get_app_detail(self, steam_id: int) -> Optional[AppDetail]:
         URL = f"https://store.steampowered.com/api/appdetails?appids={steam_id}"
         request_return = requests.get(url = URL)
         steam_response = request_return.json()
-        app_detail = self.app_detail_factory.create_app_detail(steam_response)
+        app_id = list(steam_response.keys())[0]
+        success = steam_response[app_id]['success']
+        if not success:
+            return False
+        app_detail = self.app_detail_factory.create_app_detail(steam_response, app_id)
         return app_detail
 
 #---------------------------------------------------------------------------------------

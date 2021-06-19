@@ -1,6 +1,14 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
+import logging
+
+logging.basicConfig(
+    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+    filename='/tmp/out.txt'
+)
+
 @dataclass
 class ScreenshotURL:
     thumbnail_url: str
@@ -22,12 +30,18 @@ class AppDetail:
 
 # maps the response from appdetails endpoint to an AppDetail object
 class AppDetailFactory:
-    def create_app_detail(self, steam_response) -> AppDetail:
-        app_id = list(steam_response.keys())[0]
-        app_detail_response = steam_response[app_id]['data']
+    def create_app_detail(self, steam_response, app_id: int) -> AppDetail:
+        # XXX would be nice to move this up into the caller so that more context can be provided - currently can't tell which title 
+        try:
+            app_detail_response = steam_response[app_id]['data']
+        except KeyError as e:
+            message = f"broke on this input: {steam_response}, {e}"
+            logging.critical(message)
+            # raise KeyError(message)
         screenshot_urls = self._get_screenshot_urls(app_detail_response)
         genres = self._get_genres(app_detail_response)
         metacritic_score = self._get_metacritic_score(app_detail_response)
+        controller_support = self._get_controller_support(app_detail_response)
         return AppDetail(
             detailed_description=app_detail_response['detailed_description'],
             about_the_game=app_detail_response['about_the_game'],
@@ -35,12 +49,21 @@ class AppDetailFactory:
             header_image_url=app_detail_response['header_image'],
             developers=app_detail_response['developers'],
             publishers=app_detail_response['publishers'],
-            controller_support="controller_support" in app_detail_response,
+            controller_support=controller_support,
             genres=genres,
             screenshot_urls=screenshot_urls,
             background_image_url=app_detail_response['background'],
             metacritic_score=metacritic_score
         )
+    
+    def _get_controller_support(self, app_detail_response) -> bool:
+        if "controller_support" in app_detail_response:
+            return True
+        if "categories" in app_detail_response:
+            for category_object in app_detail_response["categories"]:
+                if 'controller' in category_object['description']:
+                    return True
+        return False
 
     def _get_screenshot_urls(self, app_detail_response) -> List[ScreenshotURL]:
         screenshot_urls = []
