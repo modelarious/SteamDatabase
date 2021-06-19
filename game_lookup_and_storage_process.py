@@ -10,13 +10,16 @@ logging.basicConfig(
     filename='/tmp/out.txt'
 )
 
-def FailedToGetAppDetailsException(BaseException):
+class FailedToGetAppDetailsException(Exception):
     pass
+
 def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, userDefinedGenresFetcher, steamAPIDataFetcher, pathOnDisk, stateCommunicator):
     unableToInsert = []
     gnmpe = gameNameMatchesProcessingQueue.get()
     while gnmpe != END_OF_QUEUE:
+        print("got ", gnmpe)
         stateCommunicator.setInfoRetrievalActiveState(gnmpe)
+        print("set ", gnmpe, "to info retrieval")
 
         try:
 
@@ -28,7 +31,7 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
             app_detail = steamAPIDataFetcher.get_app_detail(steamIDNumber)
 
             if not app_detail:
-                raise FailedToGetAppDetailsException()
+                raise FailedToGetAppDetailsException(f'failed get_app_detail for {steamIDNumber}, {gnmpe}')
             
             game = Game(
                 steam_id=steamIDNumber, 
@@ -40,14 +43,30 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
                 app_detail=app_detail
             )
 
+            print(f"""
+                steam_id={steamIDNumber}, 
+                name_on_harddrive={gameNameOnDisk}, 
+                path_on_harddrive={pathOnDisk + gameNameOnDisk}, 
+                name_on_steam={gnmpe.getGameNameFromSteam()}, 
+                avg_review_score={reviewScore},
+                user_defined_genres={userGenres},
+                app_detail={app_detail}
+                """
+            )
+
+            print("created game")
+
             # YYY on exceptions, should I be tracking a state change to error?
             try:
+                print("try to commit game")
                 gameDAO.commit_game(game)
                 stateCommunicator.setStoredState(game)
-            except UniqueViolation:
+                print("success")
+            except UniqueViolation as e:
                 unableToInsert.append(gameNameOnDisk)
+                print(f"failure {e}")
         except FailedToGetAppDetailsException as e:
-            logging.critical(f"failed get_app_detail for {gnmpe.getSteamIDNumber()} - {e}")
+            logging.critical(e)
 
         gnmpe = gameNameMatchesProcessingQueue.get()
         

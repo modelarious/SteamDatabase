@@ -71,6 +71,12 @@ class ORMGame(ORMAbstractBase):
     @staticmethod
     def get_primary_key() -> Tuple[str]:
         return ('steam_id')
+    
+    @staticmethod
+    def get_non_unique_mappings() -> List[str]:
+        return [
+            'avg_review_score',
+        ]
 
 @dataclass
 class ORMUserDefinedGenres(ORMAbstractBase):
@@ -470,4 +476,4 @@ g = Game(
 f = StatementCreationFacadePostgresFactory()
 o = ORMMapper(f.create())
 o.create_tables(print)
-o.insert_game(print, print, g)
+# o.insert_game(print, print, g)
