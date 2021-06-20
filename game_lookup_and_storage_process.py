@@ -20,12 +20,12 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
         print("got ", gnmpe)
         stateCommunicator.setInfoRetrievalActiveState(gnmpe)
         print("set ", gnmpe, "to info retrieval")
+        gameNameOnDisk = gnmpe.getGameNameOnDisk()
+        steamIDNumber = gnmpe.getSteamIDNumber()
 
         try:
 
             # XXX factory
-            gameNameOnDisk = gnmpe.getGameNameOnDisk()
-            steamIDNumber = gnmpe.getSteamIDNumber()
             userGenres = userDefinedGenresFetcher.getGenres(steamIDNumber)
             reviewScore = steamAPIDataFetcher.getAvgReviewScore(steamIDNumber)
             app_detail = steamAPIDataFetcher.get_app_detail(steamIDNumber)
@@ -64,8 +64,11 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
                 print("success")
             except UniqueViolation as e:
                 unableToInsert.append(gameNameOnDisk)
-                print(f"failure {e}")
+                message = f'Unable to insert: {steamIDNumber}, {gameNameOnDisk}\n{e}\ngame={game}'
+                logging.critical(message)
+                print(f"failure {message}")
         except FailedToGetAppDetailsException as e:
+            unableToInsert.append(gameNameOnDisk)
             logging.critical(e)
 
         gnmpe = gameNameMatchesProcessingQueue.get()

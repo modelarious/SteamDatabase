@@ -4,5 +4,9 @@ class SteamGameListFetcherMOCKDATA:
         print("mocking the steam games list from API")
         with open('mockSteamReturn.txt', 'rb') as mockSteamReturn:
             steamGamesList = pickle.load(mockSteamReturn)
+        
+        print(steamGamesList)
+        # exit()
 
         return steamGamesList
+

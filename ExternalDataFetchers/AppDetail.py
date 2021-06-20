@@ -44,12 +44,13 @@ class AppDetailFactory:
         genres = self._get_genres(app_detail_response, app_id)
         metacritic_score = self._get_metacritic_score(app_detail_response, app_id)
         controller_support = self._get_controller_support(app_detail_response, app_id)
+        developers = self._get_developers(app_detail_response, app_id)
         return AppDetail(
             detailed_description=app_detail_response['detailed_description'],
             about_the_game=app_detail_response['about_the_game'],
             short_description=app_detail_response['short_description'],
             header_image_url=app_detail_response['header_image'],
-            developers=app_detail_response['developers'],
+            developers=developers,
             publishers=app_detail_response['publishers'],
             controller_support=controller_support,
             genres=genres,
@@ -57,6 +58,14 @@ class AppDetailFactory:
             background_image_url=app_detail_response['background'],
             metacritic_score=metacritic_score
         )
+    
+    def _get_developers(self, app_detail_response, app_id):
+        if 'developers' in app_detail_response:
+            return app_detail_response['developers']
+        self._error_handling(app_detail_response, app_id, 'developers')
+        return []
+        
+
     
     def _error_handling(self, app_detail_response, app_id, field_name):
         basic_log_message = f"{app_id} has no {field_name}. "

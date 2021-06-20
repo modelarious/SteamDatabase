@@ -76,8 +76,9 @@ class PostgresGameDAO:
     def __init__(self, connectionFactory):
         self.connectionFactory = connectionFactory
 
-        f = StatementCreationFacadePostgresFactory()
-        self.o = ORMMapper(f.create())
+        # XXX nope, you need to move this construction out of the postgres game dao and pass it in
+        statement_creation_facade = StatementCreationFacadePostgresFactory()
+        self.orm_mapper = ORMMapper(statement_creation_facade.create())
         
     
     def _get_connection(self):
@@ -87,22 +88,9 @@ class PostgresGameDAO:
         conn = self._get_connection()
 
     def commit_game(self, game_model: Game):
-        # self.o.insert_game(print, print, game_model)
         conn = self._get_connection()
         with conn.cursor() as cur:
-            insertions = [
-                GameORM(),
-                UserDefinedGenresORM()
-            ]
-
-            for statement_builder in insertions:
-                sql = statement_builder.get_sql_statement()
-                insertion_data = statement_builder.get_insertion_data(game_model)
-                non_commit_insertion_func = cur.execute
-                if statement_builder.needs_multiple_statements():
-                    non_commit_insertion_func = cur.executemany
-                non_commit_insertion_func(sql, insertion_data)
-            
+            self.orm_mapper.insert_game(cur.execute, cur.executemany, game_model)
             conn.commit()
         conn.close()
     

@@ -289,6 +289,9 @@ class ORMAppDetail(ORMAbstractBase):
     @staticmethod
     def get_non_unique_mappings() -> List[str]:
         return [
+            'detailed_description',
+            'about_the_game',
+            'short_description',
             'metacritic_score',
             'controller_support'
         ]
@@ -300,7 +303,7 @@ class ORMAppDetail(ORMAbstractBase):
         ]
 
 python_to_postrgres_type_map = {
-    str: "VARCHAR ( 2000 )",
+    str: "VARCHAR ( 10000 )",
     int: "int",
     bool: "boolean"
 }

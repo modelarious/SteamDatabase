@@ -26,6 +26,10 @@ class SteamAPIDataFetcher:
         success = steam_response[app_id]['success']
         if not success:
             return False
+        print(steam_response[app_id])
+        app_type = steam_response[app_id]['data']['type']
+        if app_type not in ['game', 'dlc', 'demo']:
+            return False
         app_detail = self.app_detail_factory.create_app_detail(steam_response, app_id)
         return app_detail
 
