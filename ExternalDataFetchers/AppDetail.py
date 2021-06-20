@@ -1,138 +1,127 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
+# XXX none of the logging stuff should be here
+# XXX XXX XXX you should be injecting the logger
 import logging
 
-logging.basicConfig(
-    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S',
-    filename='/tmp/basic-out.txt'
-)
+# https://stackoverflow.com/a/11233293/7520564 used this answer to help me figure out how to 
+# set up multiple loggers with different output files
+formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+def create_logger(name, log_file):
+	handler = logging.FileHandler(log_file)        
+	handler.setFormatter(formatter)
+	logger = logging.getLogger(name)
+	logger.addHandler(handler)
+	return logger
 
-# extended_context_logger = logging.getLogger('extended_context')
-basic_logger = logging.getLogger('basic')
+basic_logger = create_logger('basic', '/tmp/basic-out.txt')
+extended_logger = create_logger('extended', '/tmp/extended-out.txt')
 
 @dataclass
 class ScreenshotURL:
-    thumbnail_url: str
-    fullsize_url: str
+	thumbnail_url: str
+	fullsize_url: str
 
 @dataclass
 class AppDetail:
-    detailed_description: str
-    about_the_game: str
-    short_description: str
-    header_image_url: str
-    developers: List[str]
-    publishers: List[str]
-    metacritic_score: int
-    controller_support: bool
-    genres: List[str]
-    screenshot_urls: List[ScreenshotURL]
-    background_image_url: str
+	detailed_description: str
+	about_the_game: str
+	short_description: str
+	header_image_url: str
+	developers: List[str]
+	publishers: List[str]
+	metacritic_score: int
+	controller_support: bool
+	genres: List[str]
+	screenshot_urls: List[ScreenshotURL]
+	background_image_url: str
+
+
 # maps the response from appdetails endpoint to an AppDetail object
 class AppDetailFactory:
-    def create_app_detail(self, steam_response, app_id: int) -> AppDetail:
-        # XXX THIS HAS BEEN MOVED INTO THE PARENT
-        try:
-            app_detail_response = steam_response[app_id]['data']
-        except KeyError as e:
-            message = f"broke on this input: {steam_response}, {e}"
-            logging.critical(message)
-            # raise KeyError(message)
-        screenshot_urls = self._get_screenshot_urls(app_detail_response, app_id)
-        genres = self._get_genres(app_detail_response, app_id)
-        metacritic_score = self._get_metacritic_score(app_detail_response, app_id)
-        controller_support = self._get_controller_support(app_detail_response, app_id)
-        developers = self._get_developers(app_detail_response, app_id)
-        return AppDetail(
-            detailed_description=app_detail_response['detailed_description'],
-            about_the_game=app_detail_response['about_the_game'],
-            short_description=app_detail_response['short_description'],
-            header_image_url=app_detail_response['header_image'],
-            developers=developers,
-            publishers=app_detail_response['publishers'],
-            controller_support=controller_support,
-            genres=genres,
-            screenshot_urls=screenshot_urls,
-            background_image_url=app_detail_response['background'],
-            metacritic_score=metacritic_score
-        )
-    
-    def _get_developers(self, app_detail_response, app_id):
-        if 'developers' in app_detail_response:
-            return app_detail_response['developers']
-        self._error_handling(app_detail_response, app_id, 'developers')
-        return []
-        
+	def create_app_detail(self, steam_response, app_id: int) -> AppDetail:
+		# XXX HAS THIS BEEN MOVED INTO THE PARENT?
+		try:
+			app_detail_response = steam_response[app_id]['data']
+		except KeyError as e:
+			message = f"broke on this input: {steam_response}, {e}"
+			logging.critical(message)
+			raise KeyError(message)
+		screenshot_urls = self._get_screenshot_urls(app_detail_response, app_id)
+		genres = self._get_genres(app_detail_response, app_id)
+		metacritic_score = self._get_metacritic_score(app_detail_response, app_id)
+		controller_support = self._get_controller_support(app_detail_response, app_id)
+		developers = self._get_developers(app_detail_response, app_id)
+		return AppDetail(
+			detailed_description=app_detail_response['detailed_description'],
+			about_the_game=app_detail_response['about_the_game'],
+			short_description=app_detail_response['short_description'],
+			header_image_url=app_detail_response['header_image'],
+			developers=developers,
+			publishers=app_detail_response['publishers'],
+			controller_support=controller_support,
+			genres=genres,
+			screenshot_urls=screenshot_urls,
+			background_image_url=app_detail_response['background'],
+			metacritic_score=metacritic_score
+		)
+	
+	def _error_handling(self, app_detail_response, app_id, field_name):
+		basic_log_message = f"{app_id} has no {field_name}. "
+		basic_logger.error(basic_log_message)
 
-    
-    def _error_handling(self, app_detail_response, app_id, field_name):
-        basic_log_message = f"{app_id} has no {field_name}. "
-        basic_logger.error(basic_log_message)
+		extended_message = f"{basic_log_message} Context={app_detail_response}"
+		extended_logger.error(extended_message)
+		# logging.error(extended_message)
+	
+	def _get_developers(self, app_detail_response, app_id):
+		if 'developers' in app_detail_response:
+			return app_detail_response['developers']
+		self._error_handling(app_detail_response, app_id, 'developers')
+		return []
 
-        extended_message = f"{basic_log_message} Context={app_detail_response}"
-        # extended_context_logger.error(extended_message)
-        # logging.error(extended_message)
-    
-    def _get_controller_support(self, app_detail_response, app_id) -> bool:
-        if "controller_support" in app_detail_response:
-            return True
-        if "categories" in app_detail_response:
-            for category_object in app_detail_response["categories"]:
-                if 'controller' in category_object['description']:
-                    return True        
-        return False
+	def _get_controller_support(self, app_detail_response, app_id) -> bool:
+		if "controller_support" in app_detail_response:
+			return True
+		if "categories" in app_detail_response:
+			for category_object in app_detail_response["categories"]:
+				if 'controller' in category_object['description']:
+					return True        
+		return False
 
-    def _get_screenshot_urls(self, app_detail_response, app_id) -> List[ScreenshotURL]:
-        field_name = 'screenshots'
-        screenshot_urls = []
-        if field_name not in app_detail_response:
-            self._error_handling(app_detail_response, app_id, field_name)
-            return screenshot_urls
+	def _get_screenshot_urls(self, app_detail_response, app_id) -> List[ScreenshotURL]:
+		field_name = 'screenshots'
+		screenshot_urls = []
+		if field_name not in app_detail_response:
+			self._error_handling(app_detail_response, app_id, field_name)
+			return screenshot_urls
 
-        for screenshot_object in app_detail_response[field_name]:
-            screenshot_url = ScreenshotURL(
-                thumbnail_url=screenshot_object['path_thumbnail'], 
-                fullsize_url=screenshot_object['path_full']
-            )
-            screenshot_urls.append(screenshot_url)
-        return screenshot_urls
-    
-    def _get_genres(self, app_detail_response, app_id) -> List[str]:
-        field_name = 'genres'
-        genres = []
-        if field_name not in app_detail_response:
-            self._error_handling(app_detail_response, app_id, field_name)
-            return genres
+		for screenshot_object in app_detail_response[field_name]:
+			screenshot_url = ScreenshotURL(
+				thumbnail_url=screenshot_object['path_thumbnail'], 
+				fullsize_url=screenshot_object['path_full']
+			)
+			screenshot_urls.append(screenshot_url)
+		return screenshot_urls
+	
+	def _get_genres(self, app_detail_response, app_id) -> List[str]:
+		field_name = 'genres'
+		genres = []
+		if field_name not in app_detail_response:
+			self._error_handling(app_detail_response, app_id, field_name)
+			return genres
 
-        for genre_object in app_detail_response['genres']:
-            genres.append(genre_object['description'])
-        return genres
-    
-    def _get_metacritic_score(self, app_detail_response, app_id) -> Optional[int]:            
-        if 'metacritic' in app_detail_response:
-            if 'score' in app_detail_response['metacritic']:
-                return app_detail_response['metacritic']['score']
-        self._error_handling(app_detail_response, app_id, 'metacritic->score')
-        return None
-
-
-# Process Process-3:
-# Traceback (most recent call last):
-#   File "/usr/local/Cellar/python@3.7/3.7.10_3/Frameworks/Python.framework/Versions/3.7/lib/python3.7/multiprocessing/process.py", line 297, in _bootstrap
-#     self.run()
-#   File "/usr/local/Cellar/python@3.7/3.7.10_3/Frameworks/Python.framework/Versions/3.7/lib/python3.7/multiprocessing/process.py", line 99, in run
-#     self._target(*self._args, **self._kwargs)
-#   File "/Users/michaelhackman/Github/SteamDatabase/game_lookup_and_storage_process.py", line 31, in game_lookup_and_storage_process
-#     app_detail = steamAPIDataFetcher.get_app_detail(steamIDNumber)
-#   File "/Users/michaelhackman/Github/SteamDatabase/ExternalDataFetchers/SteamAPIDataFetcher.py", line 29, in get_app_detail
-#     app_detail = self.app_detail_factory.create_app_detail(steam_response, app_id)
-#   File "/Users/michaelhackman/Github/SteamDatabase/ExternalDataFetchers/AppDetail.py", line 41, in create_app_detail
-#     screenshot_urls = self._get_screenshot_urls(app_detail_response)
-#   File "/Users/michaelhackman/Github/SteamDatabase/ExternalDataFetchers/AppDetail.py", line 70, in _get_screenshot_urls
-#     for screenshot_object in app_detail_response['screenshots']:
-# KeyError: 'screenshots'
+		for genre_object in app_detail_response[field_name]:
+			genres.append(genre_object['description'])
+		return genres
+	
+	def _get_metacritic_score(self, app_detail_response, app_id) -> Optional[int]:            
+		if 'metacritic' in app_detail_response:
+			if 'score' in app_detail_response['metacritic']:
+				return app_detail_response['metacritic']['score']
+		self._error_handling(app_detail_response, app_id, 'metacritic->score')
+		return None
 
 # {
 #    "427520":{
@@ -556,7 +545,7 @@ class AppDetailFactory:
 # *         "background":"https:\/\/cdn.akamai.steamstatic.com\/steam\/apps\/427520\/page_bg_generated_v6b.jpg?t=1620730652",
 #          "content_descriptors":{
 #             "ids":[
-               
+			   
 #             ],
 #             "notes":null
 #          }
