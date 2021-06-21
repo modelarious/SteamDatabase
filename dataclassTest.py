@@ -221,7 +221,6 @@ class ORMScreenshotURLS(ORMAbstractBase):
     def get_table_name() -> str:
         return 'ScreenshotURLs'
     
-    # XXX this isn't going to work, you need to unpack the screenshot url stuff
     @staticmethod
     def get_insertion_data(game_model: Game) -> tuple:
         screenshot_urls = game_model.app_detail.screenshot_urls
