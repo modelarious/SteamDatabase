@@ -211,38 +211,38 @@ class ORMGenres(ORMAbstractBase):
             'genre'
         ]
 
-# @dataclass
-# class ORMScreenshotURLS(ORMAbstractBase):
-#     steam_id: int
-#     thumbnail_url: str
-#     fullsize_url: str
+@dataclass
+class ORMScreenshotURLS(ORMAbstractBase):
+    steam_id: int
+    thumbnail_url: str
+    fullsize_url: str
 
-#     @staticmethod
-#     def get_table_name() -> str:
-#         return 'ScreenshotURLs'
+    @staticmethod
+    def get_table_name() -> str:
+        return 'ScreenshotURLs'
     
-#     # XXX this isn't going to work, you need to unpack the screenshot url stuff
-#     @staticmethod
-#     def get_insertion_data(game_model: Game) -> tuple:
-#         screenshot_urls = game_model.app_detail.screenshot_urls
-#         screenshot_url_data = tuple(
-#             (game_model.steam_id, thumbnail_url, fullsize_url) for thumbnail_url, fullsize_url in screenshot_urls
-#         )
-#         return screenshot_url_data
+    # XXX this isn't going to work, you need to unpack the screenshot url stuff
+    @staticmethod
+    def get_insertion_data(game_model: Game) -> tuple:
+        screenshot_urls = game_model.app_detail.screenshot_urls
+        screenshot_url_data = tuple(
+            (game_model.steam_id, screenshot_url.thumbnail_url, screenshot_url.fullsize_url) for screenshot_url in screenshot_urls
+        )
+        return screenshot_url_data
 
-    # @staticmethod
-    # def needs_multiple_statements() -> bool:
-    #     return True
+    @staticmethod
+    def needs_multiple_statements() -> bool:
+        return True
     
-#     @staticmethod
-#     def get_foreign_key_mappings() -> Dict[str, str]:
-#         return {"steam_id" : "Games"}
+    @staticmethod
+    def get_foreign_key_mappings() -> Dict[str, str]:
+        return {"steam_id" : "Games"}
     
-#     @staticmethod
-#     def get_non_unique_mappings() -> List[str]:
-#         return [
-#             'steam_id'
-#         ]
+    @staticmethod
+    def get_non_unique_mappings() -> List[str]:
+        return [
+            'steam_id'
+        ]
 
 @dataclass
 class ORMAppDetail(ORMAbstractBase):
@@ -415,7 +415,7 @@ class ORMMapper:
             ORMPublishers,
             ORMDevelopers,
             ORMGenres,
-            # ORMScreenshotURLS
+            ORMScreenshotURLS
         ]
 
     def create_tables(self, database_interaction_func: Callable[[str], Any]):
