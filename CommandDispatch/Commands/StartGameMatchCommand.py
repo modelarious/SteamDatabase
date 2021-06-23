@@ -1,7 +1,7 @@
-from ExternalDataFetchers.SteamGameListFetcher import SteamGameListFetcher
 from CommandDispatch.Commands.Command import Command
 from typing import Dict, Any
 from State.StateCommunicatorQueues import StateCommunicationQueueWriter
+from ExternalDataFetchers.SteamGameListFetcherMOCKDATA import SteamGameListFetcherMOCKDATA
 from InternalDataFetchers.DirListFetcherMOCKDATA import DirListFetcherMOCKDATA
 from SteamDatabase import match_steam_games_to_games_on_disk_and_store
 
@@ -13,7 +13,7 @@ class StartGameMatchCommand(Command):
     
     def execute(self):
         # XXX this is shared with the cli - use abstract factory pattern to make mock data
-        steamGameListFetcher = SteamGameListFetcher()
+        steamGameListFetcher = SteamGameListFetcherMOCKDATA()
         steamGamesList = steamGameListFetcher.fetch_games_list()
 
         dirListFetcher = DirListFetcherMOCKDATA()
