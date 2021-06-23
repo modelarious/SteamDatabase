@@ -18,6 +18,9 @@ class SteamAPIDataFetcher:
         #     pprint(reviewValues['review_score'])
         return reviewValues['review_score']
     
+    # XXX not a fan of how we don't know which case failed (if not success or if app_type not in [])
+    # XXX might be worth switching to exception based communication with caller if you work on this
+    # XXX piece of code again
     def get_app_detail(self, steam_id: int) -> Optional[AppDetail]:
         URL = f"https://store.steampowered.com/api/appdetails?appids={steam_id}"
         request_return = requests.get(url = URL)
