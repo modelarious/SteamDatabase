@@ -1,5 +1,4 @@
 from Database.PostgresConnectionFactory import PostgresConnectionFactory
-from ObjectRelationalMapper.StatementCreation.StatementCreationFacadePostgresFactory import StatementCreationFacadePostgresFactory
 from ObjectRelationalMapper.ORMMapper import ORMMapper
 from typing import List
 from GameModel import Game
@@ -8,11 +7,7 @@ class PostgresGameDAO:
     def __init__(self, connection_factory: PostgresConnectionFactory, orm_mapper: ORMMapper):
         self.connection_factory = connection_factory
         self.orm_mapper = orm_mapper
-    
-    def _get_connection(self):
-        return self.connection_factory.createConnection()
-    
-    # XXX still need to call this somewhere
+
     def create_tables(self):
         conn = self._get_connection()
         with conn.cursor() as cur:
@@ -37,3 +32,6 @@ class PostgresGameDAO:
         
         paths = [ret[0] for ret in query_returns]
         return paths
+    
+    def _get_connection(self):
+        return self.connection_factory.createConnection()
