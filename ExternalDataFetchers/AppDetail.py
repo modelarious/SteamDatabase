@@ -41,11 +41,10 @@ class AppDetail:
 # maps the response from appdetails endpoint to an AppDetail object
 class AppDetailFactory:
 	def create_app_detail(self, steam_response, app_id: int) -> AppDetail:
-		# XXX HAS THIS BEEN MOVED INTO THE PARENT?
 		try:
 			app_detail_response = steam_response[app_id]['data']
 		except KeyError as e:
-			message = f"broke on this input: {steam_response}, {e}"
+			message = f"[AppDetailFactory] [create_app_detail] - found no {app_id}->'data' in {steam_response}\n{e}"
 			logging.critical(message)
 			raise KeyError(message)
 		screenshot_urls = self._get_screenshot_urls(app_detail_response, app_id)
@@ -73,7 +72,6 @@ class AppDetailFactory:
 
 		extended_message = f"{basic_log_message} Context={app_detail_response}"
 		extended_logger.error(extended_message)
-		# logging.error(extended_message)
 	
 	def _get_developers(self, app_detail_response, app_id):
 		if 'developers' in app_detail_response:
@@ -545,7 +543,6 @@ class AppDetailFactory:
 # *         "background":"https:\/\/cdn.akamai.steamstatic.com\/steam\/apps\/427520\/page_bg_generated_v6b.jpg?t=1620730652",
 #          "content_descriptors":{
 #             "ids":[
-			   
 #             ],
 #             "notes":null
 #          }

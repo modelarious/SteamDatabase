@@ -88,7 +88,7 @@ def minimum_edit_distance_processing(userInputRequiredQueue, gameNameMatchesProc
     PER_CORE = 2
     OTHER_PROCESS_COUNT = 2
     availableCores = (cpu_count() - OTHER_PROCESS_COUNT) * PER_CORE
-    numDesignatedCores = max(1, availableCores) * 2
+    numDesignatedCores = max(1, availableCores)
     print(f"numDesignatedCores = {numDesignatedCores}")
 
     print("starting process pool executor")
