@@ -1,31 +1,29 @@
-from itertools import repeat
+from Database.PostgresConnectionFactory import PostgresConnectionFactory
+from ObjectRelationalMapper.ORMMapper import ORMMapper
 from typing import List
-
+from GameModel import Game
 
 class PostgresGameDAO:
-    def __init__(self, connectionFactory):
-        self.connectionFactory = connectionFactory
+    def __init__(self, connection_factory: PostgresConnectionFactory, orm_mapper: ORMMapper):
+        self.connection_factory = connection_factory
+        self.orm_mapper = orm_mapper
 
-    def commitGame(self, gameModel):
-        conn = self.connectionFactory.createConnection()
+    def create_tables(self):
+        conn = self._get_connection()
         with conn.cursor() as cur:
-            insertGame = "INSERT INTO Games (steam_id, name_on_harddrive, path_on_harddrive, name_on_steam, avg_review_score) VALUES (%s, %s, %s, %s, %s);"
-            gameData = (gameModel.steam_id, gameModel.name_on_harddrive, gameModel.path_on_harddrive, gameModel.name_on_steam, gameModel.avg_review_score)
-            cur.execute(insertGame, gameData) # doing it this way prevents sql injection
+            self.orm_mapper.create_tables(cur.execute)
+            conn.commit()
+        conn.close()
 
-            # these are similar to genres as defined by users
-            insertGenres = "INSERT INTO UserDefinedGenres (steam_id, genre_name, rank) VALUES (%s, %s, %s);"
-            steamIDIter = repeat(gameModel.steam_id)
-            rank = range(1, (len(gameModel.user_defined_genres) + 1))
-            
-            genreData = tuple(zip(steamIDIter, gameModel.user_defined_genres, rank))
-            cur.executemany(insertGenres, genreData)
-            
+    def commit_game(self, game_model: Game):
+        conn = self._get_connection()
+        with conn.cursor() as cur:
+            self.orm_mapper.insert_game(cur.execute, cur.executemany, game_model)
             conn.commit()
         conn.close()
     
     def get_paths_of_all_stored_games(self) -> List[str]:
-        conn = self.connectionFactory.createConnection()
+        conn = self.connection_factory.createConnection()
         query_returns = []
         with conn.cursor() as cur:
             get_game_titles_query = "SELECT path_on_harddrive from Games"
@@ -34,4 +32,6 @@ class PostgresGameDAO:
         
         paths = [ret[0] for ret in query_returns]
         return paths
-        
+    
+    def _get_connection(self):
+        return self.connection_factory.createConnection()

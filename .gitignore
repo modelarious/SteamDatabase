@@ -1,3 +1,5 @@
+.DS_STORE
+.vscode
 __pycache__/
 react-frontend/yarn.lock
 react-frontend/package-lock.json

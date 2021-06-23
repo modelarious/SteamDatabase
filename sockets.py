@@ -12,6 +12,7 @@ if __name__ == '__main__':
     from Database.PostgresGameDAOFactory import PostgresGameDAOFactory
     postgresGameDAOFactory = PostgresGameDAOFactory()
     gameDAO = postgresGameDAOFactory.createGameDAO()
+    gameDAO.create_tables()
     print(gameDAO.get_paths_of_all_stored_games())
 
     websocketRegistry = WebsocketClientHandlerRegistry()
