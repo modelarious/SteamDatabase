@@ -92,7 +92,7 @@ def minimum_edit_distance_processing(userInputRequiredQueue, gameNameMatchesProc
     print(f"numDesignatedCores = {numDesignatedCores}")
 
     print("starting process pool executor")
-    with ProcessPoolExecutor(max_workers=numDesignatedCores) as MinimumEditDistanceProcessPool:
+    with ProcessPoolExecutor(max_workers=numDesignatedCores * 4) as MinimumEditDistanceProcessPool:
         print("created process pool executor")
         # future = MinimumEditDistanceProcessPool.submit(pow, 323, 1235)
         # executor.map(is_prime, PRIMES)

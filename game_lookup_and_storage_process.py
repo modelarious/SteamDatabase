@@ -24,15 +24,20 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
         steamIDNumber = gnmpe.getSteamIDNumber()
 
         try:
+            print(f"fetching info for {steamIDNumber}")
 
             # XXX factory
             userGenres = userDefinedGenresFetcher.getGenres(steamIDNumber)
             reviewScore = steamAPIDataFetcher.getAvgReviewScore(steamIDNumber)
             app_detail = steamAPIDataFetcher.get_app_detail(steamIDNumber)
 
+            print(f"fetched info for {steamIDNumber}")
             if not app_detail:
-                raise FailedToGetAppDetailsException(f'failed get_app_detail for {steamIDNumber}, {gnmpe}')
+                error_message = f'failed get_app_detail for {steamIDNumber}, {gnmpe}'
+                print(error_message)
+                raise FailedToGetAppDetailsException(error_message)
             
+            print(f"creating game object for {steamIDNumber}")
             game = Game(
                 steam_id=steamIDNumber, 
                 name_on_harddrive=gameNameOnDisk, 
@@ -69,6 +74,7 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
                 print(f"failure {message}")
         except FailedToGetAppDetailsException as e:
             unableToInsert.append(gameNameOnDisk)
+            print("big sad fail")
             logging.critical(e)
 
         gnmpe = gameNameMatchesProcessingQueue.get()

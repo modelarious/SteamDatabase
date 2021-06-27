@@ -142,11 +142,8 @@ class ORMMapper:
                     user_defined_genres=user_defined_genres,
                     app_detail=app_detail
                 )
-                print(game_model)
             except Exception as e:
                 print("yup, as expected", e)
-
-
 
 def array_handler(orm_instances: List[ORMAbstractBase]) -> Dict[str, List[str]]:
     gathered_values = {}

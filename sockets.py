@@ -14,7 +14,6 @@ if __name__ == '__main__':
     gameDAO = postgresGameDAOFactory.createGameDAO()
     gameDAO.create_tables()
     gameDAO.get_all_games()
-    print(gameDAO.get_paths_of_all_stored_games())
 
     websocketRegistry = WebsocketClientHandlerRegistry()
     server = Server(websocketRegistry)
