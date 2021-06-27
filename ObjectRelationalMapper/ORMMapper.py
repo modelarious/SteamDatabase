@@ -1,7 +1,9 @@
 
+from ExternalDataFetchers.AppDetail import AppDetail, ScreenshotURL
+from ObjectRelationalMapper.ORMMappedObjects.ORMAbstractBase import ORMAbstractBase
 from re import S
 from GameModel import Game
-from typing import Any, Callable, Dict, List, Tuple, Type
+from typing import Any, Callable, Dict, List, Tuple, Type, Union
 from ObjectRelationalMapper.ORMMappedObjects.ORMScreenshotURLs import ORMScreenshotURLS
 from ObjectRelationalMapper.ORMMappedObjects.ORMGenres import ORMGenres
 from ObjectRelationalMapper.ORMMappedObjects.ORMDevelopers import ORMDevelopers
@@ -40,7 +42,6 @@ class ORMMapper:
     
     def insert_game(self, database_interaction_func: Callable[[str, tuple], Any], database_interaction_func_multiple_statements: Callable[[str, tuple], Any], game: Game):
         for ORMClass in self.ORMClasses:
-
             sql = self.statement_creation.get_insert_data_statement(ORMClass)
             insertion_data = ORMClass.get_insertion_data(game)
             non_commit_insertion_func = database_interaction_func
@@ -48,117 +49,124 @@ class ORMMapper:
                 non_commit_insertion_func = database_interaction_func_multiple_statements
             non_commit_insertion_func(sql, insertion_data)
 
-    # this is the worst function in the entire project - if you want to improve anything you should try here 
     def get_all_games(self, database_interaction_func: Callable[[str, tuple], Any]):
+        def group_values(ORMClass: Type[ORMAbstractBase], data_to_group: List[ORMAbstractBase]):
+            if ORMClass.needs_multiple_statements():
+                return array_handler(data_to_group)
+            else:
+                return unique_value_handler(data_to_group)
+
+        def get_class_name(Class: Type) -> str:
+            return Class.__name__
+
         all_games = []
 
         returned_data = {}
         for ORMClass in self.ORMClasses:
             sql = self.statement_creation.get_select_statement(ORMClass)
             selected_data_from_db = database_interaction_func(sql)
-            class_name = self._get_class_name(ORMClass)
-            print(f"{class_name} : {selected_data_from_db}")
-            if class_name not in returned_data:
-                returned_data[class_name] = {}
+            mapped_data = [ORMClass(*row) for row in selected_data_from_db]
+            class_name = get_class_name(ORMClass)
+            returned_data[class_name] = group_values(ORMClass, mapped_data)
 
-            # XXX Ugh, you need special handling for ranked arrays too - this is a disaster!
-            # XXX I was tired when I wrote this and just wanted it to work
-            if ORMClass.needs_multiple_statements():
-                if ORMClass == ORMUserDefinedGenres:
-                    # returned_data[class_name] = ranked_array(selected_data_from_db)
-                    # sort by rank so that you always encounter ranked items in correct order
-                    for row in sorted(selected_data_from_db, key=lambda r: r[2]):
-                        steam_id = row[0]
-                        genre = row[1]
-                        rank = row[2]
-                        if steam_id not in returned_data[class_name]:
-                            returned_data[class_name][steam_id] = []
-                        returned_data[class_name][steam_id].append(genre)
+        # data returned is indexed by steam_id. it is of one of two formats, an array or a single object:
+        # {
+        #   12345: [
+        #       ORMScreenshotURL(12345, "link/to/lo-res", "link/to/hi-res"),
+        #       ORMScreenshotURL(12345, "link/to/this-lo-res", "link/to/this-hi-res")
+        #   ]
+        #   34567: [
+        #       ORMScreenshotURL(34567, "link/to/lo-res", "link/to/hi-res"),
+        #       ORMScreenshotURL(34567, "link/to/this-lo-res", "link/to/this-hi-res")
+        #   ]
+        # }
 
-                else:
-                    for row in selected_data_from_db:
-                        steam_id = row[0]
-                        array_entry = row[1:]
-                        if steam_id not in returned_data[class_name]:
-                            returned_data[class_name][steam_id] = []
-                        returned_data[class_name][steam_id].append(array_entry)
-            else: 
-                for row in selected_data_from_db:
-                    steam_id = row[0]
-                    rest = row[1:]
-                    returned_data[class_name][steam_id] = rest
-            
-        
+        # {
+        #   12345: ORMGame(...)
+        #   34567: ORMGame(...)
+        # }
+
+        def get_associated_data(ORMClass: Type[ORMAbstractBase], steam_id: int) -> Dict[int,Union[ORMAbstractBase, List[ORMAbstractBase]]]:
+            return returned_data[get_class_name(ORMClass)][steam_id]
+
         # if no games were returned from query, then return blank array
-        game_class_name = self._get_class_name(ORMGame)
+        game_class_name = get_class_name(ORMGame)
         if game_class_name not in returned_data:
             return all_games
-        
-        # XXX the right way to do this would be to make something that requests data that matches the field name_on_harddrive.
-        # it would then go through the ORMClasses to find one with a matching field name, and pull the data out of the corresponding
-        # place in returned_data.  For example, it would work out that name_on_harddrive is the second member variable of ORMGame after
-        # the obligatory steam_id. Since we are 0-indexing, this means name_on_harddrive would be at index 1 in the return from the
-        # database.  Since we are using the steam_id as the key, this means that name_on_harddrive is actually at index 0 in the
-        # associated data in returned_data.  
-        # It would thus look up 
-        # returned_data[ORMGame.__name__][steam_id][0] 
-        # and return that value
-        # This could be sped up by using memoization of where to find each field instead of looking through all the ORMClasses every time.
-        # Note you could also use something like @redis_simple_cache to do memoiziation
+
         for steam_id in returned_data[game_class_name].keys():
             try:
+                app_detail_data = get_associated_data(ORMAppDetail, steam_id)
+                screenshot_data = get_associated_data(ORMScreenshotURLS, steam_id)
+                developer_data = get_associated_data(ORMDevelopers, steam_id)
+                publisher_data = get_associated_data(ORMPublishers, steam_id)
+                genre_data = get_associated_data(ORMGenres, steam_id)
 
-                game_data = returned_data[game_class_name][steam_id]
-                user_defined_genres = returned_data[self._get_class_name(ORMUserDefinedGenres)][steam_id]
+                publishers = [
+                    orm_publisher.publisher for orm_publisher in publisher_data
+                ]
+                developers = [
+                    orm_developer.developer for orm_developer in developer_data
+                ]
+                genres = [
+                    orm_genre.genre for orm_genre in genre_data
+                ]
+                screenshots = [
+                    ScreenshotURL(orm_screenshot.thumbnail_url, orm_screenshot.fullsize_url) for orm_screenshot in screenshot_data
+                ]
+
+                app_detail = AppDetail(
+                    detailed_description=app_detail_data.detailed_description,
+                    about_the_game=app_detail_data.about_the_game,
+                    short_description=app_detail_data.short_description,
+                    header_image_url=app_detail_data.header_image_url,
+                    publishers=publishers,
+                    developers=developers,
+                    metacritic_score=app_detail_data.metacritic_score,
+                    controller_support=app_detail_data.controller_support,
+                    genres=genres,
+                    screenshot_urls=screenshots,
+                    background_image_url=app_detail_data.background_image_url
+                )
+
+                game_data = get_associated_data(ORMGame, steam_id)
+                user_defined_genre_data = get_associated_data(ORMUserDefinedGenres, steam_id)
+
+                user_defined_genres = [user_defined_genre_orm.genre_name for user_defined_genre_orm in user_defined_genre_data]
                 game_model = Game(
                     steam_id,
-                    name_on_harddrive=game_data[0],
-                    path_on_harddrive=game_data[1],
-                    name_on_steam=game_data[2],
-                    avg_review_score=game_data[3],
+                    name_on_harddrive=game_data.name_on_harddrive,
+                    path_on_harddrive=game_data.path_on_harddrive,
+                    name_on_steam=game_data.name_on_steam,
+                    avg_review_score=game_data.avg_review_score,
                     user_defined_genres=user_defined_genres,
-                    app_detail=[]
+                    app_detail=app_detail
                 )
                 print(game_model)
             except Exception as e:
                 print("yup, as expected", e)
 
-    def _get_class_name(self, Class: Type) -> str:
-        return Class.__name__
 
 
-
-# XXX the logic here is pretty much the same logic used in the other functions, you could likely consolidate it
-
-# sort by rank so that you always encounter ranked items in correct order
-def ranked_array(selected_data_from_db: List[Tuple]) -> Dict[str, List[str]]:
+def array_handler(orm_instances: List[ORMAbstractBase]) -> Dict[str, List[str]]:
     gathered_values = {}
-    # sort by rank - XXX NOTE this is not generic - and if you plan to make it generic you should make a standard
-    # such as "rank is always the second column" to follow the "steam_id is always the first column" rule
-    for row in sorted(selected_data_from_db, key=lambda r: r[2]):
-        steam_id = row[0]
-        value = row[1]
-        # rank = row[2]
+    orm_instances_internal = orm_instances.copy()
+    # try sort - it's okay if this fails as it means there was no rank field to deal with for sorting.
+    # sort by rank so that you always encounter ranked items in correct order
+    try:
+        orm_instances_internal = sorted(orm_instances, key=lambda orm_instance: orm_instance.rank)
+    except:
+        pass
+
+    for orm_instance in orm_instances_internal:
+        steam_id = orm_instance.steam_id
         if steam_id not in gathered_values:
             gathered_values[steam_id] = []
-        gathered_values[steam_id].append(value)
+        gathered_values[steam_id].append(orm_instance)
     return gathered_values
 
-def unranked_array(selected_data_from_db: List[Tuple]) -> Dict[str, List[str]]:
+def unique_value_handler(orm_instances: List[ORMAbstractBase]) -> Dict[str, List[str]]:
     gathered_values = {}
-    for row in selected_data_from_db:
-        steam_id = row[0]
-        array_entry = row[1:]
-        if steam_id not in gathered_values:
-            gathered_values[steam_id] = []
-        gathered_values[steam_id].append(array_entry)
+    for orm_instance in orm_instances:
+        gathered_values[orm_instance.steam_id] = orm_instance
     return gathered_values
-
-def unique_values(selected_data_from_db: List[Tuple]) -> Dict[str, List[str]]:
-    gathered_values = {}
-    for row in selected_data_from_db:
-        steam_id = row[0]
-        rest = row[1:]
-        gathered_values[steam_id] = rest
-    return gathered_values
-    
