@@ -92,7 +92,7 @@ def minimum_edit_distance_processing(userInputRequiredQueue, gameNameMatchesProc
     print(f"numDesignatedCores = {numDesignatedCores}")
 
     print("starting process pool executor")
-    with ProcessPoolExecutor(max_workers=numDesignatedCores * 4) as MinimumEditDistanceProcessPool:
+    with ProcessPoolExecutor(max_workers=numDesignatedCores * 3) as MinimumEditDistanceProcessPool:
         print("created process pool executor")
         # future = MinimumEditDistanceProcessPool.submit(pow, 323, 1235)
         # executor.map(is_prime, PRIMES)
@@ -119,7 +119,3 @@ def minimum_edit_distance_processing(userInputRequiredQueue, gameNameMatchesProc
 
         for future in as_completed(futureMap):
             result = future.result() # unused, but needed to ensure the jobs finish
-
-    # no more user input required after this
-    userInputRequiredQueue.put(END_OF_QUEUE)
-    print("placed END OF QUEUE onto the user input required queue")
