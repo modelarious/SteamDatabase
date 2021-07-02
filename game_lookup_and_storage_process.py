@@ -17,7 +17,9 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
     unableToInsert = []
     gnmpe = gameNameMatchesProcessingQueue.get()
     while gnmpe != END_OF_QUEUE:
+        print("got ", gnmpe)
         stateCommunicator.setInfoRetrievalActiveState(gnmpe)
+        print("set ", gnmpe, "to info retrieval")
         gameNameOnDisk = gnmpe.getGameNameOnDisk()
         steamIDNumber = gnmpe.getSteamIDNumber()
 
@@ -29,8 +31,7 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
             app_detail = steamAPIDataFetcher.get_app_detail(steamIDNumber)
 
             if not app_detail:
-                error_message = f'failed get_app_detail for {steamIDNumber}, {gnmpe}'
-                raise FailedToGetAppDetailsException(error_message)
+                raise FailedToGetAppDetailsException(f'failed get_app_detail for {steamIDNumber}, {gnmpe}')
             
             game = Game(
                 steam_id=steamIDNumber, 
@@ -42,14 +43,30 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
                 app_detail=app_detail
             )
 
+            print(f"""
+                steam_id={steamIDNumber}, 
+                name_on_harddrive={gameNameOnDisk}, 
+                path_on_harddrive={pathOnDisk + gameNameOnDisk}, 
+                name_on_steam={gnmpe.getGameNameFromSteam()}, 
+                avg_review_score={reviewScore},
+                user_defined_genres={userGenres},
+                app_detail={app_detail}
+                """
+            )
+
+            print("created game")
+
             # YYY on exceptions, should I be tracking a state change to error?
             try:
+                print("try to commit game")
                 gameDAO.commit_game(game)
                 stateCommunicator.setStoredState(game)
+                print("success")
             except UniqueViolation as e:
                 unableToInsert.append(gameNameOnDisk)
                 message = f'Unable to insert: {steamIDNumber}, {gameNameOnDisk}\n{e}\ngame={game}'
                 logging.critical(message)
+                print(f"failure {message}")
         except FailedToGetAppDetailsException as e:
             unableToInsert.append(gameNameOnDisk)
             logging.critical(e)
