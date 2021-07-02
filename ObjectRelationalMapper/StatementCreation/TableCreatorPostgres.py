@@ -4,7 +4,7 @@ from ObjectRelationalMapper.StatementCreation.StatementCreatorBase import Statem
 
 
 python_to_postrgres_type_map = {
-    str: "VARCHAR ( 10000 )",
+    str: "VARCHAR ( 50000 )",
     int: "int",
     bool: "boolean"
 }

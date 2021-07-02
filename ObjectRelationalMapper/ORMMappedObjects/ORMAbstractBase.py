@@ -1,8 +1,12 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Dict, List, Tuple
 from GameModel import Game
 
+@dataclass
 class ORMAbstractBase(ABC):
+    steam_id: int
+
     @staticmethod
     @abstractmethod
     def get_table_name() -> str:

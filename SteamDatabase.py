@@ -83,10 +83,10 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
 
     # by this point there is nothing that will write to the gameNameMatchesProcessingQueue (that is being read by gameLookupAndStorageProcess)
     gameNameMatchesProcessingQueue.put(END_OF_QUEUE)
+    print("placed END OF QUEUE onto the game name matches queue")
 
     unableToInsert = gameLookupAndStorageProcess.join()
     print(f"unmatchedGames={unmatchedGames}, unableToInsert={unableToInsert}")
-    m.join()
     
 
 

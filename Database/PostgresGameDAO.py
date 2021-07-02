@@ -22,6 +22,16 @@ class PostgresGameDAO:
             conn.commit()
         conn.close()
     
+    def get_all_games(self) -> List[Game]:
+        conn = self._get_connection()
+        with conn.cursor() as cur:
+            def _select_execute_and_return_value_wrapper(query):
+                cur.execute(query)
+                return cur.fetchall()
+            all_games = self.orm_mapper.get_all_games(_select_execute_and_return_value_wrapper)
+        return all_games
+        
+
     def get_paths_of_all_stored_games(self) -> List[str]:
         conn = self.connection_factory.createConnection()
         query_returns = []
