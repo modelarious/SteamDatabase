@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 @dataclass
 class MatchQueueEntry(SteamSendable):
-    game_name_from_steam: str
     game_name_on_disk: str
+    game_name_from_steam: str
     steam_id_number: int
 
     def get_game_name_from_steam(self):

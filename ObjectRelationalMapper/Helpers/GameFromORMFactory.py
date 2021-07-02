@@ -54,7 +54,7 @@ class GameFromORMFactory:
 		)
 
 		game_model = Game(
-			steam_id,
+			steam_id=steam_id,
 			game_name_on_disk=game_data.game_name_on_disk,
 			path_on_harddrive=game_data.path_on_harddrive,
 			game_name_from_steam=game_data.game_name_from_steam,

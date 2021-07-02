@@ -37,4 +37,5 @@ class ORMGame(ORMAbstractBase):
     def get_non_unique_mappings() -> List[str]:
         return [
             'avg_review_score',
+            'path_on_harddrive',
         ]

@@ -27,7 +27,7 @@ def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, user
         game = quickSteamTitleMap[targetGame.lower()]
         steamIDNumber = game['appid']
         steamName = game['name']
-        mqe = MatchQueueEntry(steamName, targetGame, steamIDNumber)
+        mqe = MatchQueueEntry(targetGame, steamName, steamIDNumber)
         stateCommunicator.setQueuedForInfoRetrievalStateFromFindingNameActive(mqe)
         gameNameMatchesProcessingQueue.put(mqe)
         return
@@ -65,7 +65,7 @@ def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, user
             possibleMatchesList.append(PossibleMatchQueueEntry(steamName, steamIDNumber, score))
             if score == 1.0:
                 print(steamName, targetGame, "added immediately")
-                mqe = MatchQueueEntry(steamName, targetGame, steamIDNumber)
+                mqe = MatchQueueEntry(targetGame, steamName, steamIDNumber)
                 stateCommunicator.setQueuedForInfoRetrievalStateFromFindingNameActive(mqe)
                 gameNameMatchesProcessingQueue.put(mqe)
                 break
@@ -88,7 +88,7 @@ def minimum_edit_distance_processing(userInputRequiredQueue, gameNameMatchesProc
     print(f"numDesignatedCores = {numDesignatedCores}")
 
     print("starting process pool executor")
-    with ProcessPoolExecutor(max_workers=numDesignatedCores) as MinimumEditDistanceProcessPool:
+    with ProcessPoolExecutor(max_workers=numDesignatedCores * 3) as MinimumEditDistanceProcessPool:
         print("created process pool executor")
         # future = MinimumEditDistanceProcessPool.submit(pow, 323, 1235)
         # executor.map(is_prime, PRIMES)

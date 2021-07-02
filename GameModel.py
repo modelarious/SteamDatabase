@@ -5,10 +5,10 @@ from ExternalDataFetchers.AppDetail import AppDetail
 
 @dataclass
 class Game(SteamSendable):
-    steam_id: int
     game_name_on_disk: str
-    path_on_harddrive: str
     game_name_from_steam: str
+    steam_id: int
+    path_on_harddrive: str
     avg_review_score: int
     user_defined_genres: List[str]
     app_detail : AppDetail
