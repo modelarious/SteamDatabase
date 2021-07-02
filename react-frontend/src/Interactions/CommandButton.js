@@ -11,7 +11,7 @@ class CommandButton extends Component {
   send_command() {
     const command = {
       'command_name' : 'start game match',
-      'path_on_disk' : '/path/on/disk'
+      'path_on_disk' : '/Volumes/babyBlue/Games/PC'
     }
 
     this.commandSocket.send(JSON.stringify(command))
