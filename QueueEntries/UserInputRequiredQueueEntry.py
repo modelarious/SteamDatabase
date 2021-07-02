@@ -1,20 +1,19 @@
+from QueueEntries.Sendable import Sendable
+from dataclasses import dataclass
 from typing import List
 from QueueEntries.PossibleMatchQueueEntry import PossibleMatchQueueEntry
 
-class UserInputRequiredQueueEntry:
-    def __init__(self, gameName: str, possibleMatchesList: List[PossibleMatchQueueEntry]):
-        self.gameName = gameName
-        self.possibleMatchesList = possibleMatchesList
+@dataclass
+class UserInputRequiredQueueEntry(Sendable):
+    game_name_on_disk: str
+    possible_matches_list: List[PossibleMatchQueueEntry]
     
-    def getGameName(self):
-        return self.gameName
+    def get_possible_matches_list(self):
+        return self.possible_matches_list
     
-    def getPossibleMatchesList(self):
-        return self.possibleMatchesList
-    
-    def toDict(self):
+    def to_dict(self):
         props = self.__dict__.copy()
-        # need to apply __dict__ to sub objects in the possibleMatchesList
-        props['possibleMatchesList'] = [x.toDict() for x in self.possibleMatchesList]
+        # need to apply __dict__ to sub objects in the possible_matches_list
+        props['possible_matches_list'] = [x.to_dict() for x in self.possible_matches_list]
     
         return props

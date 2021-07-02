@@ -1,20 +1,20 @@
 from QueueEntries.MatchQueueEntry import MatchQueueEntry
+from dataclasses import dataclass
 
+@dataclass
 class PossibleMatchQueueEntry:
-    def __init__(self, steamName: str, steamIDNumber: str, matchScore: float):
-        self.steamName = steamName
-        self.steamIDNumber = steamIDNumber
-        self.matchScore = matchScore
+    steam_name: str
+    steam_id_number: int
+    match_score: float
     
-    def getMatchScore(self) -> float:
-        return self.matchScore
+    def get_match_score(self) -> float:
+        return self.match_score
     
-    def getSteamName(self) -> str:
-        return self.steamName
+    def get_steam_name(self) -> str:
+        return self.steam_name
 
-    def convertToMatchQueueEntry(self, gameNameOnDisk: str) -> MatchQueueEntry:
-        return MatchQueueEntry(self.steamName, gameNameOnDisk, self.steamIDNumber)
+    def convert_to_match_queue_entry(self, game_name_on_disk: str) -> MatchQueueEntry:
+        return MatchQueueEntry(self.steam_name, game_name_on_disk, self.steam_id_number)
     
-    def toDict(self):
+    def to_dict(self):
         return self.__dict__.copy()
-

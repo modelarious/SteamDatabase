@@ -91,23 +91,23 @@ class StateCommunicatorTest(unittest.TestCase):
         userInputRequiredQueueEntry = create_user_input_required_queue_entry()
         stateCommunicator.setAwaitingUserInputState(userInputRequiredQueueEntry)
         self.assert_correct_calls_after_moving_to_next_state(gameTitleOnDisk, FINDING_NAME_ACTIVE_STATE)
-        self.assert_correct_call_structure_after_adding(userInputRequiredQueueEntry.toDict(), AWAITING_USER_STATE)
+        self.assert_correct_call_structure_after_adding(userInputRequiredQueueEntry.to_dict(), AWAITING_USER_STATE)
 
         # user selected an entry and we continue with processing
         matchQueueEntry = create_match_queue_entry()
         stateCommunicator.setQueuedForInfoRetrievalState(matchQueueEntry)
-        self.assert_correct_calls_after_moving_to_next_state(userInputRequiredQueueEntry.toDict(), AWAITING_USER_STATE)
-        self.assert_correct_call_structure_after_adding(matchQueueEntry.toDict(), QUEUED_FOR_INFO_RETRIEVAL_STATE)
+        self.assert_correct_calls_after_moving_to_next_state(userInputRequiredQueueEntry.to_dict(), AWAITING_USER_STATE)
+        self.assert_correct_call_structure_after_adding(matchQueueEntry.to_dict(), QUEUED_FOR_INFO_RETRIEVAL_STATE)
 
         stateCommunicator.setInfoRetrievalActiveState(matchQueueEntry)
-        self.assert_correct_calls_after_moving_to_next_state(matchQueueEntry.toDict(), QUEUED_FOR_INFO_RETRIEVAL_STATE)
-        self.assert_correct_call_structure_after_adding(matchQueueEntry.toDict(), INFO_RETRIEVAL_ACTIVE_STATE)
+        self.assert_correct_calls_after_moving_to_next_state(matchQueueEntry.to_dict(), QUEUED_FOR_INFO_RETRIEVAL_STATE)
+        self.assert_correct_call_structure_after_adding(matchQueueEntry.to_dict(), INFO_RETRIEVAL_ACTIVE_STATE)
 
         # persist the result 
         game = create_game()
         stateCommunicator.setStoredState(game)
-        self.assert_correct_calls_after_moving_to_next_state(matchQueueEntry.toDict(), INFO_RETRIEVAL_ACTIVE_STATE)
-        self.assert_correct_call_structure_after_adding(game.toDict(), STORED)
+        self.assert_correct_calls_after_moving_to_next_state(matchQueueEntry.to_dict(), INFO_RETRIEVAL_ACTIVE_STATE)
+        self.assert_correct_call_structure_after_adding(game.to_dict(), STORED)
     
     # this one skips the phase where it requires user input
     def test_perfect_match_flow(self):
@@ -126,17 +126,17 @@ class StateCommunicatorTest(unittest.TestCase):
         matchQueueEntry = create_match_queue_entry()
         stateCommunicator.setQueuedForInfoRetrievalState(matchQueueEntry)
         self.assert_correct_calls_after_moving_to_next_state(gameTitleOnDisk, FINDING_NAME_ACTIVE_STATE)
-        self.assert_correct_call_structure_after_adding(matchQueueEntry.toDict(), QUEUED_FOR_INFO_RETRIEVAL_STATE)
+        self.assert_correct_call_structure_after_adding(matchQueueEntry.to_dict(), QUEUED_FOR_INFO_RETRIEVAL_STATE)
 
         stateCommunicator.setInfoRetrievalActiveState(matchQueueEntry)
-        self.assert_correct_calls_after_moving_to_next_state(matchQueueEntry.toDict(), QUEUED_FOR_INFO_RETRIEVAL_STATE)
-        self.assert_correct_call_structure_after_adding(matchQueueEntry.toDict(), INFO_RETRIEVAL_ACTIVE_STATE)
+        self.assert_correct_calls_after_moving_to_next_state(matchQueueEntry.to_dict(), QUEUED_FOR_INFO_RETRIEVAL_STATE)
+        self.assert_correct_call_structure_after_adding(matchQueueEntry.to_dict(), INFO_RETRIEVAL_ACTIVE_STATE)
 
         # persist the result 
         game = create_game()
         stateCommunicator.setStoredState(game)
-        self.assert_correct_calls_after_moving_to_next_state(matchQueueEntry.toDict(), INFO_RETRIEVAL_ACTIVE_STATE)
-        self.assert_correct_call_structure_after_adding(game.toDict(), STORED)
+        self.assert_correct_calls_after_moving_to_next_state(matchQueueEntry.to_dict(), INFO_RETRIEVAL_ACTIVE_STATE)
+        self.assert_correct_call_structure_after_adding(game.to_dict(), STORED)
 
 if __name__ == '__main__':
     unittest.main()

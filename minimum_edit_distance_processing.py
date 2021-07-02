@@ -18,67 +18,63 @@ def similarity(a, b):
 # if it finds an exact match, it sends this off to the next step (gameNameMatchesProcessingQueue).
 # if it doesn't find an exact match, it sends the list off to get input from the user (userInputRequiredQueue).
 def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, userInputRequiredQueue, steamGamesList, quickSteamTitleMap, stateCommunicator):
+    stateCommunicator.setFindingNameActiveState(targetGame)
+
+    # try the fast method
     try:
-        stateCommunicator.setFindingNameActiveState(targetGame)
+        # XXX encapsulate the data access in an object - this logic should be paired with build_steam_title_map.
+        # XXX We shouldn't have to know to pass it in lower case, for example.
+        game = quickSteamTitleMap[targetGame.lower()]
+        steamIDNumber = game['appid']
+        steamName = game['name']
+        mqe = MatchQueueEntry(steamName, targetGame, steamIDNumber)
+        stateCommunicator.setQueuedForInfoRetrievalStateFromFindingNameActive(mqe)
+        gameNameMatchesProcessingQueue.put(mqe)
+        return
 
-        # try the fast method
-        try:
-            # XXX encapsulate the data access in an object - this logic should be paired with build_steam_title_map.
-            # XXX We shouldn't have to know to pass it in lower case, for example.
-            game = quickSteamTitleMap[targetGame.lower()]
-            steamIDNumber = game['appid']
-            steamName = game['name']
-            mqe = MatchQueueEntry(steamName, targetGame, steamIDNumber)
-            stateCommunicator.setQueuedForInfoRetrievalStateFromFindingNameActive(mqe)
-            gameNameMatchesProcessingQueue.put(mqe)
-            return
+    except KeyError:
+        # didn't find the title in the quick map - this is fine
+        pass
 
-        except KeyError:
-            # didn't find the title in the quick map - this is fine
-            pass
+    # XXX could refactor to the following which makes the game object smarter
+    # XXX Though this section could use optimization if anything - maybe refactoring to
+    # XXX use more objects would be a detriment
+    # possibleMatches = UserInputRequiredQueueEntry(targetGame)
+    # for game in steamGamesList:
+    #     score = game.calculateSimilarity(targetGame)
+    #     if score >= 0.7:
+    #         possibleMatches.trackCloseMatch(game, score)
 
-        # XXX could refactor to the following which makes the game object smarter
-        # XXX Though this section could use optimization if anything - maybe refactoring to
-        # XXX use more objects would be a detriment
-        # possibleMatches = UserInputRequiredQueueEntry(targetGame)
-        # for game in steamGamesList:
-        #     score = game.calculateSimilarity(targetGame)
-        #     if score >= 0.7:
-        #         possibleMatches.trackCloseMatch(game, score)
+    #         # if perfect match
+    #         if score == 1.0:
+    #             queueLayer.addPerfectNameMatch(game, targetGame)
+    #             break
+    # else:
+    #     queueLayer.askUserForSelection(possibleMatches)
+    
 
-        #         # if perfect match
-        #         if score == 1.0:
-        #             queueLayer.addPerfectNameMatch(game, targetGame)
-        #             break
-        # else:
-        #     queueLayer.askUserForSelection(possibleMatches)
-        
-
-        
-        # fallback to the slow method
-        possibleMatchesList = []
-        for game in steamGamesList:
-            # XXX encapsulate the data access in an object
-            steamName = game['name']
-            steamIDNumber = game['appid']
-            score = similarity(steamName.lower(), targetGame.lower())
-            if score >= 0.7:
-                possibleMatchesList.append(PossibleMatchQueueEntry(steamName, steamIDNumber, score))
-                if score == 1.0:
-                    print(steamName, targetGame, "added immediately")
-                    mqe = MatchQueueEntry(steamName, targetGame, steamIDNumber)
-                    stateCommunicator.setQueuedForInfoRetrievalStateFromFindingNameActive(mqe)
-                    gameNameMatchesProcessingQueue.put(mqe)
-                    break
-        else:
-            # sort by closest match first
-            sortedMatches = sorted(possibleMatchesList, key=lambda x: x.getMatchScore(), reverse=True)
-            uire = UserInputRequiredQueueEntry(targetGame, sortedMatches)
-            stateCommunicator.setAwaitingUserInputState(uire)
-            userInputRequiredQueue.put(uire)
-        
-    except Exception as e:
-        print(e)
+    
+    # fallback to the slow method
+    possibleMatchesList = []
+    for game in steamGamesList:
+        # XXX encapsulate the data access in an object
+        steamName = game['name']
+        steamIDNumber = game['appid']
+        score = similarity(steamName.lower(), targetGame.lower())
+        if score >= 0.7:
+            possibleMatchesList.append(PossibleMatchQueueEntry(steamName, steamIDNumber, score))
+            if score == 1.0:
+                print(steamName, targetGame, "added immediately")
+                mqe = MatchQueueEntry(steamName, targetGame, steamIDNumber)
+                stateCommunicator.setQueuedForInfoRetrievalStateFromFindingNameActive(mqe)
+                gameNameMatchesProcessingQueue.put(mqe)
+                break
+    else:
+        # sort by closest match first
+        sortedMatches = sorted(possibleMatchesList, key=lambda x: x.get_match_score(), reverse=True)
+        uire = UserInputRequiredQueueEntry(targetGame, sortedMatches)
+        stateCommunicator.setAwaitingUserInputState(uire)
+        userInputRequiredQueue.put(uire)
 
 def minimum_edit_distance_processing(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, quickSteamTitleMap, stateCommunicator):
     # (in an ideal world)
@@ -118,7 +114,9 @@ def minimum_edit_distance_processing(userInputRequiredQueue, gameNameMatchesProc
         print("submitted all the needed jobs")
 
         for future in as_completed(futureMap):
-            result = future.result() # unused, but needed to ensure the jobs finish
+            possible_exception = future.exception()
+            if possible_exception:
+                print(possible_exception)
 
     # no more user input required after this
     userInputRequiredQueue.put(END_OF_QUEUE)

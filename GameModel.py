@@ -12,7 +12,7 @@ class Game:
     user_defined_genres: List[str]
     app_detail : AppDetail
     
-    def toDict(self):
+    def to_dict(self):
         return asdict(self)
 
     

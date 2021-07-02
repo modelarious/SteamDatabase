@@ -28,7 +28,7 @@ class UserInputRequiredQueueEntry:
     def getGameName(self):
         return self.gameName
     
-    def getPossibleMatchesList(self):
+    def get_possible_matches_list(self):
         return self.possibleMatchesList
     
     def toJson(self):
@@ -46,13 +46,13 @@ class PossibleMatchQueueEntry:
         self.steamIDNumber = steamIDNumber
         self.matchScore = matchScore
     
-    def getMatchScore(self) -> float:
+    def get_match_score(self) -> float:
         return self.matchScore
     
-    def getSteamName(self) -> str:
+    def get_steam_name(self) -> str:
         return self.steamName
 
-    def convertToMatchQueueEntry(self, gameNameOnDisk: str):
+    def convert_to_match_queue_entry(self, gameNameOnDisk: str):
         return MatchQueueEntry(self.steamName, gameNameOnDisk, self.steamIDNumber)
     
 

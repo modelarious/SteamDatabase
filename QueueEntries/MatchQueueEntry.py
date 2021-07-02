@@ -15,5 +15,5 @@ class MatchQueueEntry:
     def getSteamIDNumber(self):
         return self.steamIDNumber
     
-    def toDict(self):
+    def to_dict(self):
         return self.__dict__.copy()
