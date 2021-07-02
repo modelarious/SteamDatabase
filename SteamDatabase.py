@@ -81,10 +81,6 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
     minimumEditDistanceProcess.join()
     print("finished processing games on the harddrive")
 
-    # no more user input required after this
-    userInputRequiredQueue.put(END_OF_QUEUE)
-    print("placed END OF QUEUE onto the user input required queue")
-
     # by this point there is nothing that will write to the gameNameMatchesProcessingQueue (that is being read by gameLookupAndStorageProcess)
     gameNameMatchesProcessingQueue.put(END_OF_QUEUE)
     print("placed END OF QUEUE onto the user input required queue")

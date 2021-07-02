@@ -24,9 +24,9 @@ python_to_postrgres_type_map = {
 # no user input here - no need to worry about injection attacks
 class TableCreatorPostgres(StatementCreatorBase):
     def create(self, ORMObjectClass: Type[ORMAbstractBase]) -> str:
-        return self._get_get_create_table_statement(get_type_hints(ORMObjectClass), ORMObjectClass)
+        return self._get_create_table_statement(get_type_hints(ORMObjectClass), ORMObjectClass)
 
-    def _get_get_create_table_statement(self, orm_column_title_name_to_type_map: Dict[str, type], ORMObjectClass: Type[ORMAbstractBase]):
+    def _get_create_table_statement(self, orm_column_title_name_to_type_map: Dict[str, type], ORMObjectClass: Type[ORMAbstractBase]):
         statement = f"CREATE TABLE IF NOT EXISTS {ORMObjectClass.get_table_name()} (\n"
         statement += self._get_columns(orm_column_title_name_to_type_map, ORMObjectClass)
         statement += self._get_foreign_key_mappings(ORMObjectClass)
