@@ -1,7 +1,7 @@
 import psycopg2
 
 class PostgresConnectionFactory:
-  def createConnection():
+  def createConnection(self):
     conn = psycopg2.connect(
       database="postgres", user='postgres', password='password', host='127.0.0.1', port= '5432'
     )

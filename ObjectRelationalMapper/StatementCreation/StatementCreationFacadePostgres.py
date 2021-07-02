@@ -12,7 +12,7 @@ class StatementCreationFacadePostgres:
     table_inserter: TableInserterPostgres
     table_selector: TableSelectorPostgres
     
-    def create_table_statement(self, ORMObjectClass: Type[ORMAbstractBase]) -> str:
+    def get_create_table_statement(self, ORMObjectClass: Type[ORMAbstractBase]) -> str:
         return self.table_creator.create(ORMObjectClass)
     
     def get_insert_data_statement(self, ORMObjectClass: Type[ORMAbstractBase]):
