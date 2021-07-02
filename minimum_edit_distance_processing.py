@@ -119,7 +119,7 @@ def minimum_edit_distance_processing(userInputRequiredQueue, gameNameMatchesProc
 
         for future in as_completed(futureMap):
             result = future.result() # unused, but needed to ensure the jobs finish
-    
+
     # no more user input required after this
     userInputRequiredQueue.put(END_OF_QUEUE)
     print("placed END OF QUEUE onto the user input required queue")
