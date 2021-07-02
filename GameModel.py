@@ -1,13 +1,14 @@
+from QueueEntries.Sendable import SteamSendable
 from dataclasses import asdict, dataclass
 from typing import List
 from ExternalDataFetchers.AppDetail import AppDetail
 
 @dataclass
-class Game:
+class Game(SteamSendable):
     steam_id: int
-    name_on_harddrive: str
+    game_name_on_disk: str
     path_on_harddrive: str
-    name_on_steam: str
+    game_name_from_steam: str
     avg_review_score: int
     user_defined_genres: List[str]
     app_detail : AppDetail
@@ -15,4 +16,3 @@ class Game:
     def to_dict(self):
         return asdict(self)
 
-    

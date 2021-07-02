@@ -20,8 +20,8 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
         # print("got ", gnmpe)
         stateCommunicator.setInfoRetrievalActiveState(gnmpe)
         # print("set ", gnmpe, "to info retrieval")
-        gameNameOnDisk = gnmpe.getGameNameOnDisk()
-        steamIDNumber = gnmpe.getSteamIDNumber()
+        gameNameOnDisk = gnmpe.get_game_name_on_disk()
+        steamIDNumber = gnmpe.get_steam_id_number()
 
         try:
 
@@ -35,9 +35,9 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
             
             game = Game(
                 steam_id=steamIDNumber, 
-                name_on_harddrive=gameNameOnDisk, 
-                path_on_harddrive=pathOnDisk + gameNameOnDisk, 
-                name_on_steam=gnmpe.getGameNameFromSteam(), 
+                game_name_on_disk=gameNameOnDisk,
+                path_on_harddrive=pathOnDisk, 
+                game_name_from_steam=gnmpe.get_game_name_from_steam(), 
                 avg_review_score=reviewScore,
                 user_defined_genres=userGenres,
                 app_detail=app_detail
@@ -45,9 +45,9 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
 
             # print(f"""
             #     steam_id={steamIDNumber}, 
-            #     name_on_harddrive={gameNameOnDisk}, 
-            #     path_on_harddrive={pathOnDisk + gameNameOnDisk}, 
-            #     name_on_steam={gnmpe.getGameNameFromSteam()}, 
+            #     game_name_on_disk={gameNameOnDisk},
+            #     path_on_harddrive={pathOnDisk}, 
+            #     game_name_from_steam={gnmpe.get_game_name_from_steam()}, 
             #     avg_review_score={reviewScore},
             #     user_defined_genres={userGenres},
             #     app_detail={app_detail}

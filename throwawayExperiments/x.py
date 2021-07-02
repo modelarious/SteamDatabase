@@ -9,13 +9,13 @@ class MatchQueueEntry:
         self.gameNameOnDisk = gameNameOnDisk
         self.steamIDNumber = steamIDNumber
 
-    def getGameNameFromSteam(self):
+    def get_game_name_from_steam(self):
         return self.gameNameFromSteam
     
-    def getGameNameOnDisk(self):
+    def get_game_name_on_disk(self):
         return self.gameNameOnDisk
 
-    def getSteamIDNumber(self):
+    def get_steam_id_number(self):
         return self.steamIDNumber
 
 

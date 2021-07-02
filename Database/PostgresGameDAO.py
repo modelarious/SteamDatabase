@@ -32,11 +32,11 @@ class PostgresGameDAO:
         return all_games
         
 
-    def get_paths_of_all_stored_games(self) -> List[str]:
+    def get_titles_of_all_stored_games(self) -> List[str]:
         conn = self.connection_factory.createConnection()
         query_returns = []
         with conn.cursor() as cur:
-            get_game_titles_query = "SELECT path_on_harddrive from Games"
+            get_game_titles_query = "SELECT game_name_on_disk from Games"
             cur.execute(get_game_titles_query)
             query_returns = cur.fetchall()
         

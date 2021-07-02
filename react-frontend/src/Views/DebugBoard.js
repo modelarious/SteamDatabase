@@ -48,7 +48,7 @@ function DebugBoard(props) {
           <br></br>
           <List>
             {props.stateData[AWAITING_USER_STATE].map(ob => (
-              <ListItem>{ob.gameName}</ListItem>
+              <ListItem>{ob.game_name_on_disk}</ListItem>
             ))}
           </List>
         </Container>
@@ -58,7 +58,7 @@ function DebugBoard(props) {
           <br></br>
           <List>
             {props.stateData[QUEUED_FOR_INFO_RETRIEVAL_STATE].map(ob => (
-              <ListItem>{ob.gameNameFromSteam}</ListItem>
+              <ListItem>{ob.game_name_from_steam}</ListItem>
             ))}
           </List>
         </Container>
@@ -68,7 +68,7 @@ function DebugBoard(props) {
           <br></br>
           <List>
             {props.stateData[INFO_RETRIEVAL_ACTIVE_STATE].map(ob => (
-              <ListItem>{ob.gameNameFromSteam}</ListItem>
+              <ListItem>{ob.game_name_from_steam}</ListItem>
             ))}
           </List>
         </Container>
@@ -78,7 +78,7 @@ function DebugBoard(props) {
           <br></br>
           <List>
             {props.stateData[STORED].map(ob => (
-              <ListItem>{ob.name_on_steam}</ListItem>
+              <ListItem>{ob.game_name_from_steam}</ListItem>
             ))}
           </List>
         </Container>

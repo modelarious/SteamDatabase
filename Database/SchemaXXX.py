@@ -26,15 +26,15 @@ cursor = conn.cursor()
 
 # Games:
 #   steam_id -> int, primary -> used as foreign key in other tables
-#   name_on_harddrive -> string
-#   name_on_steam -> string
+#   game_name_on_disk -> string
+#   game_name_from_steam -> string
 #   avg_review_score -> float
 x = '''
 CREATE TABLE IF NOT EXISTS Games (
   steam_id int NOT NULL,
-  name_on_harddrive VARCHAR ( 1000 ) UNIQUE NOT NULL,
+  game_name_on_disk VARCHAR ( 1000 ) UNIQUE NOT NULL,
   path_on_harddrive VARCHAR ( 1000 ) UNIQUE NOT NULL,
-  name_on_steam VARCHAR ( 1000 ) UNIQUE NOT NULL,
+  game_name_from_steam VARCHAR ( 1000 ) UNIQUE NOT NULL,
   avg_review_score DOUBLE PRECISION NOT NULL,
   PRIMARY KEY (steam_id)
 );
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS Games (
 cursor.execute(x)
 
 # x = '''
-# INSERT INTO Games (steam_id, name_on_harddrive, path_on_harddrive, name_on_steam, avg_review_score) VALUES
+# INSERT INTO Games (steam_id, game_name_on_disk, path_on_harddrive, game_name_from_steam, avg_review_score) VALUES
 #     (1976647, 'Tampopo', 'String', '1985-02-10', 5.4),
 #     (2658854, 'Factorio', '/Volumes/GameDrive/Factorio', 'Factorio', 9.2);
 # '''

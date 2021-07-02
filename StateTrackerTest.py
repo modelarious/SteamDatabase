@@ -17,9 +17,9 @@ possibleTitleMatch2 = "Hello, I'm a game title 2"
 def create_game():
     return Game(
         steam_id = "122999", 
-        name_on_harddrive = gameTitleOnDisk, 
+        game_name_on_disk = gameTitleOnDisk, 
         path_on_harddrive = "hello", 
-        name_on_steam = "hi there", 
+        game_name_from_steam = "hi there", 
         avg_review_score = 9.4,
         user_defined_genres = ['genre1', 'genre2']
     )

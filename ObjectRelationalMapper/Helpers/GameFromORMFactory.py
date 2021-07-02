@@ -55,9 +55,9 @@ class GameFromORMFactory:
 
 		game_model = Game(
 			steam_id,
-			name_on_harddrive=game_data.name_on_harddrive,
+			game_name_on_disk=game_data.game_name_on_disk,
 			path_on_harddrive=game_data.path_on_harddrive,
-			name_on_steam=game_data.name_on_steam,
+			game_name_from_steam=game_data.game_name_from_steam,
 			avg_review_score=game_data.avg_review_score,
 			user_defined_genres=user_defined_genres,
 			app_detail=app_detail
