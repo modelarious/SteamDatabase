@@ -22,13 +22,13 @@ class UserInputRequiredQueueEntryTest(unittest.TestCase):
 
     # was getting errors here originally because I was modifying self.__dict__ in the object
     # instead of self.__dict__.copy(). This modified the object itself which caused the second
-    # call to to_dict() to fail
+    # call to toDict() to fail
     def test_transform_multiple(self):
         x = create_user_input_required_queue_entry()
-        x.to_dict()
-        x.to_dict()
-        x.to_dict()
-        x.to_dict()
+        x.toDict()
+        x.toDict()
+        x.toDict()
+        x.toDict()
 
 if __name__ == '__main__':
     unittest.main()
