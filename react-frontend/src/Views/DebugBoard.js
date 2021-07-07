@@ -16,32 +16,31 @@ import {
 } from '@chakra-ui/react';
 import CommandButton from '../Interactions/CommandButton';
 
-const socket_to_name = [
-  {
-    state: UPCOMING_STATE, 
-    name: "Upcoming"
-  },
-  {
-    state: FINDING_NAME_ACTIVE_STATE, 
-    name: "Finding Name Active"
-  },
-  {
-    state: AWAITING_USER_STATE, 
-    name: "Awaiting User"
-  },
-  {
-    state: QUEUED_FOR_INFO_RETRIEVAL_STATE, 
-    name: "Queued for Info Retrieval"
-  },
-  {
-    state: INFO_RETRIEVAL_ACTIVE_STATE, 
-    name: "Info Retrieval Active"
-  },
-  {
-    state: STORED, 
-    name: "Stored"
+class SocketInfo {
+  constructor(state_constant, state_name, access_steam_name_instead) {
+    this.state_constant = state_constant
+    this.state_name = state_name
+    this.access_steam_name_instead = access_steam_name_instead
   }
+
+  get_name(state_data) {
+    if (this.access_steam_name_instead) {
+      return state_data.game_name_from_steam
+    }
+    return state_data.game_name_on_disk
+    
+  }
+}
+
+const socket_to_name = [
+  new SocketInfo(UPCOMING_STATE, "Upcoming", false),
+  new SocketInfo(FINDING_NAME_ACTIVE_STATE, "Finding Name Active", false),
+  new SocketInfo(AWAITING_USER_STATE, "Awaiting User", false),
+  new SocketInfo(QUEUED_FOR_INFO_RETRIEVAL_STATE, "Queued for Info Retrieval", true),
+  new SocketInfo(INFO_RETRIEVAL_ACTIVE_STATE, "Info Retrieval Active", true),
+  new SocketInfo(STORED, "Stored", true)
 ]
+
 
 // expecting to receive:
 /*
@@ -60,13 +59,13 @@ function DebugBoard(props) {
     <ChakraProvider>
       <CommandButton commandSocket={props.commandSocket}/>
       <SimpleGrid columns={socket_to_name.length} spacingX={1} spacingY={1}> {
-        socket_to_name.map(socket_to_name_data => (
+        socket_to_name.map(socket_info => (
           <Container>
-          <Text>{socket_to_name_data.name}</Text>
+          <Text>{socket_info.state_name}</Text>
           <br></br>
           <List>
-            {props.stateData[socket_to_name_data.state].map(state_data => (
-              <ListItem>{state_data.game_name_on_disk}</ListItem>
+            {props.stateData[socket_info.state_constant].map(state_data => (
+              <ListItem>{socket_info.get_name(state_data)}</ListItem>
             ))}
           </List>
           </Container>
