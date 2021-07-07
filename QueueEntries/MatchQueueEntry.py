@@ -15,6 +15,3 @@ class MatchQueueEntry(SteamSendable):
 
     def get_steam_id_number(self):
         return self.steam_id_number
-    
-    def to_dict(self):
-        return self.__dict__.copy()

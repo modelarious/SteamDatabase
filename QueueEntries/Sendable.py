@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 @dataclass
 class Sendable:
@@ -6,7 +6,6 @@ class Sendable:
 
     def get_game_name_on_disk(self) -> str:
         return self.game_name_on_disk
-    
 
 @dataclass
 class SteamSendable:

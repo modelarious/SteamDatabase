@@ -15,6 +15,3 @@ class PossibleMatchQueueEntry:
 
     def convert_to_match_queue_entry(self, game_name_on_disk: str) -> MatchQueueEntry:
         return MatchQueueEntry(game_name_on_disk, self.steam_name, self.steam_id_number)
-    
-    def to_dict(self):
-        return self.__dict__.copy()

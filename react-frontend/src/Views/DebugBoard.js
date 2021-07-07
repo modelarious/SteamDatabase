@@ -16,8 +16,7 @@ import {
 } from '@chakra-ui/react';
 import CommandButton from '../Interactions/CommandButton';
 
-// XXX improve this by generalizing how data is stored in the objects in each of the queues
-// XXX to make sure that something like gameNameOnDisk is present in every object
+// XXX now that all objects have game_name_on_disk, you can now improve this code by .map()'ing the Container objects
 function DebugBoard(props) {
   return <div>
     <ChakraProvider>
@@ -27,9 +26,9 @@ function DebugBoard(props) {
           <Text>Upcoming</Text>
           <br></br>
           <List>
-            {props.stateData[UPCOMING_STATE].map(title => (
-              <ListItem border="1px solid red" style={{display: 'flex',  borderRadius: '25px', justifyContent:'center', alignItems:'center'}}>{title}</ListItem>
-            ))}
+            {props.stateData[UPCOMING_STATE].map(ob => (
+              <ListItem border="1px solid red" style={{display: 'flex',  borderRadius: '25px', justifyContent:'center', alignItems:'center'}}>{ob.game_name_on_disk}</ListItem>
+            ))} 
           </List>
         </Container>
         
@@ -37,8 +36,8 @@ function DebugBoard(props) {
           <Text>Finding Name Active</Text>
           <br></br>
           <List>
-            {props.stateData[FINDING_NAME_ACTIVE_STATE].map(title => (
-              <ListItem>{title}</ListItem>
+            {props.stateData[FINDING_NAME_ACTIVE_STATE].map(ob => (
+              <ListItem>{ob.game_name_on_disk}</ListItem>
             ))}
           </List>
         </Container>

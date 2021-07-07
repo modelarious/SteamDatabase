@@ -1,3 +1,4 @@
+from QueueEntries.Sendable import Sendable
 from State.States import *
 from State.StateCommunicatorInterface import StateCommunicatorInterface
 
@@ -22,44 +23,39 @@ class StateCommunicator(StateCommunicatorInterface):
         self.infoRetrievalActive = observedDataStructures[INFO_RETRIEVAL_ACTIVE_STATE]
         self.stored = observedDataStructures[STORED]
 
-    def batchSetUpcomingState(self, gameTitlesOnDisk : List[str]):
-        self.upcoming.batch_add(gameTitlesOnDisk)
+    def batchSetUpcomingState(self, game_titles_on_disk : List[str]):
+        sendables = [Sendable(game_name_on_disk=title) for title in game_titles_on_disk]
+        self.upcoming.batch_add(sendables)
     
     def setFindingNameActiveState(self, gameTitleOnDisk : str):
-        self.upcoming.remove(gameTitleOnDisk)
-        self.findingNameActive.add(gameTitleOnDisk)
+        self.upcoming.remove(Sendable(gameTitleOnDisk))
+        self.findingNameActive.add(Sendable(gameTitleOnDisk))
     
     def setAwaitingUserInputState(self, userInputRequiredQueueEntry : UserInputRequiredQueueEntry):
-        gameTitleOnDisk = userInputRequiredQueueEntry.get_game_name_on_disk()
-        self.findingNameActive.remove(gameTitleOnDisk)
-        self.awaitingUser.add(userInputRequiredQueueEntry.to_dict(), gameTitleOnDisk)
+        self.findingNameActive.remove(userInputRequiredQueueEntry)
+        self.awaitingUser.add(userInputRequiredQueueEntry)
     
     def rejectedByUser(self, userInputRequiredQueueEntry: UserInputRequiredQueueEntry):
-        gameTitleOnDisk = userInputRequiredQueueEntry.get_game_name_on_disk()
-        self.awaitingUser.remove(gameTitleOnDisk)
+        self.awaitingUser.remove(userInputRequiredQueueEntry)
     
     # Could have been a 100% name match in which case, previous state was FindingNameActiveState.
     # Also could have been only a partial match to a few names and the user had to select
     # the correct one, so the previous state was AwaitingUserInputState.
     def setQueuedForInfoRetrievalStateFromFindingNameActive(self, matchQueueEntry : MatchQueueEntry):
-        gameTitleOnDisk = matchQueueEntry.get_game_name_on_disk()
-        self.findingNameActive.remove(gameTitleOnDisk)
-        self.queuedForInfoRetrieval.add(matchQueueEntry.to_dict(), gameTitleOnDisk)
+        self.findingNameActive.remove(matchQueueEntry)
+        self.queuedForInfoRetrieval.add(matchQueueEntry)
 
     def setQueuedForInfoRetrievalStateFromAwaitingUser(self, matchQueueEntry : MatchQueueEntry):
-        gameTitleOnDisk = matchQueueEntry.get_game_name_on_disk()
-        self.awaitingUser.remove(gameTitleOnDisk)
-        self.queuedForInfoRetrieval.add(matchQueueEntry.to_dict(), gameTitleOnDisk)
+        self.awaitingUser.remove(matchQueueEntry)
+        self.queuedForInfoRetrieval.add(matchQueueEntry)
     
     def setInfoRetrievalActiveState(self, matchQueueEntry : MatchQueueEntry):
-        gameTitleOnDisk = matchQueueEntry.get_game_name_on_disk()
-        self.queuedForInfoRetrieval.remove(gameTitleOnDisk)
-        self.infoRetrievalActive.add(matchQueueEntry.to_dict(), gameTitleOnDisk)
+        self.queuedForInfoRetrieval.remove(matchQueueEntry)
+        self.infoRetrievalActive.add(matchQueueEntry)
     
     def setStoredState(self, game : Game):
-        gameTitleOnDisk = game.game_name_on_disk
-        self.infoRetrievalActive.remove(gameTitleOnDisk)
-        self.stored.add(game.to_dict(), gameTitleOnDisk)
+        self.infoRetrievalActive.remove(game)
+        self.stored.add(game)
     
     # def storageFailed(self, game: Game):
     #     gameTitleOnDisk = game.game_name_on_disk

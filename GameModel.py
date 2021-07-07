@@ -12,7 +12,4 @@ class Game(SteamSendable):
     avg_review_score: int
     user_defined_genres: List[str]
     app_detail : AppDetail
-    
-    def to_dict(self):
-        return asdict(self)
 
