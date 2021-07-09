@@ -6,9 +6,9 @@ from ObjectRelationalMapper.ORMMappedObjects.ORMAbstractBase import ORMAbstractB
 @dataclass
 class ORMGame(ORMAbstractBase):
     steam_id: int
-    name_on_harddrive: str
+    game_name_on_disk: str
     path_on_harddrive: str
-    name_on_steam: str
+    game_name_from_steam: str
     avg_review_score: int
 
     @staticmethod
@@ -19,9 +19,9 @@ class ORMGame(ORMAbstractBase):
     def get_insertion_data(game_model: Game) -> tuple:
         return (
             game_model.steam_id, 
-            game_model.name_on_harddrive, 
+            game_model.game_name_on_disk, 
             game_model.path_on_harddrive, 
-            game_model.name_on_steam, 
+            game_model.game_name_from_steam, 
             game_model.avg_review_score
         )
 
@@ -37,4 +37,5 @@ class ORMGame(ORMAbstractBase):
     def get_non_unique_mappings() -> List[str]:
         return [
             'avg_review_score',
+            'path_on_harddrive',
         ]

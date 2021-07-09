@@ -22,18 +22,12 @@ class StartGameMatchCommand(Command):
 
         postgres_dao_factory = PostgresGameDAOFactory()
         postgres_dao = postgres_dao_factory.createGameDAO()
-        game_paths_from_postgres = set(postgres_dao.get_paths_of_all_stored_games())
+        game_titles_from_postgres = set(postgres_dao.get_titles_of_all_stored_games())
 
         filtered_game_titles = [ 
             game_title for game_title in games_titles_on_disk
-                if self.path_on_disk + sep + game_title not in game_paths_from_postgres
+                if game_title not in game_titles_from_postgres
         ]
-
-        for game_title in games_titles_on_disk:
-            file_path = self.path_on_disk + sep + game_title
-            print(file_path)
-            if file_path not in game_paths_from_postgres:
-                print("added")
 
         # XXX Are there duplicate steam titles in the list? The fast map might need to be changed!
         # Reason I'm concerned is that there are (for example) two steam ids for Majesty 2

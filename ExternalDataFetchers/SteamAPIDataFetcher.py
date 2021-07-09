@@ -1,39 +1,44 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import List, Optional
 from ExternalDataFetchers.AppDetail import AppDetailFactory, AppDetail
 import requests
+
+class NoResponseException(Exception):
+    pass
+
+class RequestUnsuccesfulException(Exception):
+    pass
+
+class IncorrectAppTypeException(Exception):
+    pass
 
 @dataclass
 class SteamAPIDataFetcher:
     app_detail_factory: AppDetailFactory
+    allowed_app_types: List = ['game', 'dlc', 'demo']
     
     def getAvgReviewScore(self, steam_id: int) -> int:
-        # https://partner.steamgames.com/doc/store/getreviews
         URL = f"https://store.steampowered.com/appreviews/{steam_id}?json=1 "
-
         requestReturn = requests.get(url = URL) 
         gamesObject = requestReturn.json()
         reviewValues = gamesObject['query_summary']
-        # if reviewValues['num_reviews'] > 0:
-        #     pprint(reviewValues['review_score'])
         return reviewValues['review_score']
     
-    # XXX not a fan of how we don't know which case failed (if not success or if app_type not in [])
-    # XXX might be worth switching to exception based communication with caller if you work on this
-    # XXX piece of code again
     def get_app_detail(self, steam_id: int) -> Optional[AppDetail]:
         URL = f"https://store.steampowered.com/api/appdetails?appids={steam_id}"
         request_return = requests.get(url = URL)
         steam_response = request_return.json()
-        app_id = list(steam_response.keys())[0]
+        if not steam_response:
+            raise NoResponseException(f"got None when fetching from {URL}")
 
+        app_id = list(steam_response.keys())[0]
         success = steam_response[app_id]['success']
         if not success:
-            return False
+            raise RequestUnsuccesfulException(f"request returned False in the `success` field: {steam_response}")
 
         app_type = steam_response[app_id]['data']['type']
-        if app_type not in ['game', 'dlc', 'demo']:
-            return False
+        if app_type not in self.allowed_app_types:
+            raise IncorrectAppTypeException(f"app_type ({app_type}) was not part of allowed app types: {self.allowed_app_types}")
 
         app_detail = self.app_detail_factory.create_app_detail(steam_response, app_id)
         return app_detail
