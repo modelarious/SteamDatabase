@@ -1,3 +1,4 @@
+from Server.WebsocketClientHandlerRegistry import GAMES
 from QueueEntries.Sendable import Sendable
 from State.States import *
 from State.StateCommunicatorInterface import StateCommunicatorInterface
@@ -14,7 +15,7 @@ from typing import List
 # XXX will break. This is because the observedDataStructure is powered by a data structure
 # that assumes the titles are unique within a batch
 class StateCommunicator(StateCommunicatorInterface):
-    def __init__(self, observedDataStructures : Dict[StateStrType, ObservedDataStructure]):
+    def __init__(self, observedDataStructures : Dict[StateStrType, ObservedDataStructure], games_observable_data_structure: ObservedDataStructure):
         # doing this with helpful names so accesses in member functions are easy to read
         self.upcoming  = observedDataStructures[UPCOMING_STATE]
         self.findingNameActive = observedDataStructures[FINDING_NAME_ACTIVE_STATE]
@@ -22,6 +23,7 @@ class StateCommunicator(StateCommunicatorInterface):
         self.queuedForInfoRetrieval = observedDataStructures[QUEUED_FOR_INFO_RETRIEVAL_STATE]
         self.infoRetrievalActive = observedDataStructures[INFO_RETRIEVAL_ACTIVE_STATE]
         self.stored = observedDataStructures[STORED]
+        self.games = games_observable_data_structure
 
     def batchSetUpcomingState(self, game_titles_on_disk : List[str]):
         sendables = [Sendable(game_name_on_disk=title) for title in game_titles_on_disk]
@@ -56,6 +58,7 @@ class StateCommunicator(StateCommunicatorInterface):
     def setStoredState(self, game : Game):
         self.infoRetrievalActive.remove(game)
         self.stored.add(game)
+        self.games.add(game)
     
     # def storageFailed(self, game: Game):
     #     gameTitleOnDisk = game.game_name_on_disk

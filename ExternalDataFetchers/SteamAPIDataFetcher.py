@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional
 from ExternalDataFetchers.AppDetail import AppDetailFactory, AppDetail
 import requests
@@ -15,7 +15,7 @@ class IncorrectAppTypeException(Exception):
 @dataclass
 class SteamAPIDataFetcher:
     app_detail_factory: AppDetailFactory
-    allowed_app_types: List = ['game', 'dlc', 'demo']
+    allowed_app_types: List = field(default_factory=lambda: ['game', 'dlc', 'demo'])
     
     def getAvgReviewScore(self, steam_id: int) -> int:
         URL = f"https://store.steampowered.com/appreviews/{steam_id}?json=1 "
