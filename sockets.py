@@ -1,5 +1,6 @@
+from State.States import STATES
 from CommandDispatch.CommandDispatchFactory import CommandDispatchFactory
-from Server.WebsocketClientHandlerRegistry import WebsocketClientHandlerRegistry
+from Server.WebsocketClientHandlerRegistry import GAMES, WebsocketClientHandlerRegistry
 from Server.Server import Server
 
 from State.StateCommunicatorFactory import StateCommunicatorFactory
@@ -13,7 +14,6 @@ if __name__ == '__main__':
     postgresGameDAOFactory = PostgresGameDAOFactory()
     gameDAO = postgresGameDAOFactory.createGameDAO()
     gameDAO.create_tables()
-    print(gameDAO.get_all_games())
 
     websocketRegistry = WebsocketClientHandlerRegistry()
     server = Server(websocketRegistry)
@@ -25,8 +25,10 @@ if __name__ == '__main__':
 
     # now that we are guaranteed that the sockets are connected, we can use them
     observerSocketHookupFactory = ObserverSocketHookupFactory(websocketRegistry)
+    games_observable_data_structure = observerSocketHookupFactory.hookUpObservableDataStructure(GAMES)
+    games_observable_data_structure.batch_add(gameDAO.get_all_games())
     stateCommunicatorFactory = StateCommunicatorFactory()
-    stateCommunicator = stateCommunicatorFactory.createStateCommunicator(observerSocketHookupFactory)
+    stateCommunicator = stateCommunicatorFactory.createStateCommunicator(observerSocketHookupFactory, STATES, games_observable_data_structure)
     
     m = Manager()
     queue = m.Queue()
