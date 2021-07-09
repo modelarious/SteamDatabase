@@ -10,8 +10,10 @@ import DebugBoard from './Views/DebugBoard';
 
 const autoBind = require('auto-bind');
 const COMMAND = "/command";
+const GAMES = "/games";
 const endpoints = STATES.concat([
   COMMAND,
+  GAMES
 ]);
 
 // XXX I really don't like this being global - but it seems to be the only way to

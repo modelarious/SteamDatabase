@@ -4,9 +4,18 @@ from State.States import STATES
 
 # socket is used for issuing commands from front end to back end
 COMMAND = '/command'
+GAMES = '/games'
+
+
+# GAMES_SUMMARY = '/games_summary' # Would be nice to do
+# select steam_id, header_image_url from appdetails;
+# to get a summary of the games instead of sending ALL THE DATA EVER
+# XXX Extending the above, when sending to the debug view it would be nice to just send the Sendable and SteamSendable
+# objects instead of the full sized objects to cut down on network traffic
 
 expectedSockets = set([
-    COMMAND
+    COMMAND,
+    GAMES
 ])
 
 # add all States to expectedSockets
