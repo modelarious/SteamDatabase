@@ -116,7 +116,7 @@ def minimum_edit_distance_processing(userInputRequiredQueue, gameNameMatchesProc
         for future in as_completed(futureMap):
             possible_exception = future.exception()
             if possible_exception:
-                print(possible_exception)
+                print(possible_exception) # XXX XXX XXX XXX XXX YYY YYY log this!!!
 
     # no more user input required after this
     userInputRequiredQueue.put(END_OF_QUEUE)

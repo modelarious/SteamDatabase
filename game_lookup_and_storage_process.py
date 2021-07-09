@@ -46,7 +46,6 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
                 app_detail=app_detail
             )
 
-            print(game)
             print("created game")
             try:
                 print("try to commit game")
