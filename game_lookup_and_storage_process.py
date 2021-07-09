@@ -1,3 +1,4 @@
+from ExternalDataFetchers.SteamAPIDataFetcher import IncorrectAppTypeException, NoResponseException, RequestUnsuccesfulException
 from GameModel import Game
 from Constants import END_OF_QUEUE
 from psycopg2.errors import UniqueViolation
@@ -7,10 +8,12 @@ import logging
 logging.basicConfig(
     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S',
-    filename='/tmp/out.txt'
+    filename='out.txt'
 )
 
 class FailedToGetAppDetailsException(Exception):
+    pass
+class DatabaseInsertException(Exception):
     pass
 
 def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, userDefinedGenresFetcher, steamAPIDataFetcher, pathOnDisk, stateCommunicator):
@@ -44,21 +47,24 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
             )
 
             print(game)
-
             print("created game")
-
-            # YYY on exceptions, should I be tracking a state change to error?
             try:
                 print("try to commit game")
                 gameDAO.commit_game(game)
                 stateCommunicator.setStoredState(game)
                 print("success")
             except UniqueViolation as e:
-                unableToInsert.append(gameNameOnDisk)
-                message = f'Unable to insert: {steamIDNumber}, {gameNameOnDisk}\n{e}\ngame={game}'
-                logging.critical(message)
-                print(f"failure {message}")
-        except FailedToGetAppDetailsException as e:
+                print("failure")
+                raise DatabaseInsertException(f'Unable to insert: {steamIDNumber}, {gameNameOnDisk}\n{e}\ngame={game}')
+
+        # YYY on exceptions, should I be tracking a state change to error?
+        except (
+            FailedToGetAppDetailsException,
+            NoResponseException,
+            RequestUnsuccesfulException,
+            IncorrectAppTypeException,
+            DatabaseInsertException
+         ) as e:
             unableToInsert.append(gameNameOnDisk)
             logging.critical(e)
 

@@ -15,8 +15,8 @@ def create_logger(name, log_file):
 	logger.addHandler(handler)
 	return logger
 
-basic_logger = create_logger('basic', '/tmp/basic-out.txt')
-extended_logger = create_logger('extended', '/tmp/extended-out.txt')
+basic_logger = create_logger('basic', 'basic-out.txt')
+extended_logger = create_logger('extended', 'extended-out.txt')
 
 @dataclass
 class ScreenshotURL:
