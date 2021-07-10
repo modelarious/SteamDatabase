@@ -14,6 +14,7 @@ def build_steam_title_map(steamGamesList):
         steamTitleMap[gameTitle] = gameObj
     return steamTitleMap
 
+
 def ui_handling(userInputRequiredQueue, gameNameMatchesProcessingQueue, stateCommunicator):
     unmatchedGames = []
     uire = userInputRequiredQueue.get()
