@@ -61,6 +61,11 @@ class App extends Component {
       commandSocket = this.socketContainer.get_socket(COMMAND)
     }
 
+    let gameSocket;
+    if (this.socketContainer) {
+      gameSocket = this.socketContainer.get_socket(GAMES)
+    }
+
     return (
       <Tabs renderActiveTabContentOnly={true}>
         <TabLink to="tab1" default>Games</TabLink>
@@ -68,7 +73,7 @@ class App extends Component {
         <TabLink to="tab3">Debug</TabLink>
       
         <TabContent for="tab1">
-          <GameListView></GameListView>
+          <GameListView>gameSocket={gameSocket}</GameListView>
         </TabContent>
         <TabContent for="tab2">"user input view"</TabContent>
         <TabContent for="tab3">
