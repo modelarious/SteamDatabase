@@ -46,6 +46,7 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue: Queue, gameD
             DatabaseInsertException
          ) as e:
             unableToInsert.append(gameNameOnDisk)
+            print(e)
             logging.critical(e)
 
         gnmpe = gameNameMatchesProcessingQueue.get()
