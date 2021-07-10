@@ -1,7 +1,10 @@
+from queue import Queue
+from Database.PostgresGameDAO import PostgresGameDAO
+from State.StateCommunicatorInterface import StateCommunicatorInterface
 from ExternalDataFetchers.SteamAPIDataFetcher import IncorrectAppTypeException, NoResponseException, RequestUnsuccesfulException
-from GameModel import Game
 from Constants import END_OF_QUEUE
 from psycopg2.errors import UniqueViolation
+from GameFactory import GameFactory, FailedToGetAppDetailsException
 
 import logging
 
@@ -11,41 +14,19 @@ logging.basicConfig(
     filename='out.txt'
 )
 
-class FailedToGetAppDetailsException(Exception):
-    pass
 class DatabaseInsertException(Exception):
     pass
 
-def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, userDefinedGenresFetcher, steamAPIDataFetcher, pathOnDisk, stateCommunicator):
+def game_lookup_and_storage_process(gameNameMatchesProcessingQueue: Queue, gameDAO: PostgresGameDAO, stateCommunicator: StateCommunicatorInterface, gameFactory: GameFactory):
     unableToInsert = []
     gnmpe = gameNameMatchesProcessingQueue.get()
     while gnmpe != END_OF_QUEUE:
         print("got ", gnmpe)
+        gameNameOnDisk = gnmpe.get_game_name_on_disk()
         stateCommunicator.setInfoRetrievalActiveState(gnmpe)
         print("set ", gnmpe, "to info retrieval")
-        gameNameOnDisk = gnmpe.get_game_name_on_disk()
-        steamIDNumber = gnmpe.get_steam_id_number()
-
         try:
-
-            # XXX factory
-            userGenres = userDefinedGenresFetcher.getGenres(steamIDNumber)
-            reviewScore = steamAPIDataFetcher.getAvgReviewScore(steamIDNumber)
-            app_detail = steamAPIDataFetcher.get_app_detail(steamIDNumber)
-
-            if not app_detail:
-                raise FailedToGetAppDetailsException(f'failed get_app_detail for {steamIDNumber}, {gnmpe}')
-            
-            game = Game(
-                steam_id=steamIDNumber, 
-                game_name_on_disk=gameNameOnDisk,
-                path_on_harddrive=pathOnDisk, 
-                game_name_from_steam=gnmpe.get_game_name_from_steam(), 
-                avg_review_score=reviewScore,
-                user_defined_genres=userGenres,
-                app_detail=app_detail
-            )
-
+            game = gameFactory.create(gnmpe)
             print("created game")
             try:
                 print("try to commit game")
@@ -54,7 +35,7 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue, gameDAO, use
                 print("success")
             except UniqueViolation as e:
                 print("failure")
-                raise DatabaseInsertException(f'Unable to insert: {steamIDNumber}, {gameNameOnDisk}\n{e}\ngame={game}')
+                raise DatabaseInsertException(f'Unable to insert: {gnmpe.get_steam_id_number()}, {gameNameOnDisk}\n{e}\ngame={game}')
 
         # YYY on exceptions, should I be tracking a state change to error?
         except (

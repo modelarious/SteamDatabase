@@ -1,6 +1,5 @@
+from GameFactory import GameFactory
 from State.StateCommunicatorInterface import StateCommunicatorInterface
-from ExternalDataFetchers.UserDefinedGenresFetcher import UserDefinedGenresFetcher
-from ExternalDataFetchers.SteamAPIDataFetcher import AppDetailFactory, SteamAPIDataFetcher
 from minimum_edit_distance_processing import minimum_edit_distance_processing
 from game_lookup_and_storage_process import game_lookup_and_storage_process
 from Constants import END_OF_QUEUE
@@ -14,7 +13,6 @@ def build_steam_title_map(steamGamesList):
         gameTitle = gameObj["name"].lower()
         steamTitleMap[gameTitle] = gameObj
     return steamTitleMap
-
 
 def ui_handling(userInputRequiredQueue, gameNameMatchesProcessingQueue, stateCommunicator):
     unmatchedGames = []
@@ -44,7 +42,6 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
     quickSteamTitleMap = build_steam_title_map(steamGamesList)
 
     print("creating manager and queues")
-    # XXX do these need to be manager queues anymore or could they be multiprocessing queues now?
     m = Manager()
     gameNameMatchesProcessingQueue = m.Queue()
     userInputRequiredQueue = m.Queue()
@@ -53,13 +50,11 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
     print("constructing necessary objects")
     postgresGameDAOFactory = PostgresGameDAOFactory()
     gameDAO = postgresGameDAOFactory.createGameDAO()
-    userDefinedGenresFetcher = UserDefinedGenresFetcher()
-    app_detail_factory = AppDetailFactory()
-    steamAPIDataFetcher = SteamAPIDataFetcher(app_detail_factory)
+    gameFactory = GameFactory(pathOnDisk)
     print("finished constructing necessary objects")
 
     print("launching game storage process")
-    gameLookupAndStorageProcess = Process(target=game_lookup_and_storage_process, args=(gameNameMatchesProcessingQueue, gameDAO, userDefinedGenresFetcher, steamAPIDataFetcher, pathOnDisk, stateCommunicator))
+    gameLookupAndStorageProcess = Process(target=game_lookup_and_storage_process, args=(gameNameMatchesProcessingQueue, gameDAO, stateCommunicator, gameFactory))
     gameLookupAndStorageProcess.start()
     print("finished launching game storage process")
     
@@ -70,6 +65,7 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
     minimumEditDistanceProcess.start()
     print("finished launching minimum edit distance handling process")
 
+    # this is intendid to be blocking
     print("launching user input handling")
     unmatchedGames = ui_handling(userInputRequiredQueue, gameNameMatchesProcessingQueue, stateCommunicator)
     print("finished user input handling")
