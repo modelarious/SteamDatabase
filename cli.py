@@ -24,7 +24,7 @@ def cli(pathToGamesFolder: str):
     if gamesOnDisk == False:
         exit(f'no directories found at path {pathToGamesFolder}')
 
-    match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, dummyStateCommunicator)
+    match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, dummyStateCommunicator, pathToGamesFolder)
 
 if __name__ == '__main__':
     argh.dispatch_command(cli)

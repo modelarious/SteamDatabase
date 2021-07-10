@@ -15,10 +15,30 @@ def build_steam_title_map(steamGamesList):
         steamTitleMap[gameTitle] = gameObj
     return steamTitleMap
 
+
+def ui_handling(userInputRequiredQueue, gameNameMatchesProcessingQueue, stateCommunicator):
+    unmatchedGames = []
+    uire = userInputRequiredQueue.get()
+    while uire != END_OF_QUEUE:
+        nameOnDisk = uire.get_game_name_on_disk()
+        for possibleMatch in uire.get_possible_matches_list():
+            # userInput = input(f"does it match '{possibleMatch.get_steam_name()}' - {possibleMatch.steamIDNumber} - {possibleMatch.matchScore}? (y/n)")
+            userInput = 'y'
+            if userInput.lower() == 'y':
+                mqe = possibleMatch.convert_to_match_queue_entry(nameOnDisk)
+                stateCommunicator.setQueuedForInfoRetrievalStateFromAwaitingUser(mqe)
+                gameNameMatchesProcessingQueue.put(mqe) 
+                break
+        else:
+            stateCommunicator.rejectedByUser(uire)
+            unmatchedGames.append(nameOnDisk)
+        uire = userInputRequiredQueue.get()
+    return unmatchedGames
+
 # XXX this is ripe for refactor.
 # XXX Go all Dependency Injection on it's ass.
 # XXX move UI handling into a dedicated function or class
-def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, stateCommunicator: StateCommunicatorInterface):
+def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, stateCommunicator: StateCommunicatorInterface, pathOnDisk: str):
     stateCommunicator.batchSetUpcomingState(gamesOnDisk)
     
     quickSteamTitleMap = build_steam_title_map(steamGamesList)
@@ -36,7 +56,6 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
     userDefinedGenresFetcher = UserDefinedGenresFetcher()
     app_detail_factory = AppDetailFactory()
     steamAPIDataFetcher = SteamAPIDataFetcher(app_detail_factory)
-    pathOnDisk = "/Volumes/babyBlue/Games/PC/"
     print("finished constructing necessary objects")
 
     print("launching game storage process")
@@ -51,33 +70,12 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
     minimumEditDistanceProcess.start()
     print("finished launching minimum edit distance handling process")
 
-    from time import sleep
-    from random import randint
-
     print("launching user input handling")
-    unmatchedGames = []
-    uire = userInputRequiredQueue.get()
-    while uire != END_OF_QUEUE:
-        nameOnDisk = uire.get_game_name_on_disk()
-        for possibleMatch in uire.get_possible_matches_list():
-            # XXX What are you doing to that poor possibleMatch object? Why are you grabbing internals?
-            # userInput = input(f"does it match '{possibleMatch.get_steam_name()}' - {possibleMatch.steamIDNumber} - {possibleMatch.matchScore}? (y/n)")
-            sleep(randint(1, 10))
-            userInput = 'y'
-            if userInput.lower() == 'y':
-                mqe = possibleMatch.convert_to_match_queue_entry(nameOnDisk)
-                stateCommunicator.setQueuedForInfoRetrievalStateFromAwaitingUser(mqe)
-                gameNameMatchesProcessingQueue.put(mqe) 
-                break
-        else:
-            stateCommunicator.rejectedByUser(uire)
-            unmatchedGames.append(nameOnDisk)
-        uire = userInputRequiredQueue.get()
+    unmatchedGames = ui_handling(userInputRequiredQueue, gameNameMatchesProcessingQueue, stateCommunicator)
     print("finished user input handling")
 
     # this process will signal to the user input process that it is finished by putting END_OF_QUEUE
     # on the userInputRequiredQueue
-    # XXX YYY XXX YYY
     minimumEditDistanceProcess.join()
     print("finished processing games on the harddrive")
 
