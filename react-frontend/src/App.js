@@ -24,7 +24,7 @@ class App extends Component {
   constructor() {
     super();
     this.state = {};
-    for (const state of STATES) {
+    for (const state of STATES.concat([GAMES])) {
       this.state[state] = [];
     }
     this.socketContainer = socketContainer;
@@ -61,11 +61,6 @@ class App extends Component {
       commandSocket = this.socketContainer.get_socket(COMMAND)
     }
 
-    let gameSocket;
-    if (this.socketContainer) {
-      gameSocket = this.socketContainer.get_socket(GAMES)
-    }
-
     return (
       <Tabs renderActiveTabContentOnly={true}>
         <TabLink to="tab1" default>Games</TabLink>
@@ -73,7 +68,7 @@ class App extends Component {
         <TabLink to="tab3">Debug</TabLink>
       
         <TabContent for="tab1">
-          <GameListView>gameSocket={gameSocket}</GameListView>
+          <GameListView>games={this.state[GAMES]}</GameListView>
         </TabContent>
         <TabContent for="tab2">"user input view"</TabContent>
         <TabContent for="tab3">
