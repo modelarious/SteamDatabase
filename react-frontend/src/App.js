@@ -25,7 +25,9 @@ class App extends Component {
     super();
     this.state = {};
     for (const state of STATES.concat([GAMES])) {
+      console.log(state)
       this.state[state] = [];
+      console.log(this.state[state])
     }
     this.socketContainer = socketContainer;
     autoBind(this);
@@ -39,6 +41,7 @@ class App extends Component {
         this.setState({
           [state]: receivedMessage
         });
+        console.log(`[${state}] received message`)
       };
 
       sock.onopen = () => {
@@ -61,6 +64,9 @@ class App extends Component {
       commandSocket = this.socketContainer.get_socket(COMMAND)
     }
 
+    console.log("render App");
+    console.log(this.state[GAMES])
+
     return (
       <Tabs renderActiveTabContentOnly={true}>
         <TabLink to="tab1" default>Games</TabLink>
@@ -68,7 +74,7 @@ class App extends Component {
         <TabLink to="tab3">Debug</TabLink>
       
         <TabContent for="tab1">
-          <GameListView>games={this.state[GAMES]}</GameListView>
+          <GameListView>{this.state[GAMES]}</GameListView>
         </TabContent>
         <TabContent for="tab2">"user input view"</TabContent>
         <TabContent for="tab3">
