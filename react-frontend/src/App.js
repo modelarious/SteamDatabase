@@ -74,7 +74,7 @@ class App extends Component {
         <TabLink to="tab3">Debug</TabLink>
       
         <TabContent for="tab1">
-          <GameListView>{this.state[GAMES]}</GameListView>
+          <GameListView games={this.state[GAMES]}></GameListView>
         </TabContent>
         <TabContent for="tab2">"user input view"</TabContent>
         <TabContent for="tab3">
