@@ -1,7 +1,7 @@
 from queue import Queue
 from Database.PostgresGameDAO import PostgresGameDAO
 from State.StateCommunicatorInterface import StateCommunicatorInterface
-from ExternalDataFetchers.SteamAPIDataFetcher import IncorrectAppTypeException, NoResponseException, RequestUnsuccesfulException
+from ExternalDataFetchers.SteamAPIDataFetcher import IncorrectAppTypeException, NoResponseException, ResponseUnsuccesfulException
 from Constants import END_OF_QUEUE
 from psycopg2.errors import UniqueViolation
 from GameFactory import GameFactory, FailedToGetAppDetailsException
@@ -41,7 +41,7 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue: Queue, gameD
         except (
             FailedToGetAppDetailsException,
             NoResponseException,
-            RequestUnsuccesfulException,
+            ResponseUnsuccesfulException,
             IncorrectAppTypeException,
             DatabaseInsertException
          ) as e:
