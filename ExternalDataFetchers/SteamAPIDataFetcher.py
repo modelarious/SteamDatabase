@@ -6,7 +6,7 @@ import requests
 class NoResponseException(Exception):
     pass
 
-class RequestUnsuccesfulException(Exception):
+class ResponseUnsuccesfulException(Exception):
     pass
 
 class IncorrectAppTypeException(Exception):
@@ -34,7 +34,7 @@ class SteamAPIDataFetcher:
         app_id = list(steam_response.keys())[0]
         success = steam_response[app_id]['success']
         if not success:
-            raise RequestUnsuccesfulException(f"request returned False in the `success` field: {steam_response}")
+            raise ResponseUnsuccesfulException(f"response had False in the `success` field: {steam_response}")
 
         app_type = steam_response[app_id]['data']['type']
         if app_type not in self.allowed_app_types:

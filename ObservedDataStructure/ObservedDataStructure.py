@@ -2,8 +2,6 @@ from dataclasses import asdict
 from typing import List
 from QueueEntries.Sendable import Sendable
 from Server.SocketWrapper import SocketWrapper
-from multiprocessing import Manager
-
 
 # Observer pattern, but sending updates over a socket
 class ObservedDataStructure:
@@ -37,5 +35,5 @@ class ObservedDataStructure:
             self._add(sendable)
 
     def _add(self, sendable: Sendable):
-        self.dict[sendable.game_name_on_disk] = asdict(sendable) #XXX notice this change!!
+        self.dict[sendable.game_name_on_disk] = asdict(sendable)
     
