@@ -24,6 +24,6 @@ class GameListView extends Component {
             <Gallery images={this.games} enableImageSelection={false} onClickThumbnail={this.thumbnail_click_callback}/>
         </div>;
     }
- }
+}
 
 export default GameListView;
