@@ -3,17 +3,9 @@ import React, { Component } from 'react';
 const autoBind = require('auto-bind');
 
 class GameListView extends Component {
-    constructor(props) {
+    constructor() {
         super();
-        console.log("Construct GameListView");
-        this.IMAGES = props.games.map(game =>
-            ({
-                thumbnail: game.app_detail.header_image_url,
-                thumbnailWidth: 460,
-                thumbnailHeight: 215,
-                game: game
-            })
-        )
+        this.IMAGES = [];
         autoBind(this);
     }
     thumbnail_click_callback(idx) {
@@ -28,10 +20,10 @@ class GameListView extends Component {
                 thumbnailHeight: 215,
                 game: game
             })
-        )
+        );
         return <div>
             <Gallery images={this.IMAGES} enableImageSelection={false} onClickThumbnail={this.thumbnail_click_callback}/>
-        </div>
+        </div>;
     }
  }
 
