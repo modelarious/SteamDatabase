@@ -7,7 +7,7 @@ import {
   TabContent
 } from 'react-tabs-redux';
 import DebugBoard from './Views/DebugBoard';
-
+import GameListView from './Views/GameListView';
 const autoBind = require('auto-bind');
 const COMMAND = "/command";
 const GAMES = "/games";
@@ -24,7 +24,7 @@ class App extends Component {
   constructor() {
     super();
     this.state = {};
-    for (const state of STATES) {
+    for (const state of STATES.concat([GAMES])) {
       this.state[state] = [];
     }
     this.socketContainer = socketContainer;
@@ -63,11 +63,13 @@ class App extends Component {
 
     return (
       <Tabs renderActiveTabContentOnly={true}>
-        <TabLink to="tab1">Games</TabLink>
+        <TabLink to="tab1" default>Games</TabLink>
         <TabLink to="tab2">User Input</TabLink>
-        <TabLink to="tab3" default>Debug</TabLink>
+        <TabLink to="tab3">Debug</TabLink>
       
-        <TabContent for="tab1"> "games view"</TabContent>
+        <TabContent for="tab1">
+          <GameListView games={this.state[GAMES]}></GameListView>
+        </TabContent>
         <TabContent for="tab2">"user input view"</TabContent>
         <TabContent for="tab3">
           <DebugBoard stateData={debugBoardNeededStateData} commandSocket={commandSocket}/>
