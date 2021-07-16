@@ -9,7 +9,6 @@ class StateCommunicatorFactory:
     def createStateCommunicator(self, observerSocketHookupFactory : ObserverSocketHookupFactory, states: Set[str], games_observable_data_structure: ObservedDataStructure):
         factoryMethod = observerSocketHookupFactory.hookUpObservableDataStructure
 
-        # Dependency Injection makes testing State Tracker a heck of a lot easier
         connections = {}
         for state in states:
             connections[state] = factoryMethod(state)
