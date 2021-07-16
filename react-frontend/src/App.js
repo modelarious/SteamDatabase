@@ -25,9 +25,7 @@ class App extends Component {
     super();
     this.state = {};
     for (const state of STATES.concat([GAMES])) {
-      console.log(state)
       this.state[state] = [];
-      console.log(this.state[state])
     }
     this.socketContainer = socketContainer;
     autoBind(this);
@@ -41,7 +39,6 @@ class App extends Component {
         this.setState({
           [state]: receivedMessage
         });
-        console.log(`[${state}] received message`)
       };
 
       sock.onopen = () => {
@@ -63,9 +60,6 @@ class App extends Component {
     if (this.socketContainer) {
       commandSocket = this.socketContainer.get_socket(COMMAND)
     }
-
-    console.log("render App");
-    console.log(this.state[GAMES])
 
     return (
       <Tabs renderActiveTabContentOnly={true}>
