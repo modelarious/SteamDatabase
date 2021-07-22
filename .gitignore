@@ -3,3 +3,6 @@
 __pycache__/
 react-frontend/yarn.lock
 react-frontend/package-lock.json
+basic-out.txt
+extended-out.txt
+out.txt

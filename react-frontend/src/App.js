@@ -16,6 +16,9 @@ const endpoints = STATES.concat([
   GAMES
 ]);
 
+
+
+
 // XXX I really don't like this being global - but it seems to be the only way to
 // establish these connections before the first render call triggers
 const socketContainer = new SocketContainer(endpoints);
@@ -62,19 +65,25 @@ class App extends Component {
     }
 
     return (
-      <Tabs renderActiveTabContentOnly={true}>
-        <TabLink to="tab1" default>Games</TabLink>
-        <TabLink to="tab2">User Input</TabLink>
-        <TabLink to="tab3">Debug</TabLink>
-      
-        <TabContent for="tab1">
-          <GameListView games={this.state[GAMES]}></GameListView>
-        </TabContent>
-        <TabContent for="tab2">"user input view"</TabContent>
-        <TabContent for="tab3">
-          <DebugBoard stateData={debugBoardNeededStateData} commandSocket={commandSocket}/>
-        </TabContent>
-      </Tabs>
+      <div style={{ 
+        backgroundImage: `url("https://cdn.akamai.steamstatic.com/steam/apps/313010/page_bg_generated_v6b.jpg?t=1602859660")`,
+        backgroundRepeat: 'no-repeat',
+        backgroundColor: '#1c2838'
+      }}>
+        <Tabs renderActiveTabContentOnly={true}>
+          <TabLink to="tab1" default>Games</TabLink>
+          <TabLink to="tab2">User Input</TabLink>
+          <TabLink to="tab3">Debug</TabLink>
+        
+          <TabContent for="tab1">
+            <GameListView games={this.state[GAMES]}></GameListView>
+          </TabContent>
+          <TabContent for="tab2">"user input view"</TabContent>
+          <TabContent for="tab3">
+            <DebugBoard stateData={debugBoardNeededStateData} commandSocket={commandSocket}/>
+          </TabContent>
+        </Tabs>
+      </div>
     );
   }
 }
