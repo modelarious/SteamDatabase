@@ -3,22 +3,10 @@ import ReactDOM from "react-dom";
 import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 // import { PageTransition } from "@steveeeie/react-page-transition";
 // import "./styles.css";
-const games = {
-  12345 : {
-    "steam_id" : 12345,
-    "name" : "Cities XXL",
-    "banner_link" : "https://cdn.akamai.steamstatic.com/steam/apps/313010/header.jpg?t=1602859660",
-    "more_stuff": "oh yeah"
-  },
-  135246 : {
-    "steam_id" : 135246,
-    "name" : "Factorio",
-    "banner_link" : "https://cdn.cloudflare.steamstatic.com/steam/apps/427520/header.jpg?t=1620730652",
-    "more_stuff": "happy days"
-  }
-}
-function Links(games) {
-  return Object.values(games).map(game => (
+
+function Links(props) {
+  const games = Object.values(props.games)
+  return games.map(game => (
     <Link to={`/games/${game.steam_id}`}>
       <img
         alt={`${game.game_name_on_steam} link`}
@@ -28,15 +16,14 @@ function Links(games) {
   ));
 };
 
-const Home = () => (
-  <div>
-    <h1>Homee</h1>
-    <Links />
-  </div>
-);
+function Home(props) {
+  const games = props.games;
+  return <Links games={games}/>
+};
 
-// All route props (match, location and history) are available to About
+// All route props (match, location and history) are available to GameView
 function GameView(props) {
+  console.log(props);
   return (
     <div>
       <Link to="/"> Back </Link>
@@ -46,6 +33,20 @@ function GameView(props) {
 }
 
 function App() {
+  const games = {
+    12345 : {
+      "steam_id" : 12345,
+      "name" : "Cities XXL",
+      "banner_link" : "https://cdn.akamai.steamstatic.com/steam/apps/313010/header.jpg?t=1602859660",
+      "more_stuff": "oh yeah"
+    },
+    135246 : {
+      "steam_id" : 135246,
+      "name" : "Factorio",
+      "banner_link" : "https://cdn.cloudflare.steamstatic.com/steam/apps/427520/header.jpg?t=1620730652",
+      "more_stuff": "happy days"
+    }
+  }
   return (
     <React.StrictMode>
       <BrowserRouter>
@@ -59,8 +60,11 @@ function App() {
               // exitAnimation="moveToBottomFade"
               // >
                 <Switch location={location}>
-                  <Route exact path="/" component={Home} />
-                  <Route path="/games/:steam_id" component={GameView} />
+                  <Route exact path="/">
+                    <Home games={games}/>
+                  </Route>
+                  <Route path="/games/:steam_id" component={GameView}>
+                  </Route>
                 </Switch>
               // </PageTransition>
             );
