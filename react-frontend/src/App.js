@@ -12,7 +12,7 @@ import {
   TabContent
 } from 'react-tabs-redux';
 import DebugBoard from './Views/DebugBoard';
-import GameListView from './Views/GameListView';
+// import GameListView from './Views/GameListView';
 const autoBind = require('auto-bind');
 const COMMAND = "/command";
 const GAMES = "/games";
@@ -25,64 +25,81 @@ const endpoints = STATES.concat([
 // establish these connections before the first render call triggers
 const socketContainer = new SocketContainer(endpoints);
 
-// class App extends Component {
-//   constructor() {
-//     super();
-//     this.state = {};
-//     for (const state of STATES.concat([GAMES])) {
-//       this.state[state] = [];
-//     }
-//     this.socketContainer = socketContainer;
-//     autoBind(this);
-//   }
+class App extends Component {
+  constructor() {
+    super();
+    this.state = {};
+    for (const state of STATES.concat([GAMES])) {
+      this.state[state] = [];
+    }
+    this.socketContainer = socketContainer;
+    autoBind(this);
+  }
   
-//   componentDidMount() {
-//     const sockets = Object.entries(socketContainer.get_sockets())
-//     for (const [state, sock] of sockets) {
-//       sock.onmessage = (message) => {
-//         const receivedMessage = JSON.parse(message.data);
-//         this.setState({
-//           [state]: receivedMessage
-//         });
-//       };
+  componentDidMount() {
+    const sockets = Object.entries(socketContainer.get_sockets())
+    for (const [state, sock] of sockets) {
+      sock.onmessage = (message) => {
+        const receivedMessage = JSON.parse(message.data);
+        this.setState({
+          [state]: receivedMessage
+        });
+      };
 
-//       sock.onopen = () => {
-//         console.log(`${state} open`);
-//       };
-//       sock.onclose = () => {
-//         console.log(`${state} close`);
-//       }
-//     }
-//   }
+      sock.onopen = () => {
+        console.log(`${state} open`);
+      };
+      sock.onclose = () => {
+        console.log(`${state} close`);
+      }
+    }
+  }
   
-//   render() {
-//     var debugBoardNeededStateData = {}
-//     for (const stateName of STATES) {
-//       debugBoardNeededStateData[stateName] = this.state[stateName];
-//     }
+  render() {
+    var debugBoardNeededStateData = {}
+    for (const stateName of STATES) {
+      debugBoardNeededStateData[stateName] = this.state[stateName];
+    }
 
-//     let commandSocket;
-//     if (this.socketContainer) {
-//       commandSocket = this.socketContainer.get_socket(COMMAND)
-//     }
+    let commandSocket;
+    if (this.socketContainer) {
+      commandSocket = this.socketContainer.get_socket(COMMAND)
+    }
 
-//     return (
-//       <Tabs renderActiveTabContentOnly={true}>
-//         <TabLink to="tab1" default>Games</TabLink>
-//         <TabLink to="tab2">User Input</TabLink>
-//         <TabLink to="tab3">Debug</TabLink>
+
+    // mock values for now
+    const games = {
+      12345 : {
+        "steam_id" : 12345,
+        "name" : "Cities XXL",
+        "banner_link" : "https://cdn.akamai.steamstatic.com/steam/apps/313010/header.jpg?t=1602859660",
+        "more_stuff": "oh yeah"
+      },
+      135246 : {
+        "steam_id" : 135246,
+        "name" : "Factorio",
+        "banner_link" : "https://cdn.cloudflare.steamstatic.com/steam/apps/427520/header.jpg?t=1620730652",
+        "more_stuff": "happy days"
+      }
+    }
+
+    return (
+      <Tabs renderActiveTabContentOnly={true}>
+        <TabLink to="tab1" default>Games</TabLink>
+        <TabLink to="tab2">User Input</TabLink>
+        <TabLink to="tab3">Debug</TabLink>
       
-//         <TabContent for="tab1">
-//           <GameListView games={this.state[GAMES]}></GameListView>
-//         </TabContent>
-//         <TabContent for="tab2">"user input view"</TabContent>
-//         <TabContent for="tab3">
-//           <DebugBoard stateData={debugBoardNeededStateData} commandSocket={commandSocket}/>
-//         </TabContent>
-//       </Tabs>
-//     );
-//   }
-// }
+        <TabContent for="tab1">
+          <GameListViewBETTER games={this.state[GAMES]}></GameListViewBETTER>
+        </TabContent>
+        <TabContent for="tab2">"user input view"</TabContent>
+        <TabContent for="tab3">
+          <DebugBoard stateData={debugBoardNeededStateData} commandSocket={commandSocket}/>
+        </TabContent>
+      </Tabs>
+    );
+  }
+}
 
 function Links(props) {
   const games = Object.values(props.games)
@@ -112,7 +129,7 @@ function GameView(props) {
   );
 }
 
-function App() {
+function GameListViewBETTER() {
   const games = {
     12345 : {
       "steam_id" : 12345,
