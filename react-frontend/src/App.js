@@ -1,6 +1,6 @@
 // import React from "react";
 import ReactDOM from "react-dom";
-import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
+import { BrowserRouter, Switch, Route, Link, useParams } from "react-router-dom";
 // import { PageTransition } from "@steveeeie/react-page-transition";
 // import "./styles.css";
 import React, { Component } from 'react';
@@ -67,24 +67,6 @@ class App extends Component {
     }
 
 
-    // mock values for now
-    const games = {
-      12345 : {
-        "steam_id" : 12345,
-        "name" : "Cities XXL",
-        "banner_link" : "https://cdn.akamai.steamstatic.com/steam/apps/313010/header.jpg?t=1602859660",
-        "more_stuff": "oh yeah"
-      },
-      135246 : {
-        "steam_id" : 135246,
-        "name" : "Factorio",
-        "banner_link" : "https://cdn.cloudflare.steamstatic.com/steam/apps/427520/header.jpg?t=1620730652",
-        "more_stuff": "happy days"
-      }
-    }
-
-    console.log(this.state[GAMES]);
-
     return (
       <Tabs renderActiveTabContentOnly={true}>
         <TabLink to="tab1" default>Games</TabLink>
@@ -119,13 +101,22 @@ function Home(props) {
   return <Links games={games}/>
 };
 
-// All route props (match, location and history) are available to GameView
+function linear_search_by_steam_id(array_of_games, steam_id_to_find) {
+  for (const game of array_of_games) {
+    if (game.steam_id == steam_id_to_find) {
+      return game;
+    }
+  }
+}
+
 function GameView(props) {
-  console.log(props);
+  let { steam_id } = useParams();
+  const game = linear_search_by_steam_id(props.games, steam_id);
   return (
     <div>
       <Link to="/"> Back </Link>
-      <h1>Steam ID: {props.match.params.steam_id}!</h1>
+      <h1>Steam ID: {game.steam_id}!</h1>
+      <h1>Name: {game.game_name_on_disk}!</h1>
     </div>
   );
 }
@@ -134,15 +125,17 @@ function GameListViewBETTER(props) {
   // const games = [
   //   {
   //     "steam_id" : 12345,
-  //     "name" : "Cities XXL",
-  //     "banner_link" : "https://cdn.akamai.steamstatic.com/steam/apps/313010/header.jpg?t=1602859660",
-  //     "more_stuff": "oh yeah"
+  //     "game_name_on_disk" : "Cities XXL",
+  //     "app_detail" : {
+  //       "header_image_url": "https://cdn.akamai.steamstatic.com/steam/apps/313010/header.jpg?t=1602859660",
+  //     },
   //   },
   //   {
   //     "steam_id" : 135246,
-  //     "name" : "Factorio",
-  //     "banner_link" : "https://cdn.cloudflare.steamstatic.com/steam/apps/427520/header.jpg?t=1620730652",
-  //     "more_stuff": "happy days"
+  //     "game_name_on_disk" : "Factorio",
+  //     "app_detail" : {
+  //       "header_image_url": "https://cdn.cloudflare.steamstatic.com/steam/apps/427520/header.jpg?t=1620730652",
+  //     },
   //   }
   // ]
   const games = props.games
@@ -162,7 +155,8 @@ function GameListViewBETTER(props) {
                   <Route exact path="/">
                     <Home games={games}/>
                   </Route>
-                  <Route path="/games/:steam_id" component={GameView}>
+                  <Route path="/games/:steam_id">
+                    <GameView games={games}/>
                   </Route>
                 </Switch>
               // </PageTransition>
