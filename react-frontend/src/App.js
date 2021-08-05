@@ -83,6 +83,8 @@ class App extends Component {
       }
     }
 
+    console.log(this.state[GAMES]);
+
     return (
       <Tabs renderActiveTabContentOnly={true}>
         <TabLink to="tab1" default>Games</TabLink>
@@ -102,12 +104,11 @@ class App extends Component {
 }
 
 function Links(props) {
-  const games = Object.values(props.games)
-  return games.map(game => (
+  return props.games.map(game => (
     <Link to={`/games/${game.steam_id}`}>
       <img
         alt={`${game.game_name_on_steam} link`}
-        src={game.banner_link}
+        src={game.app_detail.header_image_url}
       />
     </Link>
   ));
@@ -129,21 +130,22 @@ function GameView(props) {
   );
 }
 
-function GameListViewBETTER() {
-  const games = {
-    12345 : {
-      "steam_id" : 12345,
-      "name" : "Cities XXL",
-      "banner_link" : "https://cdn.akamai.steamstatic.com/steam/apps/313010/header.jpg?t=1602859660",
-      "more_stuff": "oh yeah"
-    },
-    135246 : {
-      "steam_id" : 135246,
-      "name" : "Factorio",
-      "banner_link" : "https://cdn.cloudflare.steamstatic.com/steam/apps/427520/header.jpg?t=1620730652",
-      "more_stuff": "happy days"
-    }
-  }
+function GameListViewBETTER(props) {
+  // const games = [
+  //   {
+  //     "steam_id" : 12345,
+  //     "name" : "Cities XXL",
+  //     "banner_link" : "https://cdn.akamai.steamstatic.com/steam/apps/313010/header.jpg?t=1602859660",
+  //     "more_stuff": "oh yeah"
+  //   },
+  //   {
+  //     "steam_id" : 135246,
+  //     "name" : "Factorio",
+  //     "banner_link" : "https://cdn.cloudflare.steamstatic.com/steam/apps/427520/header.jpg?t=1620730652",
+  //     "more_stuff": "happy days"
+  //   }
+  // ]
+  const games = props.games
   return (
     <React.StrictMode>
       <BrowserRouter>
