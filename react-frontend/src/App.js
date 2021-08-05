@@ -1,4 +1,3 @@
-import ReactDOM from "react-dom";
 import React, { Component } from 'react';
 import SocketContainer from "./SocketContainer.js";
 import { STATES } from './States.js';
@@ -10,8 +9,6 @@ import {
 import DebugBoard from './Views/DebugBoard';
 import GameListView from './Views/GameListView';
 const autoBind = require('auto-bind');
-
-
 const COMMAND = "/command";
 const GAMES = "/games";
 const endpoints = STATES.concat([
@@ -64,7 +61,6 @@ class App extends Component {
       commandSocket = this.socketContainer.get_socket(COMMAND)
     }
 
-
     return (
       <Tabs renderActiveTabContentOnly={true}>
         <TabLink to="tab1" default>Games</TabLink>
@@ -82,7 +78,5 @@ class App extends Component {
     );
   }
 }
-
-ReactDOM.render(<App />, document.getElementById("root"));
 
 export default App;
