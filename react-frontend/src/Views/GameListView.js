@@ -1,5 +1,6 @@
 import React from "react";
-import { BrowserRouter, Switch, Route, Link, useParams } from "react-router-dom";
+import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
+import GameView from "./GameView";
 // import { PageTransition } from "@steveeeie/react-page-transition";
 
 
@@ -19,27 +20,6 @@ function Home(props) {
   return <Links games={games} />;
 }
 
-function linear_search_by_steam_id(array_of_games, steam_id_to_find) {
-  for (const game of array_of_games) {
-    // don't like using ==, but one source provides string and other provides int so this weak comparison is what I want
-    // eslint-disable-next-line eqeqeq
-    if (game.steam_id == steam_id_to_find) {
-      return game;
-    }
-  }
-}
-
-function GameView(props) {
-  let { steam_id } = useParams();
-  const game = linear_search_by_steam_id(props.games, steam_id);
-  return (
-    <div>
-      <Link to="/"> Back </Link>
-      <h1>Steam ID: {game.steam_id}!</h1>
-      <h1>Name: {game.game_name_on_disk}!</h1>
-    </div>
-  );
-}
 
 function GameListView(props) {
   // const games = [
