@@ -6,9 +6,11 @@ import {
   Tabs,
   TabContent
 } from 'react-tabs-redux';
+import GameFactory from "./Factories/GameFactory";
 import DebugBoard from './Views/DebugBoard';
 import GameListView from './Views/GameListView';
 const autoBind = require('auto-bind');
+
 const COMMAND = "/command";
 const GAMES = "/games";
 const endpoints = STATES.concat([
@@ -60,6 +62,12 @@ class App extends Component {
     if (this.socketContainer) {
       commandSocket = this.socketContainer.get_socket(COMMAND)
     }
+
+    const game_factory = new GameFactory()
+    const games = this.state[GAMES].map(
+      game_from_backend => game_factory.create_game(game_from_backend)
+    );
+    console.log(games)
 
     return (
       <Tabs renderActiveTabContentOnly={true}>
