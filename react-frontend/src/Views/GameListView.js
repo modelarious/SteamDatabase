@@ -1,7 +1,9 @@
-import React from "react";
+import React, { Component } from 'react';
 import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import GameView from "./GameView";
 // import { PageTransition } from "@steveeeie/react-page-transition";
+
+const autoBind = require('auto-bind');
 
 
 function Links(props) {
@@ -15,57 +17,79 @@ function Links(props) {
   ));
 }
 
-function Home(props) {
-  const games = props.games;
-  return <Links games={games} />;
+class Home extends Component {
+  constructor(props) {
+    super();
+    this.games = props.games;
+    this.updateScrollDistanceMethod = props.updateScrollDistanceMethod;
+    this.currentScrollTop = props.currentScrollTop
+    autoBind(this);
+  }
+
+  // https://stackoverflow.com/questions/53158796/get-scroll-position-with-reactjs
+  componentDidMount() {
+    window.scrollTo(0, this.currentScrollTop)
+    window.addEventListener('scroll', this.listenToScroll)
+  }
+  
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.listenToScroll)
+  }
+  
+  listenToScroll = () => {
+    const winScroll =
+      document.body.scrollTop || document.documentElement.scrollTop
+
+    this.updateScrollDistanceMethod(winScroll)
+  }
+
+  render() {
+    return <Links games={this.games} />;
+  }
 }
 
+class GameListView extends Component {
+  constructor(props) {
+    super();
+    this.games = props.games;
+    autoBind(this);
+  }
 
-function GameListView(props) {
-  // const games = [
-  //   {
-  //     "steam_id" : 12345,
-  //     "game_name_on_disk" : "Cities XXL",
-  //     "app_detail" : {
-  //       "header_image_url": "https://cdn.akamai.steamstatic.com/steam/apps/313010/header.jpg?t=1602859660",
-  //     },
-  //   },
-  //   {
-  //     "steam_id" : 135246,
-  //     "game_name_on_disk" : "Factorio",
-  //     "app_detail" : {
-  //       "header_image_url": "https://cdn.cloudflare.steamstatic.com/steam/apps/427520/header.jpg?t=1620730652",
-  //     },
-  //   }
-  // ]
-  const games = props.games;
-  return (
-    <React.StrictMode>
-      <BrowserRouter>
-        {/* Tabs go here and wrap the Route component - this is where I took Links from  */}
-        <Route
-          render={({ location }) => {
-            return (
-              // <PageTransition
-              // transitionKey={location.pathname}
-              // enterAnimation="moveFromTopFade"
-              // exitAnimation="moveToBottomFade"
-              // >
-              <Switch location={location}>
-                <Route exact path="/">
-                  <Home games={games} />
-                </Route>
-                <Route path="/games/:steam_id">
-                  <GameView games={games} />
-                </Route>
-              </Switch>
-              // </PageTransition>
-            );
-          }}
-        />
-      </BrowserRouter>
-    </React.StrictMode>
-  );
+  scrollDistanceUpdate(currentPixelsFromTop) {
+    console.log("ooooooh yeah jerry, I got CALLED!");
+    console.log(currentPixelsFromTop);
+    this.pixelsFromTop = currentPixelsFromTop;
+  }
+
+  render() {
+    return (
+      <React.StrictMode>
+        <BrowserRouter>
+          {/* Tabs go here and wrap the Route component - this is where I took Links from  */}
+          <Route
+            render={({ location }) => {
+              return (
+                // <PageTransition
+                // transitionKey={location.pathname}
+                // enterAnimation="moveFromTopFade"
+                // exitAnimation="moveToBottomFade"
+                // >
+                <Switch location={location}>
+                  <Route exact path="/">
+                    <Home games={this.games} updateScrollDistanceMethod={this.scrollDistanceUpdate} currentScrollTop={this.pixelsFromTop}/>
+                  </Route>
+                  <Route path="/games/:steam_id">
+                    <GameView games={this.games} />
+                  </Route>
+                </Switch>
+                // </PageTransition>
+              );
+            }}
+          />
+        </BrowserRouter>
+      </React.StrictMode>
+    );
+  }
 }
 
 export default GameListView;
