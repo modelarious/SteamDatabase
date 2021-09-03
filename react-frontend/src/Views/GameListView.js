@@ -1,71 +1,50 @@
-import React from "react";
-import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
+import React, { Component } from 'react';
+import { BrowserRouter, Switch, Route } from "react-router-dom";
 import GameView from "./GameView";
+import { Home } from './Home';
 // import { PageTransition } from "@steveeeie/react-page-transition";
 
+const autoBind = require('auto-bind');
 
-function Links(props) {
-  return props.games.map((game) => (
-    <Link to={`/games/${game.steam_id}`}>
-      <img
-        alt={`${game.game_name_on_steam} link`}
-        src={game.app_detail.header_image_url}
-      />
-    </Link>
-  ));
-}
+class GameListView extends Component {
+  constructor(props) {
+    super();
+    this.games = props.games;
+    autoBind(this);
+  }
 
-function Home(props) {
-  const games = props.games;
-  return <Links games={games} />;
-}
+  scrollDistanceUpdate(currentPixelsFromTop) {
+    this.pixelsFromTop = currentPixelsFromTop;
+  }
 
-
-function GameListView(props) {
-  // const games = [
-  //   {
-  //     "steam_id" : 12345,
-  //     "game_name_on_disk" : "Cities XXL",
-  //     "app_detail" : {
-  //       "header_image_url": "https://cdn.akamai.steamstatic.com/steam/apps/313010/header.jpg?t=1602859660",
-  //     },
-  //   },
-  //   {
-  //     "steam_id" : 135246,
-  //     "game_name_on_disk" : "Factorio",
-  //     "app_detail" : {
-  //       "header_image_url": "https://cdn.cloudflare.steamstatic.com/steam/apps/427520/header.jpg?t=1620730652",
-  //     },
-  //   }
-  // ]
-  const games = props.games;
-  return (
-    <React.StrictMode>
-      <BrowserRouter>
-        {/* Tabs go here and wrap the Route component - this is where I took Links from  */}
-        <Route
-          render={({ location }) => {
-            return (
-              // <PageTransition
-              // transitionKey={location.pathname}
-              // enterAnimation="moveFromTopFade"
-              // exitAnimation="moveToBottomFade"
-              // >
-              <Switch location={location}>
-                <Route exact path="/">
-                  <Home games={games} />
-                </Route>
-                <Route path="/games/:steam_id">
-                  <GameView games={games} />
-                </Route>
-              </Switch>
-              // </PageTransition>
-            );
-          }}
-        />
-      </BrowserRouter>
-    </React.StrictMode>
-  );
+  render() {
+    return (
+      <React.StrictMode>
+        <BrowserRouter>
+          <Route
+            render={({ location }) => {
+              return (
+                // <PageTransition
+                // transitionKey={location.pathname}
+                // enterAnimation="moveFromTopFade"
+                // exitAnimation="moveToBottomFade"
+                // >
+                <Switch location={location}>
+                  <Route exact path="/">
+                    <Home games={this.games} updateScrollDistanceMethod={this.scrollDistanceUpdate} currentScrollTop={this.pixelsFromTop}/>
+                  </Route>
+                  <Route path="/games/:steam_id">
+                    <GameView games={this.games} />
+                  </Route>
+                </Switch>
+                // </PageTransition>
+              );
+            }}
+          />
+        </BrowserRouter>
+      </React.StrictMode>
+    );
+  }
 }
 
 export default GameListView;

@@ -37,6 +37,7 @@ class AppDetail:
 	// background_image_url: str
 */
 function GameView(props) {
+  window.scrollTo(0, 0)
   let { steam_id } = useParams();
   const game = linear_search_by_steam_id(props.games, steam_id);
   const app_detail = game.app_detail;
