@@ -21,7 +21,6 @@ class GameListView extends Component {
     return (
       <React.StrictMode>
         <BrowserRouter>
-          {/* Tabs go here and wrap the Route component - this is where I took Links from  */}
           <Route
             render={({ location }) => {
               return (
