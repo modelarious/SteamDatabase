@@ -9,6 +9,28 @@ function linear_search_by_steam_id(array_of_games, steam_id_to_find) {
     }
   }
 }
+
+/*
+Filters:
+    Game Name - Contains:
+        game_name_on_disk
+        game_name_from_steam
+        path_on_harddrive
+    Review Score - <=, >=, ==
+        avg_review_score
+    Genres - Contains:
+        user_defined_genres
+        genres
+    Developers - Contains:
+        developers
+    Publishers - Contains:
+        publishers
+    Controller Support
+        controller_support
+Sorting - Ascending, Descending
+    Game Name
+    Review Score
+*/
 /*
 class Game(SteamSendable):
     // game_name_on_disk: str
@@ -20,35 +42,34 @@ class Game(SteamSendable):
     // app_detail : AppDetail
 
 class ScreenshotURL:
-	// thumbnail_url: str
-	// fullsize_url: str
+  // thumbnail_url: str
+  // fullsize_url: str
 
 class AppDetail:
-	// detailed_description: str
-	about_the_game: str
-	short_description: str
-	// header_image_url: str
-	// developers: List[str]
-	// publishers: List[str]
-	// metacritic_score: int
-	// controller_support: bool
-	// genres: List[str]
-	// screenshot_urls: List[ScreenshotURL]
-	// background_image_url: str
+  // detailed_description: str
+  about_the_game: str
+  short_description: str
+  // header_image_url: str
+  // developers: List[str]
+  // publishers: List[str]
+  // metacritic_score: int
+  // controller_support: bool
+  // genres: List[str]
+  // screenshot_urls: List[ScreenshotURL]
+  // background_image_url: str
 */
 function GameView(props) {
-  window.scrollTo(0, 0)
   let { steam_id } = useParams();
   const game = linear_search_by_steam_id(props.games, steam_id);
   const app_detail = game.app_detail;
-  
+
   const screenshots = app_detail.screenshot_urls.map(screenshot_obj =>
-    ({
-      src: screenshot_obj.fullsize_url,
-      thumbnail: screenshot_obj.thumbnail_url,
-      thumbnailWidth: 460,
-      thumbnailHeight: 215,
-    })
+  ({
+    src: screenshot_obj.fullsize_url,
+    thumbnail: screenshot_obj.thumbnail_url,
+    thumbnailWidth: 460,
+    thumbnailHeight: 215,
+  })
   );
   const genres = app_detail.genres.map((genre) =>
     <li>{genre}</li>
@@ -64,17 +85,17 @@ function GameView(props) {
   );
   return (
     <div style={{
-        backgroundImage: `url(${app_detail.background_image_url})`,
-        backgroundRepeat: 'no-repeat',
-        backgroundColor: "#1c2838"
+      backgroundImage: `url(${app_detail.background_image_url})`,
+      backgroundRepeat: 'no-repeat',
+      backgroundColor: "#1c2838"
     }}>
-      <Link to="/" style={{backgroundColor: "white"}}> Back </Link>
-      <font style={{color: "white"}}>
+      <Link to="/" style={{ backgroundColor: "white" }}> Back </Link>
+      <font style={{ color: "white" }}>
         <h1>{game.game_name_from_steam}</h1>
         <h1>Avg review score: {game.avg_review_score}</h1>
         <div dangerouslySetInnerHTML={{ __html: app_detail.detailed_description }} />
         <div>
-          <Gallery images={screenshots} enableImageSelection={false}/>
+          <Gallery images={screenshots} enableImageSelection={false} />
         </div>
         <h1>Steam ID: {game.steam_id}!</h1>
         {app_detail.controller_support && <h1>Controller support: Yes!</h1>}

@@ -2,76 +2,74 @@ import React, { Component } from 'react';
 import { BrowserRouter, Switch, Route } from "react-router-dom";
 import GameView from "./GameView";
 import { Home } from './Home';
-// import { Dropdown } from 'semantic-ui-react'
-// import { DropdownExampleInline } from './garbage2';
 // import { PageTransition } from "@steveeeie/react-page-transition";
 
-
-
-
-// const friendOptions = [
-//   {
-//     key: 'Jenny Hess',
-//     text: 'Jenny Hess',
-//     value: 'Jenny Hess',
-//     image: { avatar: true, src: '/images/avatar/small/jenny.jpg' },
-//   },
-//   {
-//     key: 'Elliot Fu',
-//     text: 'Elliot Fu',
-//     value: 'Elliot Fu',
-//     image: { avatar: true, src: '/images/avatar/small/elliot.jpg' },
-//   },
-//   {
-//     key: 'Stevie Feliciano',
-//     text: 'Stevie Feliciano',
-//     value: 'Stevie Feliciano',
-//     image: { avatar: true, src: '/images/avatar/small/stevie.jpg' },
-//   },
-//   {
-//     key: 'Christian',
-//     text: 'Christian',
-//     value: 'Christian',
-//     image: { avatar: true, src: '/images/avatar/small/christian.jpg' },
-//   },
-// ]
-
-
-// class DropdownExampleInline extends Component {
-//   render() {
-//     return <span>
-//       Show me posts by{' '}
-//         <Dropdown
-//           inline
-//           options={friendOptions}
-//           defaultValue={friendOptions[0].value}
-//         />
-//     </span>
-//   }
-// };
 import Dropdown from 'react-dropdown';
 import 'react-dropdown/style.css';
 
-const SortingDirectionOptions = [
-  'Ascending', 'Descending'
-];
-const defaultSortDirectionOption = SortingDirectionOptions[0];
-
-const SortingTypeOptions = [
-  'Name', 'Rating'
-];
-const defaultSortTypeOption = SortingTypeOptions[0];
-
-
 const autoBind = require('auto-bind');
 
+// https://stackoverflow.com/a/2466503
+var byField = function (field) {
+  return function (a, b) {
+    if (typeof a[field] == "number") {
+      return (b[field] - a[field]);
+    } else {
+      return ((a[field] < b[field]) ? -1 : ((a[field] > b[field]) ? 1 : 0));
+    }
+  };
+};
 
+class ascendingSortingStrategy {
+  constructor() {
+    this._name = "Ascending";
+    autoBind(this);
+  }
+  get_name() {
+    return this._name;
+  }
+  sort_game_list(games, field) {
+    games.sort(byField(field))
+    return games;
+  }
+}
+
+const ascendingStrategy = new ascendingSortingStrategy();
+const sortingStrategies = [
+  ascendingStrategy
+];
+
+
+let sortingStrategiesIndex = {}
+for (const strategy of sortingStrategies) {
+  sortingStrategiesIndex[strategy.get_name()] = strategy;
+}
+const sortingStrategyOptions = sortingStrategies.map(
+  strat => strat.get_name()
+)
+const defaultSortStrategyOption = ascendingStrategy.get_name();
+
+
+
+
+
+
+
+const sortingFieldOptions = [
+  'game_name_from_steam', 'avg_review_score'
+];
+const defaultSortFieldOption = sortingFieldOptions[0];
+
+
+
+
+// will this reconstruct when app.state.games has a game added to it?
 class GameListView extends Component {
   constructor(props) {
     super();
     this.games = props.games;
-    this.sortingType = defaultSortTypeOption;
-    this.sortingDirection = defaultSortDirectionOption;
+    this.sortingField = defaultSortFieldOption;
+    this.sortingStrategy = sortingStrategiesIndex[defaultSortStrategyOption];
     autoBind(this);
   }
 
@@ -79,12 +77,18 @@ class GameListView extends Component {
     this.pixelsFromTop = currentPixelsFromTop;
   }
 
-  _onSelectSortDirection(sortDirection) {
-    this.sortingDirection = sortDirection.value;
+  _onSelectSortStrategy(sortStrategy) {
+    const sortingStrategy = sortStrategy.value;
+    this.sortingStrategy = sortingStrategiesIndex[sortingStrategy];
+    this._onSortUpdate();
   }
 
-  _onSelectSortType(sortType) {
-    this.sortingType = sortType.value;
+  _onSelectSortField(sortField) {
+    this.sortingField = sortField.value;
+  }
+
+  _onSortUpdate() {
+    this.sortingStrategy.sort_game_list(this.games, this.sortingField);
   }
 
   render() {
@@ -101,8 +105,8 @@ class GameListView extends Component {
                 // >
                 <Switch location={location}>
                   <Route exact path="/">
-                    <Dropdown options={SortingDirectionOptions} onChange={this._onSelectSortDirection} value={defaultSortDirectionOption} placeholder="Select an option" />
-                    <Dropdown options={SortingTypeOptions} onChange={this._onSelectSortType} value={defaultSortTypeOption} placeholder="Select an option" />
+                    <Dropdown options={sortingStrategyOptions} onChange={this._onSelectSortStrategy} value={defaultSortStrategyOption} placeholder="Sort Strategy" />
+                    <Dropdown options={sortingFieldOptions} onChange={this._onSelectSortField} value={defaultSortFieldOption} placeholder="Sort Type" />
                     <Home games={this.games} updateScrollDistanceMethod={this.scrollDistanceUpdate} currentScrollTop={this.pixelsFromTop}/>
                   </Route>
                   <Route path="/games/:steam_id">
