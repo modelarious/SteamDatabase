@@ -13,6 +13,7 @@ export class Home extends Component {
     autoBind(this);
   }
 
+  // need to be able to update this component's state based on a parent update. This is called before render.
   UNSAFE_componentWillReceiveProps(nextProps) {
     this.setState({ 
       games: nextProps.games 

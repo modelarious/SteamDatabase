@@ -54,11 +54,12 @@ const defaultSortStrategyOption = ascendingStrategy.get_name();
 
 
 
+const sortingFieldsIndex = {
+  "Steam Game Title": "game_name_from_steam",
+  "Steam Average Review Score": "avg_review_score",
+}
 
-
-const sortingFieldOptions = [
-  'game_name_from_steam', 'avg_review_score'
-];
+const sortingFieldOptions = Object.keys(sortingFieldsIndex)
 const defaultSortFieldOption = sortingFieldOptions[0];
 
 
@@ -67,17 +68,13 @@ const defaultSortFieldOption = sortingFieldOptions[0];
 // will this reconstruct when app.state.games has a game added to it?
 class GameListView extends Component {
   constructor(props) {
-    console.log("In sort update")
     super();
-    console.log("After super")
-    this.sortingField = defaultSortFieldOption;
+    this.sortingField = sortingFieldsIndex[defaultSortFieldOption];
     this.sortingStrategy = sortingStrategiesIndex[defaultSortStrategyOption];
     autoBind(this);
     this.state = {
       games: this._getSortedValues(props.games)
     };
-    console.log("set this.state to")
-    console.log(this.state)
   }
 
   scrollDistanceUpdate(currentPixelsFromTop) {
@@ -91,26 +88,24 @@ class GameListView extends Component {
   }
 
   _onSelectSortField(sortField) {
-    this.sortingField = sortField.value;
+    const sortingField = sortField.value;
+    this.sortingField = sortingFieldsIndex[sortingField];
     this._onSortUpdate();
   }
   
   _getSortedValues(games) {
+    console.log(`sorting by ${this.sortingField}, using ${this.sortingStrategy.get_name()} strategy`);
     return this.sortingStrategy.sortGames(games, this.sortingField)
   }
   
   _onSortUpdate() {
-    console.log("In sort update")
     const sorted = this._getSortedValues(this.state.games);
     this.setState({
       games: sorted,
     })
-    console.log(sorted)
   }
 
   render() {
-    console.log("Rendering GameListView with these values:")
-    console.log(this.state.games);
     return (
       <React.StrictMode>
         <BrowserRouter>
