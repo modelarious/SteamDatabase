@@ -28,9 +28,10 @@ class ascendingSortingStrategy {
   get_name() {
     return this._name;
   }
-  sort_game_list(games, field) {
-    games.sort(byField(field))
-    return games;
+  sortGames(games, field) {
+    const games_copy = JSON.parse(JSON.stringify(games));
+    games_copy.sort(byField(field))
+    return games_copy;
   }
 }
 
@@ -66,11 +67,17 @@ const defaultSortFieldOption = sortingFieldOptions[0];
 // will this reconstruct when app.state.games has a game added to it?
 class GameListView extends Component {
   constructor(props) {
+    console.log("In sort update")
     super();
-    this.games = props.games;
+    console.log("After super")
     this.sortingField = defaultSortFieldOption;
     this.sortingStrategy = sortingStrategiesIndex[defaultSortStrategyOption];
     autoBind(this);
+    this.state = {
+      games: this._getSortedValues(props.games)
+    };
+    console.log("set this.state to")
+    console.log(this.state)
   }
 
   scrollDistanceUpdate(currentPixelsFromTop) {
@@ -85,13 +92,25 @@ class GameListView extends Component {
 
   _onSelectSortField(sortField) {
     this.sortingField = sortField.value;
+    this._onSortUpdate();
   }
-
+  
+  _getSortedValues(games) {
+    return this.sortingStrategy.sortGames(games, this.sortingField)
+  }
+  
   _onSortUpdate() {
-    this.sortingStrategy.sort_game_list(this.games, this.sortingField);
+    console.log("In sort update")
+    const sorted = this._getSortedValues(this.state.games);
+    this.setState({
+      games: sorted,
+    })
+    console.log(sorted)
   }
 
   render() {
+    console.log("Rendering GameListView with these values:")
+    console.log(this.state.games);
     return (
       <React.StrictMode>
         <BrowserRouter>
@@ -107,10 +126,10 @@ class GameListView extends Component {
                   <Route exact path="/">
                     <Dropdown options={sortingStrategyOptions} onChange={this._onSelectSortStrategy} value={defaultSortStrategyOption} placeholder="Sort Strategy" />
                     <Dropdown options={sortingFieldOptions} onChange={this._onSelectSortField} value={defaultSortFieldOption} placeholder="Sort Type" />
-                    <Home games={this.games} updateScrollDistanceMethod={this.scrollDistanceUpdate} currentScrollTop={this.pixelsFromTop}/>
+                    <Home key={this.state.games} games={this.state.games} updateScrollDistanceMethod={this.scrollDistanceUpdate} currentScrollTop={this.pixelsFromTop}/>
                   </Route>
                   <Route path="/games/:steam_id">
-                    <GameView games={this.games} />
+                    <GameView games={this.state.games} />
                   </Route>
                 </Switch>
                 // </PageTransition>

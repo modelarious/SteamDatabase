@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from "react-router-dom";
 
 export function Links(props) {
+  console.log("RENDERING LINKS")
+  console.log(props)
   return props.games.map((game) => (
     <Link to={`/games/${game.steam_id}`}>
       <img
