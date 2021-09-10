@@ -53,9 +53,18 @@ export class Sorter extends Component {
   }
 
   render() {
-    return <div>
-      <Dropdown options={sortingStrategyOptions} onChange={this._onSelectSortStrategy} value={defaultSortStrategyOption} placeholder="Sort Strategy" />
+    const style = {
+      display: 'flex',
+      justifyContent: 'start',
+      paddingLeft : '20px'
+    };
+
+    return <div style={style}>
+      <text>Sort on</text>
       <Dropdown options={sortingFieldOptions} onChange={this._onSelectSortField} value={defaultSortFieldOption} placeholder="Sort Type" />
+      <text>field in</text>
+      <Dropdown options={sortingStrategyOptions} onChange={this._onSelectSortStrategy} value={defaultSortStrategyOption} placeholder="Sort Strategy" />
+      <text>order</text>
     </div>;
   }
 }
