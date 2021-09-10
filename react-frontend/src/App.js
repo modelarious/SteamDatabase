@@ -76,7 +76,7 @@ class App extends Component {
         <TabLink to="tab3">Debug</TabLink>
       
         <TabContent for="tab1">
-          <GameListView games={this.state[GAMES]} updateScrollDistance={this.scrollDistanceUpdate}></GameListView>
+          <GameListView key={games} games={games} updateScrollDistance={this.scrollDistanceUpdate}></GameListView>
         </TabContent>
         <TabContent for="tab2">"user input view"</TabContent>
         <TabContent for="tab3">

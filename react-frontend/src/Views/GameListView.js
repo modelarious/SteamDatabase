@@ -4,17 +4,36 @@ import GameView from "./GameView";
 import { Home } from './Home';
 // import { PageTransition } from "@steveeeie/react-page-transition";
 
+import 'react-dropdown/style.css';
+import { Sorter } from '../Sorting/Sorter';
 const autoBind = require('auto-bind');
 
+
+// XXX will this reconstruct when app.state.games has a game added to it?
 class GameListView extends Component {
   constructor(props) {
     super();
-    this.games = props.games;
     autoBind(this);
+    this.sorter = new Sorter(this._onUpdate);
+    this.state = {
+      games: props.games
+    };
   }
 
   scrollDistanceUpdate(currentPixelsFromTop) {
     this.pixelsFromTop = currentPixelsFromTop;
+  }
+
+  _getFilteredValues(games) {
+    return games;
+  }
+
+  _onUpdate() {
+    const filtered = this._getFilteredValues(this.state.games);
+    const sorted = this.sorter.getSortedValues(filtered);
+    this.setState({
+      games: sorted,
+    })
   }
 
   render() {
@@ -31,10 +50,11 @@ class GameListView extends Component {
                 // >
                 <Switch location={location}>
                   <Route exact path="/">
-                    <Home games={this.games} updateScrollDistanceMethod={this.scrollDistanceUpdate} currentScrollTop={this.pixelsFromTop}/>
+                    {this.sorter.render()}
+                    <Home key={this.state.games} games={this.state.games} updateScrollDistanceMethod={this.scrollDistanceUpdate} currentScrollTop={this.pixelsFromTop}/>
                   </Route>
                   <Route path="/games/:steam_id">
-                    <GameView games={this.games} />
+                    <GameView games={this.state.games} />
                   </Route>
                 </Switch>
                 // </PageTransition>

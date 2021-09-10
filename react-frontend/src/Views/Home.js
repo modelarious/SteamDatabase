@@ -5,10 +5,19 @@ const autoBind = require('auto-bind');
 export class Home extends Component {
   constructor(props) {
     super();
-    this.games = props.games;
+    this.state = {
+      games: props.games,
+    };
     this.updateScrollDistanceMethod = props.updateScrollDistanceMethod;
     this.currentScrollTop = props.currentScrollTop;
     autoBind(this);
+  }
+
+  // need to be able to update this component's state based on a parent update. This is called before render.
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    this.setState({ 
+      games: nextProps.games 
+    });
   }
 
   componentDidMount() {
@@ -26,6 +35,6 @@ export class Home extends Component {
   };
 
   render() {
-    return <Links games={this.games} />;
+    return <Links games={this.state.games} />;
   }
 }
