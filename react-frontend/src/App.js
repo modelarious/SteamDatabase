@@ -67,7 +67,7 @@ class App extends Component {
     const games = this.state[GAMES].map(
       game_from_backend => game_factory.create_game(game_from_backend)
     );
-    console.log(games);
+    console.log(games)
 
     return (
       <Tabs renderActiveTabContentOnly={true}>
