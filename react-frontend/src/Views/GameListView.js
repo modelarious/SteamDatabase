@@ -6,34 +6,9 @@ import { Home } from './Home';
 
 import Dropdown from 'react-dropdown';
 import 'react-dropdown/style.css';
+import { ascendingSortingStrategy } from '../Sorting/Strategies/ascendingSortingStrategy';
 
 const autoBind = require('auto-bind');
-
-// https://stackoverflow.com/a/2466503
-var byField = function (field) {
-  return function (a, b) {
-    if (typeof a[field] == "number") {
-      return (b[field] - a[field]);
-    } else {
-      return ((a[field] < b[field]) ? -1 : ((a[field] > b[field]) ? 1 : 0));
-    }
-  };
-};
-
-class ascendingSortingStrategy {
-  constructor() {
-    this._name = "Ascending";
-    autoBind(this);
-  }
-  get_name() {
-    return this._name;
-  }
-  sortGames(games, field) {
-    const games_copy = JSON.parse(JSON.stringify(games));
-    games_copy.sort(byField(field))
-    return games_copy;
-  }
-}
 
 const ascendingStrategy = new ascendingSortingStrategy();
 const sortingStrategies = [
@@ -63,17 +38,48 @@ const sortingFieldOptions = Object.keys(sortingFieldsIndex)
 const defaultSortFieldOption = sortingFieldOptions[0];
 
 
-
-
-// will this reconstruct when app.state.games has a game added to it?
-class GameListView extends Component {
-  constructor(props) {
+class Sorter extends Component {
+  constructor(onUpdate) {
     super();
     this.sortingField = sortingFieldsIndex[defaultSortFieldOption];
     this.sortingStrategy = sortingStrategiesIndex[defaultSortStrategyOption];
+    this.onUpdate = onUpdate;
     autoBind(this);
+  }
+
+  _onSelectSortStrategy(sortStrategy) {
+    const sortingStrategy = sortStrategy.value;
+    this.sortingStrategy = sortingStrategiesIndex[sortingStrategy];
+    this.onUpdate();
+  }
+
+  _onSelectSortField(sortField) {
+    const sortingField = sortField.value;
+    this.sortingField = sortingFieldsIndex[sortingField];
+    this.onUpdate();
+  }
+  
+  getSortedValues(games) {
+    console.log(`sorting by ${this.sortingField}, using ${this.sortingStrategy.get_name()} strategy`);
+    return this.sortingStrategy.sortGames(games, this.sortingField)
+  }
+
+  render() {
+    return <div>
+      <Dropdown options={sortingStrategyOptions} onChange={this._onSelectSortStrategy} value={defaultSortStrategyOption} placeholder="Sort Strategy" />
+      <Dropdown options={sortingFieldOptions} onChange={this._onSelectSortField} value={defaultSortFieldOption} placeholder="Sort Type" />
+    </div>
+  }
+}
+
+// XXX will this reconstruct when app.state.games has a game added to it?
+class GameListView extends Component {
+  constructor(props) {
+    super();
+    autoBind(this);
+    this.sorter = new Sorter(this._onUpdate);
     this.state = {
-      games: this._getSortedValues(props.games)
+      games: props.games
     };
   }
 
@@ -81,25 +87,15 @@ class GameListView extends Component {
     this.pixelsFromTop = currentPixelsFromTop;
   }
 
-  _onSelectSortStrategy(sortStrategy) {
-    const sortingStrategy = sortStrategy.value;
-    this.sortingStrategy = sortingStrategiesIndex[sortingStrategy];
-    this._onSortUpdate();
+  _getFilteredValues(games) {
+    return games;
   }
 
-  _onSelectSortField(sortField) {
-    const sortingField = sortField.value;
-    this.sortingField = sortingFieldsIndex[sortingField];
-    this._onSortUpdate();
-  }
-  
-  _getSortedValues(games) {
-    console.log(`sorting by ${this.sortingField}, using ${this.sortingStrategy.get_name()} strategy`);
-    return this.sortingStrategy.sortGames(games, this.sortingField)
-  }
-  
-  _onSortUpdate() {
-    const sorted = this._getSortedValues(this.state.games);
+  _onUpdate() {
+    const filtered = this._getFilteredValues(this.state.games);
+    const sorted = this.sorter.getSortedValues(filtered);
+    console.log("Sorted games:")
+    console.log(sorted)
     this.setState({
       games: sorted,
     })
@@ -119,8 +115,7 @@ class GameListView extends Component {
                 // >
                 <Switch location={location}>
                   <Route exact path="/">
-                    <Dropdown options={sortingStrategyOptions} onChange={this._onSelectSortStrategy} value={defaultSortStrategyOption} placeholder="Sort Strategy" />
-                    <Dropdown options={sortingFieldOptions} onChange={this._onSelectSortField} value={defaultSortFieldOption} placeholder="Sort Type" />
+                    {this.sorter.render()}
                     <Home key={this.state.games} games={this.state.games} updateScrollDistanceMethod={this.scrollDistanceUpdate} currentScrollTop={this.pixelsFromTop}/>
                   </Route>
                   <Route path="/games/:steam_id">
