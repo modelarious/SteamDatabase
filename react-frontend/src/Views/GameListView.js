@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { BrowserRouter, Switch, Route } from "react-router-dom";
 import GameView from "./GameView";
 import { Home } from './Home';
+import Filters from "./Filters";
 // import { PageTransition } from "@steveeeie/react-page-transition";
 
 import 'react-dropdown/style.css';
@@ -51,6 +52,7 @@ class GameListView extends Component {
                 <Switch location={location}>
                   <Route exact path="/">
                     {this.sorter.render()}
+                    <Filters></Filters>
                     <Home key={this.state.games} games={this.state.games} updateScrollDistanceMethod={this.scrollDistanceUpdate} currentScrollTop={this.pixelsFromTop}/>
                   </Route>
                   <Route path="/games/:steam_id">
