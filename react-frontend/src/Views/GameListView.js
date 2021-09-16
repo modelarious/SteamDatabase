@@ -16,6 +16,7 @@ class GameListView extends Component {
     super();
     autoBind(this);
     this.sorter = new Sorter(this._onUpdate);
+    // this.filters = new Filters(this._onUpdate);
     this.state = {
       games: props.games
     };
@@ -52,7 +53,8 @@ class GameListView extends Component {
                 <Switch location={location}>
                   <Route exact path="/">
                     {this.sorter.render()}
-                    <Filters></Filters>
+                    {this.filters.render()}
+                    <Filters onUpdate={this._onUpdate}></Filters>
                     <Home key={this.state.games} games={this.state.games} updateScrollDistanceMethod={this.scrollDistanceUpdate} currentScrollTop={this.pixelsFromTop}/>
                   </Route>
                   <Route path="/games/:steam_id">
