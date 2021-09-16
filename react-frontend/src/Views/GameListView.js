@@ -9,14 +9,11 @@ import 'react-dropdown/style.css';
 import { Sorter } from '../Sorting/Sorter';
 const autoBind = require('auto-bind');
 
-
-// XXX will this reconstruct when app.state.games has a game added to it?
 class GameListView extends Component {
   constructor(props) {
     super();
     autoBind(this);
     this.sorter = new Sorter(this._onUpdate);
-    // this.filters = new Filters(this._onUpdate);
     this.state = {
       games: props.games
     };
@@ -30,12 +27,15 @@ class GameListView extends Component {
     return games;
   }
 
-  _onUpdate() {
-    const filtered = this._getFilteredValues(this.state.games);
-    const sorted = this.sorter.getSortedValues(filtered);
+  _onUpdate(filtered_games) {
+    const sorted = this.sorter.getSortedValues(filtered_games);
     this.setState({
       games: sorted,
     })
+  }
+
+  _getGames() {
+    return this.state.games;
   }
 
   render() {
@@ -53,8 +53,7 @@ class GameListView extends Component {
                 <Switch location={location}>
                   <Route exact path="/">
                     {this.sorter.render()}
-                    {this.filters.render()}
-                    <Filters onUpdate={this._onUpdate}></Filters>
+                    <Filters onUpdate={this._onUpdate} getGames={this._getGames}></Filters>
                     <Home key={this.state.games} games={this.state.games} updateScrollDistanceMethod={this.scrollDistanceUpdate} currentScrollTop={this.pixelsFromTop}/>
                   </Route>
                   <Route path="/games/:steam_id">
