@@ -51,8 +51,8 @@ class filter {
         return games.filter(game => this._apply_to_game(game));
     }
 }
-const game_name_filter = new filter("stuff", string_includes, retrieve_name);
-const review_score_filter = new filter(7, greater_than, retrieve_review_score);
+// const game_name_filter = new filter("stuff", string_includes, retrieve_name);
+// const review_score_filter = new filter(7, greater_than, retrieve_review_score);
 // game_name_filter._apply_to_game({ "name": "STUFF IN HERE" });
 // game_name_filter.update_filter_boolean_function(always_false);
 // game_name_filter._apply_to_game({ "name": "STUFF IN HERE" });
@@ -87,11 +87,11 @@ const GAME_NAME_FILTER = "Game Name Filter";
 export default class Filters extends Component {
     constructor(props) {
         super()
+        this.onUpdate = props.onUpdate;
+        this.getGames = props.getGames;
         this.state = { 
             [GAME_NAME_FILTER]: '',
         };
-        this.onUpdate = props.onUpdate;
-        this.getGames = props.getGames;
         this.filters = {
             [GAME_NAME_FILTER]: new filter(this.state[GAME_NAME_FILTER], string_includes, retrieve_name)
         };
