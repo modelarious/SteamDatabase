@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Dropdown from 'react-dropdown';
 const autoBind = require('auto-bind');
 
 
@@ -12,18 +13,18 @@ function retrieve_review_score(game) {
 function string_includes(str, subStr) {
     return str.toLowerCase().includes(subStr.toLowerCase());
 }
+
 function greater_than(num, filter_num) {
-    return num > filter_num;
+    return parseInt(num) > parseInt(filter_num);
+}
+function greater_than_or_equal_to(num, filter_num) {
+    return parseInt(num) >= parseInt(filter_num);
 }
 function less_than(num, filter_num) {
-    return num < filter_num;
+    return parseInt(num) < parseInt(filter_num);
 }
 function equal(num, filter_num) {
-    return num === filter_num;
-}
-
-function always_false(str, subStr) {
-    return false;
+    return parseInt(num) === parseInt(filter_num);
 }
 
 class filter {
@@ -83,7 +84,17 @@ Sorting - Ascending, Descending
     Game Name
     Review Score
 */
+
+const ratingFilterTypeIndex = {
+    "<": greater_than,
+    "<=": greater_than_or_equal_to,
+    "==": equal,
+    ">": less_than,
+}
+const ratingFilterTypeOptions = Object.keys(ratingFilterTypeIndex)
+const defaultRatingFilterTypeOption = ratingFilterTypeOptions[0];
 const GAME_NAME_FILTER = "Game Name Filter";
+const REVIEW_SCORE_FILTER = "Review Score Filter";
 export default class Filters extends Component {
     constructor(props) {
         super()
@@ -91,38 +102,67 @@ export default class Filters extends Component {
         this.getGames = props.getGames;
         this.state = { 
             [GAME_NAME_FILTER]: '',
+            [REVIEW_SCORE_FILTER]: -1,
         };
         this.filters = {
-            [GAME_NAME_FILTER]: new filter(this.state[GAME_NAME_FILTER], string_includes, retrieve_name)
+            [GAME_NAME_FILTER]: new filter(this.state[GAME_NAME_FILTER], string_includes, retrieve_name),
+            [REVIEW_SCORE_FILTER]: new filter(this.state[REVIEW_SCORE_FILTER], ratingFilterTypeIndex[defaultRatingFilterTypeOption], retrieve_review_score),
         };
         autoBind(this);
     }
 
+    _triggerFilterUpdate() {
+        const all_games = this.getGames();
+        let filtered_games = all_games;
+        for (const filter of Object.values(this.filters)) {
+            filtered_games = filter.apply(filtered_games);
+        }
+        this.onUpdate(filtered_games);
+    }
+
     _filterUpdate(event) {
         const new_state = event.target.value;
-        const filter_name = event.target.name
-        console.log(event);
+        const filter_name = event.target.name;
         this.setState({ 
             [filter_name]: new_state
         });
-        
-        this.filters[GAME_NAME_FILTER].update_filter_state(new_state)
+        this.filters[filter_name].update_filter_state(new_state)
         console.log(new_state)
-        this.onUpdate(this.filters[GAME_NAME_FILTER].apply(this.getGames()));
+        this._triggerFilterUpdate()
+    }
+
+    _onSelectRatingFilterType(ratingFilterTypeChangeEvent) {
+        const ratingFilterType = ratingFilterTypeChangeEvent.value;
+        const newFilterTypeFunction = ratingFilterTypeIndex[ratingFilterType];
+        this.filters[REVIEW_SCORE_FILTER].update_filter_boolean_function(newFilterTypeFunction)
+        console.log("Updated filter function to")
+        console.log(newFilterTypeFunction)
+        this._triggerFilterUpdate()
     }
 
     render() {
 
+        const style = {
+            display: 'flex',
+            justifyContent: 'start',
+            paddingLeft : '20px'
+        };
+
+        
+
+
         return <form>
-            <label>
-                {GAME_NAME_FILTER}:
+            <label style={style}>
+                <text>{GAME_NAME_FILTER}:</text>
                 <input type="text" value={this.state[GAME_NAME_FILTER]} onChange={this._filterUpdate} name={GAME_NAME_FILTER} />
             </label>
+            <div style={style}>
+                <text>Filter by review score</text>
+                <Dropdown options={ratingFilterTypeOptions} onChange={this._onSelectRatingFilterType} value={defaultRatingFilterTypeOption} placeholder="Rating Filter Type" />
+                <text>to</text>
+                <input type="text" value={this.state[REVIEW_SCORE_FILTER]} onChange={this._filterUpdate} name={REVIEW_SCORE_FILTER} />
+            </div>
             {/* <label>
-                Review Score Filter:
-                <input type="text" value={this.state.gameNameFilter} onChange={this._gameNameFilterTextUpdate} name="Review Score Filter" />
-            </label>
-            <label>
                 Genre Filter:
                 <input type="text" value={this.state.gameNameFilter} onChange={this._gameNameFilterTextUpdate} name="Genre Filter" />
             </label> */}
@@ -136,7 +176,7 @@ export default class Filters extends Component {
             </label> */}
             {/* <label>
                 Controller Support Filter:
-                <input type="text" value={this.state.gameNameFilter} onChange={this._gameNameFilterTextUpdate} name="Publisher Filter" />
+                <input type="text" value={this.state.gameNameFilter} onChange={this._gameNameFilterTextUpdate} name="Controller Support Filter" />
             </label> */}
         </form>
     }
