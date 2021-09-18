@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import Dropdown from 'react-dropdown';
+
+import { WithContext as ReactTags } from 'react-tag-input';
 const autoBind = require('auto-bind');
 
 
@@ -22,6 +24,9 @@ function greater_than_or_equal_to(num, filter_num) {
 }
 function less_than(num, filter_num) {
     return parseInt(num) < parseInt(filter_num);
+}
+function less_than_or_equal_to(num, filter_num) {
+    return parseInt(num) <= parseInt(filter_num);
 }
 function equal(num, filter_num) {
     return parseInt(num) === parseInt(filter_num);
@@ -85,11 +90,86 @@ Sorting - Ascending, Descending
     Review Score
 */
 
+const COUNTRIES = ["Thailand", "India", "Vietnam", "Turkey", "USA", "Canada"]
+const suggestions = COUNTRIES.map(country => {
+  return {
+    id: country,
+    text: country
+  };
+});
+
+const KeyCodes = {
+  comma: 188,
+  enter: 13
+};
+
+const delimiters = [KeyCodes.comma, KeyCodes.enter];
+
+const Whoa = () => {
+  const [tags, setTags] = React.useState([
+    { id: 'Thailand', text: 'Thailand' },
+    { id: 'India', text: 'India' },
+    { id: 'Vietnam', text: 'Vietnam' },
+    { id: 'Turkey', text: 'Turkey' }
+  ]);
+
+  const handleDelete = i => {
+    setTags(tags.filter((tag, index) => index !== i));
+  };
+
+  const handleAddition = tag => {
+    setTags([...tags, tag]);
+  };
+
+  const onClearAll = () => {
+    setTags([]);
+  };
+
+  const handleDrag = (tag, currPos, newPos) => {
+    const newTags = tags.slice();
+
+    newTags.splice(currPos, 1);
+    newTags.splice(newPos, 0, tag);
+
+    // re-render
+    setTags(newTags);
+  };
+
+  const handleTagClick = index => {
+    console.log('The tag at index ' + index + ' was clicked');
+  };
+
+  return (
+    <div className="app">
+      <div>
+        <ReactTags
+          tags={tags}
+          suggestions={suggestions}
+          delimiters={delimiters}
+          onClearAll={onClearAll}
+          handleDelete={handleDelete}
+          handleAddition={handleAddition}
+          handleDrag={handleDrag}
+          handleTagClick={handleTagClick}
+          inputFieldPosition="inline"
+          placeholder="Genre tags..."
+          minQueryLength={1}
+          allowDragDrop={false}
+          clearAll={true}
+          autocomplete
+        />
+      </div>
+    </div>
+  );
+};
+
+
 const ratingFilterTypeIndex = {
     "<": greater_than,
     "<=": greater_than_or_equal_to,
     "==": equal,
     ">": less_than,
+    ">=": less_than_or_equal_to
 }
 const ratingFilterTypeOptions = Object.keys(ratingFilterTypeIndex)
 const defaultRatingFilterTypeOption = ratingFilterTypeOptions[0];
@@ -148,9 +228,6 @@ export default class Filters extends Component {
             paddingLeft : '20px'
         };
 
-        
-
-
         return <form>
             <label style={style}>
                 <text>{GAME_NAME_FILTER}:</text>
@@ -162,6 +239,7 @@ export default class Filters extends Component {
                 <text>to</text>
                 <input type="text" value={this.state[REVIEW_SCORE_FILTER]} onChange={this._filterUpdate} name={REVIEW_SCORE_FILTER} />
             </div>
+            <Whoa></Whoa>
             {/* <label>
                 Genre Filter:
                 <input type="text" value={this.state.gameNameFilter} onChange={this._gameNameFilterTextUpdate} name="Genre Filter" />

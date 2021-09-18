@@ -21,8 +21,13 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
     "react-tabs-redux": "",
+    "react-dnd": "^14.0.2",
+    "react-dnd-html5-backend": "^14.0.0",
+    "react-tag-input": "^6.7.3",
     "web-vitals": "^1.0.1",
-    "websocket": "^1.0.33"
+    "websocket": "^1.0.33",
+    "@babel/core": "^7.13.0",
+    "typescript": "^2.8.0"
   },
   "scripts": {
     "start": "react-scripts start",
