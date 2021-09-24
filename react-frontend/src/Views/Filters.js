@@ -1,62 +1,13 @@
 import React, { Component } from 'react';
 import Dropdown from 'react-dropdown';
 
-import { WithContext as ReactTags } from 'react-tag-input';
+
+import { GenreTagSelector } from './GenreTagSelector';
+
+
+import { greater_than, greater_than_or_equal_to, equal, less_than, less_than_or_equal_to, string_includes, retrieve_name, retrieve_review_score, all_genres_apply_to_game, retrieve_genres } from './filter_functions';
+import { filter } from './filter';
 const autoBind = require('auto-bind');
-
-
-function retrieve_name(game) {
-    return game.game_name_from_steam;
-}
-function retrieve_review_score(game) {
-    return game.avg_review_score;
-}
-
-function string_includes(str, subStr) {
-    return str.toLowerCase().includes(subStr.toLowerCase());
-}
-
-function greater_than(num, filter_num) {
-    return parseInt(num) > parseInt(filter_num);
-}
-function greater_than_or_equal_to(num, filter_num) {
-    return parseInt(num) >= parseInt(filter_num);
-}
-function less_than(num, filter_num) {
-    return parseInt(num) < parseInt(filter_num);
-}
-function less_than_or_equal_to(num, filter_num) {
-    return parseInt(num) <= parseInt(filter_num);
-}
-function equal(num, filter_num) {
-    return parseInt(num) === parseInt(filter_num);
-}
-
-class filter {
-    constructor(initial_value, filter_boolean_function, game_accessor_function) {
-        this.filter_state = initial_value
-        this.filter_boolean_function = filter_boolean_function
-        this.game_accessor_function = game_accessor_function;
-        autoBind(this);
-    }
-
-    update_filter_state(new_value) {
-        this.filter_state = new_value;
-    }
-
-    update_filter_boolean_function(new_function) {
-        this.filter_boolean_function = new_function
-    }
-
-    _apply_to_game(game) {
-        const field_value = this.game_accessor_function(game)
-        return this.filter_boolean_function(field_value, this.filter_state)
-    }
-
-    apply(games) {
-        return games.filter(game => this._apply_to_game(game));
-    }
-}
 // const game_name_filter = new filter("stuff", string_includes, retrieve_name);
 // const review_score_filter = new filter(7, greater_than, retrieve_review_score);
 // game_name_filter._apply_to_game({ "name": "STUFF IN HERE" });
@@ -90,78 +41,6 @@ Sorting - Ascending, Descending
     Review Score
 */
 
-const COUNTRIES = ["Thailand", "India", "Vietnam", "Turkey", "USA", "Canada"]
-const suggestions = COUNTRIES.map(country => {
-  return {
-    id: country,
-    text: country
-  };
-});
-
-const KeyCodes = {
-  comma: 188,
-  enter: 13
-};
-
-const delimiters = [KeyCodes.comma, KeyCodes.enter];
-
-const Whoa = () => {
-  const [tags, setTags] = React.useState([
-    { id: 'Thailand', text: 'Thailand' },
-    { id: 'India', text: 'India' },
-    { id: 'Vietnam', text: 'Vietnam' },
-    { id: 'Turkey', text: 'Turkey' }
-  ]);
-
-  const handleDelete = i => {
-    setTags(tags.filter((tag, index) => index !== i));
-  };
-
-  const handleAddition = tag => {
-    setTags([...tags, tag]);
-  };
-
-  const onClearAll = () => {
-    setTags([]);
-  };
-
-  const handleDrag = (tag, currPos, newPos) => {
-    const newTags = tags.slice();
-
-    newTags.splice(currPos, 1);
-    newTags.splice(newPos, 0, tag);
-
-    // re-render
-    setTags(newTags);
-  };
-
-  const handleTagClick = index => {
-    console.log('The tag at index ' + index + ' was clicked');
-  };
-
-  return (
-    <div className="app">
-      <div>
-        <ReactTags
-          tags={tags}
-          suggestions={suggestions}
-          delimiters={delimiters}
-          onClearAll={onClearAll}
-          handleDelete={handleDelete}
-          handleAddition={handleAddition}
-          handleDrag={handleDrag}
-          handleTagClick={handleTagClick}
-          inputFieldPosition="inline"
-          placeholder="Genre tags..."
-          minQueryLength={1}
-          allowDragDrop={false}
-          clearAll={true}
-          autocomplete
-        />
-      </div>
-    </div>
-  );
-};
 
 
 const ratingFilterTypeIndex = {
@@ -175,38 +54,45 @@ const ratingFilterTypeOptions = Object.keys(ratingFilterTypeIndex)
 const defaultRatingFilterTypeOption = ratingFilterTypeOptions[0];
 const GAME_NAME_FILTER = "Game Name Filter";
 const REVIEW_SCORE_FILTER = "Review Score Filter";
+const GENRE_TAG_FILTER = "Genre Tag Filter";
 export default class Filters extends Component {
     constructor(props) {
         super()
         this.onUpdate = props.onUpdate;
         this.getGames = props.getGames;
+        // XXX there has got to be a better way to set these up than needing 3 references to each constant here, and a bunch of references below
         this.state = { 
             [GAME_NAME_FILTER]: '',
             [REVIEW_SCORE_FILTER]: -1,
+            [GENRE_TAG_FILTER]: [],
         };
         this.filters = {
             [GAME_NAME_FILTER]: new filter(this.state[GAME_NAME_FILTER], string_includes, retrieve_name),
             [REVIEW_SCORE_FILTER]: new filter(this.state[REVIEW_SCORE_FILTER], ratingFilterTypeIndex[defaultRatingFilterTypeOption], retrieve_review_score),
+            [GENRE_TAG_FILTER]: new filter(this.state[GENRE_TAG_FILTER], all_genres_apply_to_game, retrieve_genres),
         };
         autoBind(this);
     }
-
-    _triggerFilterUpdate() {
-        const all_games = this.getGames();
+    _getFilteredGames() {
+        const all_games = this.getGames(); // XXX not needed
         let filtered_games = all_games;
         for (const filter of Object.values(this.filters)) {
             filtered_games = filter.apply(filtered_games);
         }
-        this.onUpdate(filtered_games);
+        return filtered_games;
+    }
+
+    _triggerFilterUpdate() {
+        this.onUpdate(this._getFilteredGames());
     }
 
     _filterUpdate(event) {
         const new_state = event.target.value;
         const filter_name = event.target.name;
+        this.filters[filter_name].update_filter_state(new_state)
         this.setState({ 
             [filter_name]: new_state
         });
-        this.filters[filter_name].update_filter_state(new_state)
         console.log(new_state)
         this._triggerFilterUpdate()
     }
@@ -214,9 +100,19 @@ export default class Filters extends Component {
     _onSelectRatingFilterType(ratingFilterTypeChangeEvent) {
         const ratingFilterType = ratingFilterTypeChangeEvent.value;
         const newFilterTypeFunction = ratingFilterTypeIndex[ratingFilterType];
-        this.filters[REVIEW_SCORE_FILTER].update_filter_boolean_function(newFilterTypeFunction)
+        this.filters[REVIEW_SCORE_FILTER].update_filter_boolean_function(newFilterTypeFunction);
         console.log("Updated filter function to")
         console.log(newFilterTypeFunction)
+        this._triggerFilterUpdate()
+    }
+
+    _onUpdateGenreTags(newTags) {
+        console.log("NEW TAGS:")
+        console.log(newTags)
+        this.filters[GENRE_TAG_FILTER].update_filter_state(newTags);
+        this.setState({ 
+            [GENRE_TAG_FILTER]: newTags
+        });
         this._triggerFilterUpdate()
     }
 
@@ -227,6 +123,9 @@ export default class Filters extends Component {
             justifyContent: 'start',
             paddingLeft : '20px'
         };
+
+        // XXX could include more genres here from app_detail -- don't forget to change the retrieve_genres function if you update this
+        const genre_tags = new Set(this._getFilteredGames().map(game => game.user_defined_genres).flat(Infinity));
 
         return <form>
             <label style={style}>
@@ -239,7 +138,7 @@ export default class Filters extends Component {
                 <text>to</text>
                 <input type="text" value={this.state[REVIEW_SCORE_FILTER]} onChange={this._filterUpdate} name={REVIEW_SCORE_FILTER} />
             </div>
-            <Whoa></Whoa>
+            <GenreTagSelector genre_tags={genre_tags} onUpdate={this._onUpdateGenreTags}></GenreTagSelector>
             {/* <label>
                 Genre Filter:
                 <input type="text" value={this.state.gameNameFilter} onChange={this._gameNameFilterTextUpdate} name="Genre Filter" />
