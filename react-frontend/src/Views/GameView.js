@@ -11,27 +11,6 @@ function linear_search_by_steam_id(array_of_games, steam_id_to_find) {
 }
 
 /*
-Filters:
-    Game Name - Contains:
-        game_name_on_disk
-        game_name_from_steam
-        path_on_harddrive
-    Review Score - <=, >=, ==
-        avg_review_score
-    Genres - Contains:
-        user_defined_genres
-        genres
-    Developers - Contains:
-        developers
-    Publishers - Contains:
-        publishers
-    Controller Support
-        controller_support
-Sorting - Ascending, Descending
-    Game Name
-    Review Score
-*/
-/*
 class Game(SteamSendable):
     // game_name_on_disk: str
     // game_name_from_steam: str
