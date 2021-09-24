@@ -1,5 +1,3 @@
-
-
 /* retrieval functions */
 export function retrieve_name(game) {
     return game.game_name_from_steam;

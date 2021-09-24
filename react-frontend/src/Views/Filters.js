@@ -1,24 +1,9 @@
 import React, { Component } from 'react';
 import Dropdown from 'react-dropdown';
-
-
 import { GenreTagSelector } from './GenreTagSelector';
-
-
 import { greater_than, greater_than_or_equal_to, equal, less_than, less_than_or_equal_to, string_includes, retrieve_name, retrieve_review_score, all_genres_apply_to_game, retrieve_genres, retrieve_controller_support, exists_in_boolean_list } from './filter_functions';
 import { filter } from './filter';
 const autoBind = require('auto-bind');
-// const game_name_filter = new filter("stuff", string_includes, retrieve_name);
-// const review_score_filter = new filter(7, greater_than, retrieve_review_score);
-// game_name_filter._apply_to_game({ "name": "STUFF IN HERE" });
-// game_name_filter.update_filter_boolean_function(always_false);
-// game_name_filter._apply_to_game({ "name": "STUFF IN HERE" });
-
-
-// partial string match            game_name
-// numeric comparison              review_score
-// partial string match in list    genres, developers, publishers
-// Boolean                         controller support
 
 /*
 Filters:
@@ -40,9 +25,6 @@ Sorting - Ascending, Descending
     Game Name
     Review Score
 */
-
-
-
 const ratingFilterTypeIndex = {
     "<": greater_than,
     "<=": greater_than_or_equal_to,
@@ -95,7 +77,6 @@ export default class Filters extends Component {
         this.setState({ 
             [filter_name]: new_state
         });
-        console.log(new_state)
         this._triggerFilterUpdate()
     }
 
@@ -103,14 +84,10 @@ export default class Filters extends Component {
         const ratingFilterType = ratingFilterTypeChangeEvent.value;
         const newFilterTypeFunction = ratingFilterTypeIndex[ratingFilterType];
         this.filters[REVIEW_SCORE_FILTER].update_filter_boolean_function(newFilterTypeFunction);
-        console.log("Updated filter function to")
-        console.log(newFilterTypeFunction)
         this._triggerFilterUpdate()
     }
 
     _onUpdateGenreTags(newTags) {
-        console.log("NEW TAGS:")
-        console.log(newTags)
         this.filters[GENRE_TAG_FILTER].update_filter_state(newTags);
         this.setState({ 
             [GENRE_TAG_FILTER]: newTags
@@ -173,14 +150,6 @@ export default class Filters extends Component {
                 <input type="radio" value="No" name="controller_support" onChange={this._onRadioUpdate} /> No
                 <input type="radio" value="Off" name="controller_support" onChange={this._onRadioUpdate} defaultChecked /> Off
             </div>
-            {/* <label>
-                Developer Filter:
-                <input type="text" value={this.state.gameNameFilter} onChange={this._gameNameFilterTextUpdate} name="Developer Filter" />
-            </label>
-            <label>
-                Publisher Filter:
-                <input type="text" value={this.state.gameNameFilter} onChange={this._gameNameFilterTextUpdate} name="Publisher Filter" />
-            </label> */}
         </form>
     }
 }

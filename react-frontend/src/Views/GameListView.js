@@ -12,7 +12,6 @@ const autoBind = require('auto-bind');
 class GameListView extends Component {
   constructor(props) {
     super();
-    console.log(this.sorter)
     autoBind(this);
 
     // Sorter MUST be defined after autoBind is called since we are passing in a function and javascript is stupid about
