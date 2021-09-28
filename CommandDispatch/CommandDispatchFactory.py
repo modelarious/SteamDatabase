@@ -3,8 +3,13 @@ from State.StateCommunicatorQueues import StateCommunicationQueueWriter
 from CommandDispatch.CommandFactory import CommandFactory
 from CommandDispatch.CommandDispatch import CommandDispatch
 
+
 class CommandDispatchFactory:
     def create(self, websocket_registry: WebsocketClientHandlerRegistry, writer: StateCommunicationQueueWriter):
-        command_socket = websocket_registry.get_socket(COMMAND)
+
+        def fetch_command_socket():
+            return websocket_registry.get_socket(COMMAND)
+
+        # command_socket = websocket_registry.get_socket(COMMAND)
         command_factory = CommandFactory(writer)
-        return CommandDispatch(command_socket, command_factory)
+        return CommandDispatch(fetch_command_socket, command_factory)
