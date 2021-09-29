@@ -15,6 +15,9 @@ class CommandDispatch:
             message = command_socket.get_message()
 
             print("Got message:", message)
+            if message == "init":
+                continue
+            
             # XXX maybe message will be None because the socket disconnects?
             command = self.command_factory.create(message)
 

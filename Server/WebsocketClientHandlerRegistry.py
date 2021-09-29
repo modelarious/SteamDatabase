@@ -29,17 +29,21 @@ class WebsocketClientHandlerRegistry:
 
     def waitForAllSocketsReady(self):
         self.__allSocketsReady.wait()
-    
+
     def track_socket_and_loop(self, socket, socket_name):
-        wrapped_socket = SocketWrapper(socket, socket_name)
-        self.__socketWrappers[socket_name] = wrapped_socket
+        if socket_name in self.__socketWrappers:
+            self.__socketWrappers[socket_name].replace_socket(socket)
+        else:
+            wrapped_socket = SocketWrapper(socket, socket_name)
+            self.__socketWrappers[socket_name] = wrapped_socket
+
         self._internalCheckAllSocketsReady()
 
         # loop until client closes connection
-        wrapped_socket.connection_loop()
+        self.__socketWrappers[socket_name].connection_loop()
 
-        # client has closed connection, so stop tracking it
-        del self.__socketWrappers[socket_name]
+        # client has closed connection
+        # self.__socketWrappers[socket_name].mark_closed()
     
     def get_socket(self, socket_name):
         return self.__socketWrappers[socket_name]

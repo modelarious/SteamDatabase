@@ -10,6 +10,5 @@ class CommandDispatchFactory:
         def fetch_command_socket():
             return websocket_registry.get_socket(COMMAND)
 
-        # command_socket = websocket_registry.get_socket(COMMAND)
         command_factory = CommandFactory(writer)
         return CommandDispatch(fetch_command_socket, command_factory)
