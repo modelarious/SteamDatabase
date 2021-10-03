@@ -12,7 +12,6 @@ RUN apt-get update && \
 #server host port
 EXPOSE 3091
 
-
 WORKDIR /usr/src/app
 COPY . .
 RUN pip3 install -r requirements.txt
