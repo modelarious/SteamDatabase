@@ -33,7 +33,7 @@ class PostgresGameDAO:
         
 
     def get_titles_of_all_stored_games(self) -> List[str]:
-        conn = self.connection_factory.createConnection()
+        conn = self._get_connection()
         query_returns = []
         with conn.cursor() as cur:
             get_game_titles_query = "SELECT game_name_on_disk from Games"
