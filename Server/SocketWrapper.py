@@ -8,7 +8,7 @@ class SocketWrapper:
         self.socket = socket
         self.socket_name = socket_name
         self.received_message_queue = Queue()
-        self.previous_message = ""
+        self.latest_message = ""
 
     def _wait(self):
         try:
@@ -30,7 +30,7 @@ class SocketWrapper:
     
     def send_message(self, message):
         # track message as it comes in so that you can resend the latest message on reconnect
-        self.previous_message = message
+        self.latest_message = message
         json_message = dumps(message)
         try:
             self.socket.send(json_message)
@@ -50,5 +50,7 @@ class SocketWrapper:
 
     def replace_socket(self, socket):
         self.socket = socket
-        if self.previous_message:
-            self.send_message(self.previous_message)
+
+        # resend the latest message on reconnect
+        if self.latest_message:
+            self.send_message(self.latest_message)

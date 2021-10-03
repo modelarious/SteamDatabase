@@ -8,7 +8,5 @@ class ObserverSocketHookupFactory:
     # socket name should be one of the states in States.py
     def hookUpObservableDataStructure(self, socketName: str) -> ObservedDataStructure:
         def fetchSocket():
-            sock = self.websocketRegistry.get_socket(socketName)
-            print(socketName, sock)
-            return sock
+            return self.websocketRegistry.get_socket(socketName)
         return ObservedDataStructure(fetchSocket)

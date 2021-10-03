@@ -8,7 +8,7 @@ from typing import Any, List
 class DummyStateCommunicator(StateCommunicatorInterface):
     def show(self, payload: Any):
         funcName = self._determine_function_name()
-        # print(f"[{funcName}] - {payload}")
+        print(f"[{funcName}] - {payload}")
 
     def batchSetUpcomingState(self, gameTitlesOnDisk : List[str]):
         for gameTitle in gameTitlesOnDisk:

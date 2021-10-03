@@ -13,10 +13,7 @@ class CommandDispatch:
             print("awaiting command")
             command_socket = self.command_socket_fetch_function()
             message = command_socket.get_message()
-
-            print("Got message:", message)
             command = self.command_factory.create(message)
-
             if command.get_command_name() == SHUTDOWN_COMMAND:
                 break
 

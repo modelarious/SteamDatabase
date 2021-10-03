@@ -42,13 +42,9 @@ class WebsocketClientHandlerRegistry:
         # loop until client closes connection
         self.__socketWrappers[socket_name].connection_loop()
 
-        # client has closed connection
-        # XXX When a command has already been issued to the command socket, and the game matching is running, 
-        # when we reload the client, we don't see updates in the debug menu.
-        # XXX we do however now see updates when we reload the client and then issue a command (when a command is not already running)
-        # XXX XXX XXX XXX THIS WON'T WORK!! There's a race condition where the socket can be written 
-        # to in between breaking out of the above loop and before marking it closed
-        # self.__socketWrappers[socket_name].mark_closed()
+        # client has closed connection and we exit this context but leave the SocketWrapper 
+        # object in self.__socketWrappers so that others can wait on the internal queue and get
+        # notified when the client re-establishes connecttion
     
     def get_socket(self, socket_name):
         return self.__socketWrappers[socket_name]
