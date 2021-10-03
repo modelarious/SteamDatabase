@@ -36,6 +36,7 @@ class SteamAPIDataFetcher:
         if not success:
             raise ResponseUnsuccesfulException(f"response had False in the `success` field: {steam_response}")
 
+        # XXX this is too late to be checking for this exception - you should be using this to filter
         app_type = steam_response[app_id]['data']['type']
         if app_type not in self.allowed_app_types:
             raise IncorrectAppTypeException(f"app_type ({app_type}) was not part of allowed app types: {self.allowed_app_types}")
