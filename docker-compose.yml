@@ -1,10 +1,9 @@
-# docker-compose.yml
 version: '3'
 services:
   database:
-    image: "postgres" # use latest official postgres version
+    image: "postgres"
     env_file:
-      - database.env # configure postgres
+      - database.env
     volumes:
       - database-data:/var/lib/postgresql/data/ # persist data even if container shuts down
     ports:
@@ -16,6 +15,10 @@ services:
       - database
     ports:
       - "3091:3091"
+    environment:
+      - DOCKER_ENV="YEAH DOG"
+    volumes:
+      - .:/usr/src/app  # <-- hot code reloading! (/usr/src/app refers to the path I set up in the Dockerfile)
   frontend:
     build: ./react-frontend
     image: "react-frontend"
