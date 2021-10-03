@@ -1,0 +1,31 @@
+version: '3'
+services:
+  database:
+    image: "postgres"
+    env_file:
+      - database.env
+    volumes:
+      - database-data:/var/lib/postgresql/data/ # persist data even if container shuts down
+    ports:
+      - "5432:5432"
+  server:
+    build: .
+    image: "steam-database-backend"
+    depends_on:
+      - database
+    ports:
+      - "3091:3091"
+    environment:
+      - DOCKER_ENV="YEAH DOG"
+    volumes:
+      - .:/usr/src/app  # <-- hot code reloading! (/usr/src/app refers to the path I set up in the Dockerfile)
+  frontend:
+    build: ./react-frontend
+    image: "react-frontend"
+    depends_on:
+      - server
+    ports:
+      - "3000:3000"
+
+volumes:
+  database-data: # named volumes can be managed easier using docker-compose
