@@ -54,18 +54,18 @@ cursor.execute(x)
 #   steam_id -> int, foreign
 #   tag_id -> int, foreign
 x = '''
-CREATE TABLE IF NOT EXISTS UserDefinedTagMappings (
+CREATE TABLE IF NOT EXISTS UserDefinedGenres (
   steam_id int NOT NULL,
-  tag_name VARCHAR ( 100 ) NOT NULL,
+  genre_name VARCHAR ( 100 ) NOT NULL,
   rank int NOT NULL,
   FOREIGN KEY (steam_id) REFERENCES Games(steam_id),
-  PRIMARY KEY (steam_id, tag_name)
+  PRIMARY KEY (steam_id, genre_name)
 );
 '''
 cursor.execute(x)
 
 # x = '''
-# INSERT INTO UserDefinedTagMappings (steam_id, tag_name) VALUES
+# INSERT INTO UserDefinedGenres (steam_id, genre_name) VALUES
 #     (1976647, 'Good'),
 #     (1976647, 'ol'),
 #     (1976647, 'Fun'),
@@ -108,7 +108,7 @@ conn.close()
 
 # # UserDefinedTags
 # #   tag_id -> int, foreign, primary
-# #   tag_name -> string
+# #   genre_name -> string
 # x = '''
 # CREATE TABLE IF NOT EXISTS UserDefinedTag (
 #   tag_id serial PRIMARY KEY,

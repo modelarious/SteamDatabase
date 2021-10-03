@@ -1,14 +1,17 @@
-class MatchQueueEntry:
-    def __init__(self, gameNameFromSteam, gameNameOnDisk, steamIDNumber):
-        self.gameNameFromSteam = gameNameFromSteam
-        self.gameNameOnDisk = gameNameOnDisk
-        self.steamIDNumber = steamIDNumber
+from QueueEntries.Sendable import SteamSendable
+from dataclasses import dataclass
 
-    def getGameNameFromSteam(self):
-        return self.gameNameFromSteam
+@dataclass
+class MatchQueueEntry(SteamSendable):
+    game_name_on_disk: str
+    game_name_from_steam: str
+    steam_id_number: int
+
+    def get_game_name_from_steam(self):
+        return self.game_name_from_steam
     
-    def getGameNameOnDisk(self):
-        return self.gameNameOnDisk
+    def get_game_name_on_disk(self):
+        return self.game_name_on_disk
 
-    def getSteamIDNumber(self):
-        return self.steamIDNumber
+    def get_steam_id_number(self):
+        return self.steam_id_number

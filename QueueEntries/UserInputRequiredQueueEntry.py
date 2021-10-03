@@ -1,10 +1,12 @@
-class UserInputRequiredQueueEntry:
-    def __init__(self, targetName, possibleMatchesList):
-        self.targetName = targetName
-        self.possibleMatchesList = possibleMatchesList
+from QueueEntries.Sendable import Sendable
+from dataclasses import dataclass
+from typing import List
+from QueueEntries.PossibleMatchQueueEntry import PossibleMatchQueueEntry
+
+@dataclass
+class UserInputRequiredQueueEntry(Sendable):
+    game_name_on_disk: str
+    possible_matches_list: List[PossibleMatchQueueEntry]
     
-    def getTargetName(self):
-        return self.targetName
-    
-    def getPossibleMatchesList(self):
-        return self.possibleMatchesList
+    def get_possible_matches_list(self):
+        return self.possible_matches_list

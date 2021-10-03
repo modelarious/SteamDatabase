@@ -1,48 +1,45 @@
-from ExternalDataFetchers.UserDefinedTagsFetcher import UserDefinedTagsFetcher
-from ExternalDataFetchers.SteamAPIDataFetcher import SteamAPIDataFetcher
-from minimumEditDistanceProcessing import minimumEditDistanceProcessing
-from gameLookupAndStorageProcess import gameLookupAndStorageProcess
+from GameFactory import GameFactory
+from State.StateCommunicatorInterface import StateCommunicatorInterface
+from minimum_edit_distance_processing import minimum_edit_distance_processing
+from game_lookup_and_storage_process import game_lookup_and_storage_process
 from Constants import END_OF_QUEUE
 from Database.PostgresGameDAOFactory import PostgresGameDAOFactory
 
-import pickle
 from multiprocessing import Process, Manager
-
-# from pprint import pprint
-# import requests
-
-# URL = "http://api.steampowered.com/ISteamApps/GetAppList/v0002/?key=STEAMKEY&format=json"
-
-# requestReturn = requests.get(url = URL) 
-# gamesObject = requestReturn.json()
-# steamGamesList = gamesObject["applist"]["apps"]
-
-
-
-# with open('mockSteamReturn.txt', 'wb') as mockSteamReturn:
-#     pickle.dump(steamGamesList, mockSteamReturn)
-
-# exit(1)
-
-# import os
-# gamesOnDisk = os.listdir("/Volumes/babyBlue/Games/PC/")
-
-
-
-#-----------------------------------------------------------------------------------------
-
 
 def build_steam_title_map(steamGamesList):
     steamTitleMap = dict()
-    print(steamGamesList)
     for gameObj in steamGamesList:
         gameTitle = gameObj["name"].lower()
         steamTitleMap[gameTitle] = gameObj
     return steamTitleMap
 
 
-def main(steamGamesList, gamesOnDisk):
+def ui_handling(userInputRequiredQueue, gameNameMatchesProcessingQueue, stateCommunicator):
+    unmatchedGames = []
+    uire = userInputRequiredQueue.get()
+    while uire != END_OF_QUEUE:
+        nameOnDisk = uire.get_game_name_on_disk()
+        for possibleMatch in uire.get_possible_matches_list():
+            # userInput = input(f"does it match '{possibleMatch.get_steam_name()}' - {possibleMatch.steamIDNumber} - {possibleMatch.matchScore}? (y/n)")
+            userInput = 'y'
+            if userInput.lower() == 'y':
+                mqe = possibleMatch.convert_to_match_queue_entry(nameOnDisk)
+                stateCommunicator.setQueuedForInfoRetrievalStateFromAwaitingUser(mqe)
+                gameNameMatchesProcessingQueue.put(mqe) 
+                break
+        else:
+            stateCommunicator.rejectedByUser(uire)
+            unmatchedGames.append(nameOnDisk)
+        uire = userInputRequiredQueue.get()
+    return unmatchedGames
 
+# XXX this is ripe for refactor.
+# XXX Go all Dependency Injection on it's ass.
+# XXX move UI handling into a dedicated function or class
+def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, stateCommunicator: StateCommunicatorInterface, pathOnDisk: str):
+    stateCommunicator.batchSetUpcomingState(gamesOnDisk)
+    
     quickSteamTitleMap = build_steam_title_map(steamGamesList)
 
     print("creating manager and queues")
@@ -52,71 +49,42 @@ def main(steamGamesList, gamesOnDisk):
     print("created manager and queues")
 
     print("constructing necessary objects")
-    gameDAO = PostgresGameDAOFactory.createGameDAO()
-    userDefinedTagsFetcher = UserDefinedTagsFetcher()
-    steamAPIDataFetcher = SteamAPIDataFetcher()
-    pathOnDisk = "/Volumes/babyBlue/Games/PC/"
+    postgresGameDAOFactory = PostgresGameDAOFactory()
+    gameDAO = postgresGameDAOFactory.createGameDAO()
+    gameFactory = GameFactory(pathOnDisk)
     print("finished constructing necessary objects")
 
     print("launching game storage process")
-    # XXX gameLookupAndStorageProcess -> game_lookup_and_storage_process
-    GameLookupAndStorageProcess = Process(target=gameLookupAndStorageProcess, args=(gameNameMatchesProcessingQueue, gameDAO, userDefinedTagsFetcher, steamAPIDataFetcher, pathOnDisk))
-    GameLookupAndStorageProcess.start()
+    gameLookupAndStorageProcess = Process(target=game_lookup_and_storage_process, args=(gameNameMatchesProcessingQueue, gameDAO, stateCommunicator, gameFactory))
+    gameLookupAndStorageProcess.start()
     print("finished launching game storage process")
-
-
+    
     # This process goes through the steamGamesList and applies the min edit dist algo. (uses a pool of processes to accomplish this quicker)
     # adds matches that are 1.0 to the GamePerfectMatches queue, adds anything else UserInputRequired queue for user input process to consume
     print("launching minimum edit distance handling process")
-    MinimumEditDistanceProcess = Process(target=minimumEditDistanceProcessing, args=(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, quickSteamTitleMap))
-    MinimumEditDistanceProcess.start()
+    minimumEditDistanceProcess = Process(target=minimum_edit_distance_processing, args=(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, quickSteamTitleMap, stateCommunicator))
+    minimumEditDistanceProcess.start()
     print("finished launching minimum edit distance handling process")
 
+    # this is intendid to be blocking
     print("launching user input handling")
-    unmatchedGames = []
-    uire = userInputRequiredQueue.get()
-    while uire != END_OF_QUEUE:
-        nameOnDisk = uire.getTargetName()
-        for possibleMatch in uire.getPossibleMatchesList():
-            userInput = input(f"does it match '{possibleMatch.getSteamName()}' - {possibleMatch.steamIDNumber} - {possibleMatch.matchScore}? (y/n)")
-            if userInput.lower() == 'y':
-                gameNameMatchesProcessingQueue.put(possibleMatch.convertToMatchQueueEntry(nameOnDisk)) 
-                break
-        else:
-            unmatchedGames.append(nameOnDisk)
-        uire = userInputRequiredQueue.get()
+    unmatchedGames = ui_handling(userInputRequiredQueue, gameNameMatchesProcessingQueue, stateCommunicator)
     print("finished user input handling")
 
     # this process will signal to the user input process that it is finished by putting END_OF_QUEUE
     # on the userInputRequiredQueue
-    MinimumEditDistanceProcess.join()
+    minimumEditDistanceProcess.join()
     print("finished processing games on the harddrive")
 
-    # by this point there is nothing that will write to the gameNameMatchesProcessingQueue (that is being read by GameLookupAndStorageProcess)
+    # by this point there is nothing that will write to the gameNameMatchesProcessingQueue (that is being read by gameLookupAndStorageProcess)
     gameNameMatchesProcessingQueue.put(END_OF_QUEUE)
+    print("placed END OF QUEUE onto the game name matches queue")
 
-    unableToInsert = GameLookupAndStorageProcess.join()
+    unableToInsert = gameLookupAndStorageProcess.join()
     print(f"unmatchedGames={unmatchedGames}, unableToInsert={unableToInsert}")
-
-if __name__ == '__main__':
-    # XXX mocks
-    print("mocking the steam games list from API")
-    with open('mockSteamReturn.txt', 'rb') as mockSteamReturn:
-        steamGamesList = pickle.load(mockSteamReturn)
-    print("finished mocking the steam games list from API")
-
-    # XXX mocks
-    print("mocking the local games list from directory")
-    with open('mockGamesList.txt', 'rb') as mockGamesList:
-        gamesOnDisk = pickle.load(mockGamesList)
-    print("finished mocking the local games list from directory")
-    
-    main(steamGamesList, gamesOnDisk)
-
     
 
 
 # One process for going through the steamGamesList and applying the min edit dist algo - adds matches that are 1.0 to the GamePerfectMatches queue, adds anything else UserInputRequired queue for user input process to consume
 # Main process for user input - allow user to make decisions about the games that don't have a 1.0 score - adds to the GamePerfectMatches queue
 # One process for GameData - fetches from GamePerfectMatches queue to get the steam id and fetches from appreviews and appdetails - writes result to database
-
