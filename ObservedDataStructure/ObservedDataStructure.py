@@ -1,5 +1,5 @@
 from dataclasses import asdict
-from typing import List
+from typing import Callable, List
 from QueueEntries.Sendable import Sendable
 from Server.SocketWrapper import SocketWrapper
 
@@ -11,14 +11,15 @@ class ObservedDataStructure:
         def update_sock(self, *args, **kwargs):
             func(self, *args, **kwargs)
             messageToSend = list(self.dict.values())
+            socket = self.fetchSocketToUpdate()
             # if you want to sort here, you'll need to be able to handle a list
             # of strings or a list of dicts (the models converted to dictionaries)
-            self.socketToUpdate.send_message(messageToSend)
+            socket.send_message(messageToSend)
         return update_sock
 
     @sendUpdateDecorator
-    def __init__(self, socketToUpdate : SocketWrapper):
-        self.socketToUpdate = socketToUpdate
+    def __init__(self, fetchSocketToUpdate : Callable[[], SocketWrapper]):
+        self.fetchSocketToUpdate = fetchSocketToUpdate
         self.dict = {}
     
     @sendUpdateDecorator
