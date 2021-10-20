@@ -13,6 +13,8 @@ RUN apt-get update && \
 EXPOSE 3091
 
 WORKDIR /usr/src/app
+
+# XXX not the greatest - this also copies react-frontend and likely all the node modules with it
 COPY . .
 RUN pip3 install -r requirements.txt
 ENTRYPOINT [ "python3.8", "sockets.py" ]

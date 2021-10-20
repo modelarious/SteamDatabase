@@ -83,12 +83,13 @@ def minimum_edit_distance_processing(userInputRequiredQueue, gameNameMatchesProc
     # the rest are used 2 per core for doing "nearest titles" search - MinimumEditDistanceProcess
     PER_CORE = 2
     OTHER_PROCESS_COUNT = 2
+    MAX_WORKER_COUNT = 61
     availableCores = (cpu_count() - OTHER_PROCESS_COUNT) * PER_CORE
-    numDesignatedCores = max(1, availableCores)
+    numDesignatedCores = min(max(1, availableCores), MAX_WORKER_COUNT)
     print(f"numDesignatedCores = {numDesignatedCores}")
 
     print("starting process pool executor")
-    with ProcessPoolExecutor(max_workers=numDesignatedCores * 3) as MinimumEditDistanceProcessPool:
+    with ProcessPoolExecutor(max_workers=numDesignatedCores) as MinimumEditDistanceProcessPool:
         print("created process pool executor")
         # future = MinimumEditDistanceProcessPool.submit(pow, 323, 1235)
         # executor.map(is_prime, PRIMES)

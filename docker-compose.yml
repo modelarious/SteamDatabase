@@ -17,15 +17,16 @@ services:
       - "3091:3091"
     environment:
       - DOCKER_ENV="YEAH DOG"
+      - CHOKIDAR_USEPOLLING=true
     volumes:
       - .:/usr/src/app  # <-- hot code reloading! (/usr/src/app refers to the path I set up in the Dockerfile)
-  frontend:
-    build: ./react-frontend
-    image: "react-frontend"
-    depends_on:
-      - server
-    ports:
-      - "3000:3000"
+  # frontend:
+  #   build: ./react-frontend
+  #   image: "react-frontend"
+  #   depends_on:
+  #     - server
+  #   ports:
+  #     - "3000:3000"
 
 volumes:
   database-data: # named volumes can be managed easier using docker-compose
