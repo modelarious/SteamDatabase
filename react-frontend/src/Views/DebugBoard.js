@@ -4,7 +4,9 @@ import {
   AWAITING_USER_STATE,
   QUEUED_FOR_INFO_RETRIEVAL_STATE,
   INFO_RETRIEVAL_ACTIVE_STATE,
-  STORED
+  STORED,
+  ERROR_STATE,
+  translate_state_to_title
 } from './../States.js';
 import {
   ChakraProvider,
@@ -17,9 +19,9 @@ import {
 import CommandButton from '../Interactions/CommandButton';
 
 class SocketInfo {
-  constructor(state_constant, state_name, access_steam_name_instead) {
+  constructor(state_constant, access_steam_name_instead) {
     this.state_constant = state_constant
-    this.state_name = state_name
+    this.state_name = translate_state_to_title(state_constant)
     this.access_steam_name_instead = access_steam_name_instead
   }
 
@@ -33,12 +35,13 @@ class SocketInfo {
 }
 
 const socket_to_name = [
-  new SocketInfo(UPCOMING_STATE, "Upcoming", false),
-  new SocketInfo(FINDING_NAME_ACTIVE_STATE, "Finding Name Active", false),
-  new SocketInfo(AWAITING_USER_STATE, "Awaiting User", false),
-  new SocketInfo(QUEUED_FOR_INFO_RETRIEVAL_STATE, "Queued for Info Retrieval", true),
-  new SocketInfo(INFO_RETRIEVAL_ACTIVE_STATE, "Info Retrieval Active", true),
-  new SocketInfo(STORED, "Stored", true)
+  new SocketInfo(UPCOMING_STATE, false),
+  new SocketInfo(FINDING_NAME_ACTIVE_STATE, false),
+  new SocketInfo(AWAITING_USER_STATE, false),
+  new SocketInfo(QUEUED_FOR_INFO_RETRIEVAL_STATE, true),
+  new SocketInfo(INFO_RETRIEVAL_ACTIVE_STATE, true),
+  new SocketInfo(STORED, true),
+  new SocketInfo(ERROR_STATE, false),
 ]
 
 

@@ -1,7 +1,9 @@
+from dataclasses import dataclass
 from Server.WebsocketClientHandlerRegistry import GAMES
 from QueueEntries.Sendable import Sendable
 from State.States import *
 from State.StateCommunicatorInterface import StateCommunicatorInterface
+import inspect
 
 # type hints
 from typing import Dict
@@ -10,6 +12,24 @@ from QueueEntries.MatchQueueEntry import MatchQueueEntry
 from ObservedDataStructure.ObservedDataStructure import ObservedDataStructure
 from GameModel import Game
 from typing import List
+
+@dataclass
+class InternalStateTracker:
+    def __init__(self):
+        self.previousStateTracker = {}
+
+    def track(self, sendable: Sendable, state: ObservedDataStructure):
+        game_on_disk = sendable.get_game_name_on_disk()
+        self.previousStateTracker[game_on_disk] = state
+    
+    def remove(self, sendable: Sendable):
+        game_on_disk = sendable.get_game_name_on_disk()
+        del self.previousStateTracker[game_on_disk]
+    
+    def get(self, sendable: Sendable) -> ObservedDataStructure:
+        game_on_disk = sendable.get_game_name_on_disk()
+        return self.previousStateTracker[game_on_disk]
+
 
 # XXX This was only made to handle the case where you have unique games - if you have duplicates then this
 # XXX will break. This is because the observedDataStructure is powered by a data structure
@@ -23,23 +43,27 @@ class StateCommunicator(StateCommunicatorInterface):
         self.queuedForInfoRetrieval = observedDataStructures[QUEUED_FOR_INFO_RETRIEVAL_STATE]
         self.infoRetrievalActive = observedDataStructures[INFO_RETRIEVAL_ACTIVE_STATE]
         self.stored = observedDataStructures[STORED]
+        self.errorState = observedDataStructures[ERROR_STATE]
         self.games = games_observable_data_structure
+        self.internalStateTracker = InternalStateTracker() # XXX DI
 
     def batchSetUpcomingState(self, game_titles_on_disk : List[str]):
         sendables = [Sendable(game_name_on_disk=title) for title in game_titles_on_disk]
         self.upcoming.batch_add(sendables)
+        for sendable in sendables:
+            self.internalStateTracker.track(sendable, self.upcoming)
     
     def setFindingNameActiveState(self, gameTitleOnDisk : str):
-        self.upcoming.remove(Sendable(gameTitleOnDisk))
-        self.findingNameActive.add(Sendable(gameTitleOnDisk))
+        sendable = Sendable(gameTitleOnDisk)
+        self.upcoming.remove(sendable)
+        self.findingNameActive.add(sendable)
+        self.internalStateTracker.track(sendable, self.findingNameActive)
     
     def setAwaitingUserInputState(self, userInputRequiredQueueEntry : UserInputRequiredQueueEntry):
         self.findingNameActive.remove(userInputRequiredQueueEntry)
         self.awaitingUser.add(userInputRequiredQueueEntry)
+        self.internalStateTracker.track(userInputRequiredQueueEntry, self.awaitingUser)
     
-    # XXX YYY XXX YYY should go back to old implementation - DO NOT COMMIT THIS PART OF THE CHANGE
-    def rejectedByUser(self, userInputRequiredQueueEntry: UserInputRequiredQueueEntry):
-        self.findingNameActive.remove(userInputRequiredQueueEntry)
     
     # Could have been a 100% name match in which case, previous state was FindingNameActiveState.
     # Also could have been only a partial match to a few names and the user had to select
@@ -47,10 +71,12 @@ class StateCommunicator(StateCommunicatorInterface):
     def setQueuedForInfoRetrievalStateFromFindingNameActive(self, matchQueueEntry : MatchQueueEntry):
         self.findingNameActive.remove(matchQueueEntry)
         self.queuedForInfoRetrieval.add(matchQueueEntry)
+        self.internalStateTracker.track(matchQueueEntry, self.queuedForInfoRetrieval)
 
     def setQueuedForInfoRetrievalStateFromAwaitingUser(self, matchQueueEntry : MatchQueueEntry):
         self.awaitingUser.remove(matchQueueEntry)
         self.queuedForInfoRetrieval.add(matchQueueEntry)
+        self.internalStateTracker.track(matchQueueEntry, self.queuedForInfoRetrieval)
     
     def setInfoRetrievalActiveState(self, matchQueueEntry : MatchQueueEntry):
         self.queuedForInfoRetrieval.remove(matchQueueEntry)
@@ -60,10 +86,10 @@ class StateCommunicator(StateCommunicatorInterface):
         self.infoRetrievalActive.remove(game)
         self.stored.add(game)
         self.games.add(game)
+        self.internalStateTracker.remove(game)
     
-    # def storageFailed(self, game: Game):
-    #     gameTitleOnDisk = game.game_name_on_disk
-    #     self.stored.remove(gameTitleOnDisk)
-    #     self._trackCurrentState(None, gameTitleOnDisk)
-
-    
+    def transitionToErrorState(self, sendable: Sendable):
+        self.errorState.add(sendable)
+        previousState = self.internalStateTracker.get(sendable)
+        previousState.remove(sendable)
+        self.internalStateTracker.remove(sendable)

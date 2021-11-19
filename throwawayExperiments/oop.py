@@ -82,7 +82,7 @@ class StateCommunicator:
         self.awaitingUser.add(userInputRequiredQueueEntry.toDict(), gameTitleOnDisk)
         self._trackCurrentState(self.awaitingUser, gameTitleOnDisk)
     
-    def rejectedByUser(self, gameTitle: str):
+    def transitionToErrorState(self, gameTitle: str):
         self.awaitingUser.remove(gameTitle)
     
     def setQueuedForInfoRetrievalState(self, matchQueueEntry : MatchQueueEntry):
@@ -126,7 +126,7 @@ ShareObjectBetweenProcesses.register('StateCommunicator', StateCommunicator,
         'setUpcomingState', 
         'setFindingNameActiveState', 
         'setAwaitingUserInputState', 
-        'rejectedByUser', 
+        'transitionToErrorState', 
         'setQueuedForInfoRetrievalState', 
         'setInfoRetrievalActiveState', 
         'setStoredState'

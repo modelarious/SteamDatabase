@@ -18,7 +18,7 @@ class StateCommunicatorInterface(ABC):
         pass
     
     @abstractmethod
-    def rejectedByUser(self, userInputRequiredQueueEntry: UserInputRequiredQueueEntry):
+    def transitionToErrorState(self, userInputRequiredQueueEntry: UserInputRequiredQueueEntry):
         pass
     
     @abstractmethod

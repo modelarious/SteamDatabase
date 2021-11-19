@@ -16,6 +16,8 @@ INFO_RETRIEVAL_ACTIVE_STATE = '/infoRetrievalActive'
 # game has been persisted to database and will now show up on main screen
 STORED = '/stored'
 
+ERROR_STATE = '/error'
+
 # states:
 #  - upcoming
 #  - finding name (active)
@@ -29,7 +31,8 @@ STATES = set([
     AWAITING_USER_STATE,
     QUEUED_FOR_INFO_RETRIEVAL_STATE,
     INFO_RETRIEVAL_ACTIVE_STATE,
-    STORED
+    STORED,
+    ERROR_STATE
 ])
 
 # anything of StateStrType means that it is a member of STATES

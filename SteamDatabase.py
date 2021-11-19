@@ -47,7 +47,7 @@ def ui_handling(userInputRequiredQueue, gameNameMatchesProcessingQueue, stateCom
             raise Exception(f"\n\n\n\n\n\n\n\nFAILED TO FIND MATCH FOR GAME {match_queue_entry}\n\n\n\n\n\n\n\n\n")
 
     # XXX
-    # stateCommunicator.rejectedByUser(uire)
+    # stateCommunicator.transitionToErrorState(uire)
     # unmatchedGames.append(nameOnDisk)
 
     return unmatchedGames

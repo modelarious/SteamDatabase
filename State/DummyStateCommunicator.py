@@ -20,7 +20,7 @@ class DummyStateCommunicator(StateCommunicatorInterface):
     def setAwaitingUserInputState(self, userInputRequiredQueueEntry : UserInputRequiredQueueEntry):
         self.show(userInputRequiredQueueEntry)
     
-    def rejectedByUser(self, userInputRequiredQueueEntry: UserInputRequiredQueueEntry):
+    def transitionToErrorState(self, userInputRequiredQueueEntry: UserInputRequiredQueueEntry):
         self.show(userInputRequiredQueueEntry)
     
     def setQueuedForInfoRetrievalStateFromFindingNameActive(self, matchQueueEntry : MatchQueueEntry):

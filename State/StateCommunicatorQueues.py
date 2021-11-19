@@ -41,7 +41,7 @@ class StateCommunicationQueueWriter(StateCommunicatorInterface):
     def setAwaitingUserInputState(self, userInputRequiredQueueEntry : UserInputRequiredQueueEntry):
         self._putOnQueue(userInputRequiredQueueEntry)
     
-    def rejectedByUser(self, userInputRequiredQueueEntry: UserInputRequiredQueueEntry):
+    def transitionToErrorState(self, userInputRequiredQueueEntry: UserInputRequiredQueueEntry):
         self._putOnQueue(userInputRequiredQueueEntry)
     
     def setQueuedForInfoRetrievalStateFromFindingNameActive(self, matchQueueEntry : MatchQueueEntry):
