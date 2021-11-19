@@ -19,13 +19,14 @@ def build_steam_title_map(steamGamesList):
     return steamTitleMap
 
 def ui_handling(userInputRequiredQueue, gameNameMatchesProcessingQueue, stateCommunicator, input_socket_fetch_function):
-    unmatchedGames = []
     queuedGames = []
     while queuedGames != [END_OF_QUEUE]:
         print(f"queuedGames = {queuedGames}")
         # block on waiting for message from socket from user input section
         input_socket = input_socket_fetch_function()
         match_queue_entry = MatchQueueEntry(**input_socket.get_message())
+
+        #transistion to the info retrieval state
         stateCommunicator.setQueuedForInfoRetrievalStateFromAwaitingUser(match_queue_entry)
         gameNameMatchesProcessingQueue.put(match_queue_entry) 
 
@@ -38,19 +39,14 @@ def ui_handling(userInputRequiredQueue, gameNameMatchesProcessingQueue, stateCom
             except Empty:
                 inputAvailable = False
         
-        # remove the one we just dealt with
+        # remove the one we just dealt with from the array to ensure we approach the exit condition
         for queuedGame in queuedGames:
             if queuedGame.game_name_on_disk == match_queue_entry.game_name_on_disk:
                 queuedGames.remove(queuedGame)
                 break
         else:
-            raise Exception(f"\n\n\n\n\n\n\n\nFAILED TO FIND MATCH FOR GAME {match_queue_entry}\n\n\n\n\n\n\n\n\n")
-
-    # XXX
-    # stateCommunicator.transitionToErrorState(uire)
-    # unmatchedGames.append(nameOnDisk)
-
-    return unmatchedGames
+            errorString = f"\n\n\n\n\n\n\n\nFAILED TO FIND MATCH FOR GAME {match_queue_entry}\n\n\n\n\n\n\n\n\n"
+            raise Exception(errorString)
 
 # XXX this is ripe for refactor.
 # XXX Go all Dependency Injection on it's ass.
@@ -85,7 +81,7 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
 
     # this is intendid to be blocking
     print("launching user input handling")
-    unmatchedGames = ui_handling(userInputRequiredQueue, gameNameMatchesProcessingQueue, stateCommunicator, input_socket_fetch_function)
+    ui_handling(userInputRequiredQueue, gameNameMatchesProcessingQueue, stateCommunicator, input_socket_fetch_function)
     print("finished user input handling")
 
     # this process will signal to the user input process that it is finished by putting END_OF_QUEUE
@@ -98,7 +94,7 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
     print("placed END OF QUEUE onto the game name matches queue")
 
     unableToInsert = gameLookupAndStorageProcess.join()
-    print(f"unmatchedGames={unmatchedGames}, unableToInsert={unableToInsert}")
+    print(f"unableToInsert={unableToInsert}")
     
 
 

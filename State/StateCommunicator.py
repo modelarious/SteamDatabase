@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from Server.WebsocketClientHandlerRegistry import GAMES
-from QueueEntries.Sendable import Sendable
+from QueueEntries.Sendable import Sendable, ErrorSendable
 from State.States import *
 from State.StateCommunicatorInterface import StateCommunicatorInterface
 import inspect
@@ -81,6 +81,7 @@ class StateCommunicator(StateCommunicatorInterface):
     def setInfoRetrievalActiveState(self, matchQueueEntry : MatchQueueEntry):
         self.queuedForInfoRetrieval.remove(matchQueueEntry)
         self.infoRetrievalActive.add(matchQueueEntry)
+        self.internalStateTracker.track(matchQueueEntry, self.infoRetrievalActive)
     
     def setStoredState(self, game : Game):
         self.infoRetrievalActive.remove(game)
@@ -88,8 +89,9 @@ class StateCommunicator(StateCommunicatorInterface):
         self.games.add(game)
         self.internalStateTracker.remove(game)
     
-    def transitionToErrorState(self, sendable: Sendable):
-        self.errorState.add(sendable)
-        previousState = self.internalStateTracker.get(sendable)
-        previousState.remove(sendable)
-        self.internalStateTracker.remove(sendable)
+    def transitionToErrorState(self, errorSendable: ErrorSendable):
+        print("IN TRANSITION TO ERROR STATE IN STATE COMMUNICATOR")
+        self.errorState.add(errorSendable)
+        previousState = self.internalStateTracker.get(errorSendable)
+        previousState.remove(errorSendable)
+        self.internalStateTracker.remove(errorSendable)

@@ -5,7 +5,7 @@ from ExternalDataFetchers.SteamAPIDataFetcher import IncorrectAppTypeException, 
 from Constants import END_OF_QUEUE
 from psycopg2.errors import UniqueViolation
 from GameFactory import GameFactory, FailedToGetAppDetailsException
-
+from QueueEntries.Sendable import ErrorSendable
 import logging
 
 logging.basicConfig(
@@ -35,8 +35,8 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue: Queue, gameD
                 print("success")
             except UniqueViolation as e:
                 print("failure")
-                # raise DatabaseInsertException(f'Unable to insert: {gnmpe.get_steam_id_number()}, {gameNameOnDisk}\n{e}\ngame={game}')
-                raise DatabaseInsertException(f'XXX')
+                errorString = f'Unable to insert: {gnmpe.get_steam_id_number()}, {gameNameOnDisk}\n{e}\ngame={game}'
+                raise DatabaseInsertException(errorString)
 
         # YYY on exceptions, should I be tracking a state change to error?
         except (
@@ -46,6 +46,7 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue: Queue, gameD
             IncorrectAppTypeException,
             DatabaseInsertException
          ) as e:
+            stateCommunicator.transitionToErrorState(ErrorSendable(gnmpe, e))
             unableToInsert.append(gameNameOnDisk)
             print(e)
             logging.critical(e)

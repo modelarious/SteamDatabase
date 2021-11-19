@@ -1,4 +1,4 @@
-from QueueEntries.Sendable import Sendable
+from QueueEntries.Sendable import ErrorSendable, Sendable
 from State.StateCommunicatorInterface import StateCommunicatorInterface
 from threading import Thread
 from Constants import END_OF_QUEUE
@@ -41,8 +41,6 @@ class StateCommunicationQueueWriter(StateCommunicatorInterface):
     def setAwaitingUserInputState(self, userInputRequiredQueueEntry : UserInputRequiredQueueEntry):
         self._putOnQueue(userInputRequiredQueueEntry)
     
-    def transitionToErrorState(self, userInputRequiredQueueEntry: UserInputRequiredQueueEntry):
-        self._putOnQueue(userInputRequiredQueueEntry)
     
     def setQueuedForInfoRetrievalStateFromFindingNameActive(self, matchQueueEntry : MatchQueueEntry):
         self._putOnQueue(matchQueueEntry)
@@ -56,6 +54,10 @@ class StateCommunicationQueueWriter(StateCommunicatorInterface):
     def setStoredState(self, game : Game):
         self._putOnQueue(game)
     
+    def transitionToErrorState(self, errorSendable: ErrorSendable):
+        print("IN TRANSITION TO ERROR STATE IN STATE COMMUNICATOR WRITER")
+        self._putOnQueue(errorSendable)
+
     def _determine_function_name(self):
         return inspect.stack()[2][3]
 
@@ -79,6 +81,8 @@ class StateCommunicationQueueReader:
         while queueItem != END_OF_QUEUE:
             # undo the inspect.stack() to find a function name, like setStoredState
             funcName = queueItem.functionName
+            if "transitionToErrorState" in funcName:
+                print("IN TRANSITION TO ERROR STATE IN STATE COMMUNICATOR READER")
 
             # get a handle for that function from the state communicator that actually writes to sockets.
             # this is undoing _putOnQueue from the StateCommunicationQueueWriter

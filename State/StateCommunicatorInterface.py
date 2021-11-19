@@ -3,6 +3,7 @@ from QueueEntries.UserInputRequiredQueueEntry import UserInputRequiredQueueEntry
 from QueueEntries.MatchQueueEntry import MatchQueueEntry
 from GameModel import Game
 from typing import List
+from QueueEntries.Sendable import ErrorSendable
 
 class StateCommunicatorInterface(ABC):
     @abstractmethod
@@ -16,11 +17,7 @@ class StateCommunicatorInterface(ABC):
     @abstractmethod
     def setAwaitingUserInputState(self, userInputRequiredQueueEntry : UserInputRequiredQueueEntry):
         pass
-    
-    @abstractmethod
-    def transitionToErrorState(self, userInputRequiredQueueEntry: UserInputRequiredQueueEntry):
-        pass
-    
+
     @abstractmethod
     def setQueuedForInfoRetrievalStateFromFindingNameActive(self, matchQueueEntry : MatchQueueEntry):
         pass
@@ -35,4 +32,8 @@ class StateCommunicatorInterface(ABC):
     
     @abstractmethod
     def setStoredState(self, game : Game):
+        pass
+
+    @abstractmethod
+    def transitionToErrorState(self, errorSendable: ErrorSendable):
         pass
