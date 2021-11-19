@@ -2,6 +2,7 @@ from Server.WebsocketClientHandlerRegistry import WebsocketClientHandlerRegistry
 from State.StateCommunicatorQueues import StateCommunicationQueueWriter
 from CommandDispatch.CommandFactory import CommandFactory
 from CommandDispatch.CommandDispatch import CommandDispatch
+from State.States import AWAITING_USER_STATE
 
 
 class CommandDispatchFactory:
@@ -9,6 +10,9 @@ class CommandDispatchFactory:
 
         def fetch_command_socket():
             return websocket_registry.get_socket(COMMAND)
+        
+        def fetch_input_socket():
+            return websocket_registry.get_socket(AWAITING_USER_STATE)
 
         command_factory = CommandFactory(writer)
-        return CommandDispatch(fetch_command_socket, command_factory)
+        return CommandDispatch(fetch_command_socket, fetch_input_socket, command_factory)

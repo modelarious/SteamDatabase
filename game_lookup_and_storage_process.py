@@ -35,7 +35,8 @@ def game_lookup_and_storage_process(gameNameMatchesProcessingQueue: Queue, gameD
                 print("success")
             except UniqueViolation as e:
                 print("failure")
-                raise DatabaseInsertException(f'Unable to insert: {gnmpe.get_steam_id_number()}, {gameNameOnDisk}\n{e}\ngame={game}')
+                # raise DatabaseInsertException(f'Unable to insert: {gnmpe.get_steam_id_number()}, {gameNameOnDisk}\n{e}\ngame={game}')
+                raise DatabaseInsertException(f'XXX')
 
         # YYY on exceptions, should I be tracking a state change to error?
         except (

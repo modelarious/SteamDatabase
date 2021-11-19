@@ -73,6 +73,10 @@ def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, user
         # sort by closest match first
         sortedMatches = sorted(possibleMatchesList, key=lambda x: x.get_match_score(), reverse=True)
         uire = UserInputRequiredQueueEntry(targetGame, sortedMatches)
+        if len(sortedMatches) == 0:
+            stateCommunicator.rejectedByUser(uire) # YYY YYY XXX XXX CANNOT LEAVE LIKE THIS - must add state
+            # XXX XXX XXX Either a generic error state that can be transitioned to anytime, or a "noCloseSteamMatches" State
+            return
         stateCommunicator.setAwaitingUserInputState(uire)
         userInputRequiredQueue.put(uire)
 

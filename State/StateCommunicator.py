@@ -37,8 +37,9 @@ class StateCommunicator(StateCommunicatorInterface):
         self.findingNameActive.remove(userInputRequiredQueueEntry)
         self.awaitingUser.add(userInputRequiredQueueEntry)
     
+    # XXX YYY XXX YYY should go back to old implementation - DO NOT COMMIT THIS PART OF THE CHANGE
     def rejectedByUser(self, userInputRequiredQueueEntry: UserInputRequiredQueueEntry):
-        self.awaitingUser.remove(userInputRequiredQueueEntry)
+        self.findingNameActive.remove(userInputRequiredQueueEntry)
     
     # Could have been a 100% name match in which case, previous state was FindingNameActiveState.
     # Also could have been only a partial match to a few names and the user had to select

@@ -29,7 +29,7 @@ class StateCommunicationQueueWriter(StateCommunicatorInterface):
     def _putOnQueue(self, payload: Sendable):
         funcName = self._determine_function_name()
         queueItem = QueueSendable(funcName, payload)
-        print(f"[{funcName}] - {payload}")
+        # print(f"[{funcName}] - {payload}")
         self.queue.put(queueItem)
 
     def batchSetUpcomingState(self, gameTitlesOnDisk : List[Sendable]):
