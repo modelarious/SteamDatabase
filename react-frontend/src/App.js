@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import SocketContainer from "./SocketContainer.js";
-import { STATES } from './States.js';
+import { STATES, AWAITING_USER_STATE } from './States.js';
 import {
   TabLink,
   Tabs,
@@ -9,6 +9,7 @@ import {
 import GameFactory from "./Factories/GameFactory";
 import DebugBoard from './Views/DebugBoard';
 import GameListView from './Views/GameListView';
+import { UserInputView } from './UserInputView';
 const autoBind = require('auto-bind');
 
 const COMMAND = "/command";
@@ -63,6 +64,16 @@ class App extends Component {
       commandSocket = this.socketContainer.get_socket(COMMAND)
     }
 
+    let userInputSocket;
+    if (this.socketContainer) {
+      userInputSocket = this.socketContainer.get_socket(AWAITING_USER_STATE)
+    }
+
+    let userInputRequiredArray;
+    if (this.socketContainer) {
+      userInputRequiredArray = this.state[AWAITING_USER_STATE];
+    }
+
     const game_factory = new GameFactory()
     const games = this.state[GAMES].map(
       game_from_backend => game_factory.create_game(game_from_backend)
@@ -78,7 +89,9 @@ class App extends Component {
         <TabContent for="tab1">
           <GameListView key={games} games={games} updateScrollDistance={this.scrollDistanceUpdate}></GameListView>
         </TabContent>
-        <TabContent for="tab2">"user input view"</TabContent>
+        <TabContent for="tab2">
+          <UserInputView userInputRequiredArray={userInputRequiredArray} userInputSocket={userInputSocket}></UserInputView>
+        </TabContent>
         <TabContent for="tab3">
           <DebugBoard stateData={debugBoardNeededStateData} commandSocket={commandSocket}/>
         </TabContent>

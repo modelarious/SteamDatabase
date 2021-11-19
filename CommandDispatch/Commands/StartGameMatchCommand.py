@@ -1,14 +1,16 @@
 from Database.PostgresGameDAOFactory import PostgresGameDAOFactory
 from CommandDispatch.Commands.Command import Command
-from typing import Dict, Any
+from typing import Dict, Any, Callable
 from State.StateCommunicatorQueues import StateCommunicationQueueWriter
 from ExternalDataFetchers.SteamGameListFetcherMOCKDATA import SteamGameListFetcherMOCKDATA
 from InternalDataFetchers.DirListFetcherMOCKDATA import DirListFetcherMOCKDATA
 from SteamDatabase import match_steam_games_to_games_on_disk_and_store
+from Server.SocketWrapper import SocketWrapper
+
 
 class StartGameMatchCommand(Command):
-    def __init__(self, message: Dict[str, Any], state_communicator: StateCommunicationQueueWriter):
-        super().__init__(message, state_communicator)
+    def __init__(self, message: Dict[str, Any], state_communicator: StateCommunicationQueueWriter, input_socket_fetch_function: Callable[[], SocketWrapper]):
+        super().__init__(message, state_communicator, input_socket_fetch_function)
         self.path_on_disk = message['path_on_disk']
     
     def execute(self):
@@ -30,4 +32,4 @@ class StartGameMatchCommand(Command):
 
         # XXX Are there duplicate steam titles in the list? The fast map might need to be changed!
         # Reason I'm concerned is that there are (for example) two steam ids for Majesty 2
-        match_steam_games_to_games_on_disk_and_store(steamGamesList, filtered_game_titles, self.state_communicator, self.path_on_disk)
+        match_steam_games_to_games_on_disk_and_store(steamGamesList, filtered_game_titles, self.state_communicator, self.path_on_disk, self.input_socket_fetch_function)

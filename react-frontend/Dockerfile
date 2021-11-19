@@ -5,4 +5,5 @@ COPY . .
 RUN npm install
 EXPOSE 3000
 
+ENV CHOKIDAR_USEPOLLING=true
 ENTRYPOINT [ "npm", "start" ]

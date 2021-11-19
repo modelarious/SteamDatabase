@@ -16,13 +16,16 @@ const INFO_RETRIEVAL_ACTIVE_STATE = '/infoRetrievalActive';
 // game has been persisted to database and will now show up on main screen
 const STORED = '/stored';
 
+const ERROR_STATE = '/error';
+
 const stateToTitleMap = {
     [UPCOMING_STATE]: "Upcoming",
     [FINDING_NAME_ACTIVE_STATE]: "Finding Name",
     [AWAITING_USER_STATE]: "Awaiting User",
     [QUEUED_FOR_INFO_RETRIEVAL_STATE]: "Queued For Info Retrieval",
     [INFO_RETRIEVAL_ACTIVE_STATE]: "Info Retrieval Active",
-    [STORED]: "Stored"
+    [STORED]: "Stored",
+    [ERROR_STATE]: "Error"
 }
 
 const translate_state_to_title = function(stateName) {
@@ -42,7 +45,8 @@ const STATES = [
     AWAITING_USER_STATE,
     QUEUED_FOR_INFO_RETRIEVAL_STATE,
     INFO_RETRIEVAL_ACTIVE_STATE,
-    STORED
+    STORED,
+    ERROR_STATE
 ];
 
 module.exports = {
@@ -53,5 +57,6 @@ module.exports = {
     QUEUED_FOR_INFO_RETRIEVAL_STATE,
     INFO_RETRIEVAL_ACTIVE_STATE,
     STORED,
+    ERROR_STATE,
     translate_state_to_title
 }

@@ -4,6 +4,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from multiprocessing import cpu_count
 from typing import Match
 from multiprocessing import Process
+from QueueEntries.Sendable import ErrorSendable
 
 from QueueEntries.MatchQueueEntry import MatchQueueEntry
 from QueueEntries.PossibleMatchQueueEntry import PossibleMatchQueueEntry
@@ -53,26 +54,35 @@ def apply_minimum_edit_distance(targetGame, gameNameMatchesProcessingQueue, user
     #     queueLayer.askUserForSelection(possibleMatches)
     
 
-    
     # fallback to the slow method
+    minSimilarity = 0.7
     possibleMatchesList = []
     for game in steamGamesList:
         # XXX encapsulate the data access in an object
         steamName = game['name']
         steamIDNumber = game['appid']
         score = similarity(steamName.lower(), targetGame.lower())
-        if score >= 0.7:
+        if score >= minSimilarity:
             possibleMatchesList.append(PossibleMatchQueueEntry(steamName, steamIDNumber, score))
+            # XXX YYY investigate - with the quickSteamTitleMap, is it still possible to hit this case?
             if score == 1.0:
                 print(steamName, targetGame, "added immediately")
                 mqe = MatchQueueEntry(targetGame, steamName, steamIDNumber)
                 stateCommunicator.setQueuedForInfoRetrievalStateFromFindingNameActive(mqe)
                 gameNameMatchesProcessingQueue.put(mqe)
                 break
+    # score wasn't 1.0 for any of the values... XXX do the investigation mentioned above
+    # if you find the 1.0 case isn't possible, you can take this out of the "else" block
     else:
         # sort by closest match first
         sortedMatches = sorted(possibleMatchesList, key=lambda x: x.get_match_score(), reverse=True)
         uire = UserInputRequiredQueueEntry(targetGame, sortedMatches)
+
+        if len(sortedMatches) == 0:
+            errorString = f"No matches exist for {uire.get_game_name_on_disk()} above {minSimilarity*100}%"
+            stateCommunicator.transitionToErrorState(ErrorSendable(uire, errorString))
+            return
+
         stateCommunicator.setAwaitingUserInputState(uire)
         userInputRequiredQueue.put(uire)
 
@@ -83,12 +93,13 @@ def minimum_edit_distance_processing(userInputRequiredQueue, gameNameMatchesProc
     # the rest are used 2 per core for doing "nearest titles" search - MinimumEditDistanceProcess
     PER_CORE = 2
     OTHER_PROCESS_COUNT = 2
+    MAX_WORKER_COUNT = 61
     availableCores = (cpu_count() - OTHER_PROCESS_COUNT) * PER_CORE
-    numDesignatedCores = max(1, availableCores)
+    numDesignatedCores = min(max(1, availableCores), MAX_WORKER_COUNT)
     print(f"numDesignatedCores = {numDesignatedCores}")
 
     print("starting process pool executor")
-    with ProcessPoolExecutor(max_workers=numDesignatedCores * 3) as MinimumEditDistanceProcessPool:
+    with ProcessPoolExecutor(max_workers=numDesignatedCores) as MinimumEditDistanceProcessPool:
         print("created process pool executor")
         # future = MinimumEditDistanceProcessPool.submit(pow, 323, 1235)
         # executor.map(is_prime, PRIMES)

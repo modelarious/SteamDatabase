@@ -17,6 +17,7 @@ services:
       - "3091:3091"
     environment:
       - DOCKER_ENV="YEAH DOG"
+      - CHOKIDAR_USEPOLLING=true
     volumes:
       - .:/usr/src/app  # <-- hot code reloading! (/usr/src/app refers to the path I set up in the Dockerfile)
   frontend:

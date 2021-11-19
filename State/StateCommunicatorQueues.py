@@ -1,4 +1,4 @@
-from QueueEntries.Sendable import Sendable
+from QueueEntries.Sendable import ErrorSendable, Sendable
 from State.StateCommunicatorInterface import StateCommunicatorInterface
 from threading import Thread
 from Constants import END_OF_QUEUE
@@ -29,7 +29,7 @@ class StateCommunicationQueueWriter(StateCommunicatorInterface):
     def _putOnQueue(self, payload: Sendable):
         funcName = self._determine_function_name()
         queueItem = QueueSendable(funcName, payload)
-        print(f"[{funcName}] - {payload}")
+        # print(f"[{funcName}] - {payload}")
         self.queue.put(queueItem)
 
     def batchSetUpcomingState(self, gameTitlesOnDisk : List[Sendable]):
@@ -41,8 +41,6 @@ class StateCommunicationQueueWriter(StateCommunicatorInterface):
     def setAwaitingUserInputState(self, userInputRequiredQueueEntry : UserInputRequiredQueueEntry):
         self._putOnQueue(userInputRequiredQueueEntry)
     
-    def rejectedByUser(self, userInputRequiredQueueEntry: UserInputRequiredQueueEntry):
-        self._putOnQueue(userInputRequiredQueueEntry)
     
     def setQueuedForInfoRetrievalStateFromFindingNameActive(self, matchQueueEntry : MatchQueueEntry):
         self._putOnQueue(matchQueueEntry)
@@ -56,6 +54,9 @@ class StateCommunicationQueueWriter(StateCommunicatorInterface):
     def setStoredState(self, game : Game):
         self._putOnQueue(game)
     
+    def transitionToErrorState(self, errorSendable: ErrorSendable):
+        self._putOnQueue(errorSendable)
+
     def _determine_function_name(self):
         return inspect.stack()[2][3]
 

@@ -28,7 +28,7 @@ class ObservedDataStructure:
 
     @sendUpdateDecorator
     def remove(self, sendable: Sendable):
-        del self.dict[sendable.game_name_on_disk]
+        del self.dict[sendable.get_game_name_on_disk()]
     
     @sendUpdateDecorator
     def batch_add(self, sendables: List[Sendable]):
