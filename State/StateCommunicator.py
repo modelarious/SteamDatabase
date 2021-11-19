@@ -90,7 +90,6 @@ class StateCommunicator(StateCommunicatorInterface):
         self.internalStateTracker.remove(game)
     
     def transitionToErrorState(self, errorSendable: ErrorSendable):
-        print("IN TRANSITION TO ERROR STATE IN STATE COMMUNICATOR")
         self.errorState.add(errorSendable)
         previousState = self.internalStateTracker.get(errorSendable)
         previousState.remove(errorSendable)

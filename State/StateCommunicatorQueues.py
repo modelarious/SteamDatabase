@@ -55,7 +55,6 @@ class StateCommunicationQueueWriter(StateCommunicatorInterface):
         self._putOnQueue(game)
     
     def transitionToErrorState(self, errorSendable: ErrorSendable):
-        print("IN TRANSITION TO ERROR STATE IN STATE COMMUNICATOR WRITER")
         self._putOnQueue(errorSendable)
 
     def _determine_function_name(self):
@@ -81,8 +80,6 @@ class StateCommunicationQueueReader:
         while queueItem != END_OF_QUEUE:
             # undo the inspect.stack() to find a function name, like setStoredState
             funcName = queueItem.functionName
-            if "transitionToErrorState" in funcName:
-                print("IN TRANSITION TO ERROR STATE IN STATE COMMUNICATOR READER")
 
             # get a handle for that function from the state communicator that actually writes to sockets.
             # this is undoing _putOnQueue from the StateCommunicationQueueWriter
