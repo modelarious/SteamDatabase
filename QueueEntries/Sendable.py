@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from logging import error
 
 @dataclass
 class Sendable:
@@ -19,4 +18,3 @@ class SteamSendable(Sendable):
     game_name_from_steam: str
     def get_game_name_from_steam(self) -> str:
         return self.game_name_from_steam
-
