@@ -83,7 +83,7 @@ fileExamples = [
     ["The.Citadel.v22.06.2021.rar", "The Citadel"],
     ["The.Slormancer.v0.2.03.rar", "The Slormancer"],
     ["The.Unexpected.Quest.rar", "The Unexpected Quest"],
-    ["Wayward.Beta.2.10.7.rar", "Wayward Beta"],
+    ["Wayward.Beta.2.10.7.rar", "Wayward"],
     ["Zoo.Tycoon.2.Ultimate.Collection.zip", "Zoo Tycoon 2 Ultimate Collection"],
     ["ELDERBORN.v1.037.rar", "ELDERBORN"],
     ["GRIME.v1.0.4.5.rar", "GRIME"],
