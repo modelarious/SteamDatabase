@@ -1,4 +1,4 @@
-from abc import ABC, abstractclassmethod, abstractmethod
+from abc import ABC, abstractmethod
 from os import walk
 import re
 
@@ -26,21 +26,14 @@ There Is No Game Wrong Dimension v1.0.29-
 Shantae And The Seven Sirens v731089-
 '''
 
-# on windows - when a folder is a copy of another folder, windows adds a -1 to the end of the file, the next copy is -2, etc
-# this wrapper removes a -1 (but not any other copy indicator like -2)
-def remove_tailing_minus_one_wrapper(func):
-    def wrapper(*args, **kwargs):
-        name = func(*args, **kwargs)
-        if name[-2:] == "-1":
-            return name[:-2]
-        return name
-    return wrapper
-
-def perform_strip_wrapper(func):
-    def wrapper( *args, **kwargs):
-        name = func(*args, **kwargs)
-        return name.strip()
-    return wrapper
+class AbstractInputSanitizer(ABC):
+    @abstractmethod
+    def perform_directory_name_replacement(self, directoryName: str) -> str:
+        return ""
+    
+    @abstractmethod
+    def perform_filename_replacement(self, fileName: str) -> str:
+        return ""
 
 # XXX temporary
 skip = [
@@ -124,103 +117,113 @@ fileTypes = [
 # match a series of 2 or more numbers followed by a file extension (rar, zip, 7z, etc) like "Ai.War.2.138962.rar" would match the "138962.rar"
 pattern = f"(v\d+.+|\d\d+.({'|'.join(fileTypes)}))"
 
-@remove_tailing_minus_one_wrapper
-@perform_strip_wrapper
-def perform_replacement(dirName):
-    for skippable in skip:
-        if skippable.lower() in dirName.lower():
-            return "-" * 100
-    
-    # try simple replacement cases first
-    for directlyReplaceable in directlyReplaceables:
-        if directlyReplaceable in dirName:
-            # print(dirName, "-->", "'" + perform_replacement(dirName.replace(directlyReplaceable, "")) + "'") 
-            # print(perform_replacement(dirName.replace(directlyReplaceable, "")))
-            return perform_replacement(dirName.replace(directlyReplaceable, ""))
+# on windows - when a folder is a copy of another folder, windows adds a -1 to the end of the file, the next copy is -2, etc
+# this wrapper removes a -1 (but not any other copy indicator like -2)
+def remove_tailing_minus_one_wrapper(func):
+    def wrapper(*args, **kwargs):
+        name = func(*args, **kwargs)
+        if name[-2:] == "-1":
+            return name[:-2]
+        return name
+    return wrapper
 
-    # check case where it is a KaOs repack
-    # AMID.EVIL.v2172c.REPACK-KaOs -> AMID EVIL 
-    # Red.Faction.Armageddon.v1.01.REPACK-KaOs -> Red Faction Armageddon
-    # Transport.Fever.2.v33872-GOG -> Transport Fever 2
-    for dotAndVersionReplacable in dotAndVersionReplacables:
-        if dotAndVersionReplacable in dirName:
-            newName = dirName.replace(dotAndVersionReplacable, "").replace(".", " ")
+def perform_strip_wrapper(func):
+    def wrapper( *args, **kwargs):
+        name = func(*args, **kwargs)
+        return name.strip()
+    return wrapper
 
-            # if version number exists in file name...... 
-            # XXX oh lol, if version doesn't exist in the filename and the file has a "v" in it then this will break
-            # XXX the way to fix this would be to go backwards through the string making sure you hit numbers, spaces and periods, and stop when you hit the v.
-            # XXX and if you don't hit a v but run into another character that isnt a number, space or period, then you claim there is no version string
-            try:
-                versionNumberIndex = newName.lower().rindex("v")
-                outName = newName[:versionNumberIndex]
-                # print(outName)
-                return perform_replacement(outName)
-            
-            # this is fine - this just means there was no version number in the filename
-            except ValueError:
-                # print(newName)
-                return perform_replacement(newName)
-    
-    # Just_Cause_2_1.0.0.2_(50335)_win_gog
-    # Steel_Division_2_51957_(47364)_win_gog-1
-    # Streets_of_Rogue_95_(48531)_win_gog
-    if ")_win_gog" in dirName or ")_win_dev_gog" in dirName:
-        # if this doesn't exist, I want an exception to be triggered because the format is invalid
-        openBracketIndex = dirName.rindex("(")
-        updatedName = dirName[:openBracketIndex]
+class InputSanitizer(AbstractInputSanitizer):
 
-        # remove version and split something like
-        # Streets_of_Rogue_95_
-        updatedName = " ".join(updatedName.split("_")[:-2])
-        # print(updatedName)
-        return perform_replacement(updatedName)
-    
-    for dotReplacable in dotReplacables:
-        if dotReplacable in dirName:
-            # print(dirName.replace(dotReplacable, "").replace(".", " "))
-            return perform_replacement(dirName.replace(dotReplacable, "").replace(".", " "))
-    
-    for underscoreReplacable in underscoreReplacables:
-        if underscoreReplacable in dirName:
-            # print(dirName.replace(underscoreReplacable, "").replace("_", " "))
-            return perform_replacement(dirName.replace(underscoreReplacable, "").replace("_", " "))
-    # print(dirName)
-    return dirName
+    @remove_tailing_minus_one_wrapper
+    @perform_strip_wrapper
+    def perform_directory_name_replacement(self, dirName):
+        for skippable in skip:
+            if skippable.lower() in dirName.lower():
+                return "-" * 100
+        
+        # try simple replacement cases first
+        for directlyReplaceable in directlyReplaceables:
+            if directlyReplaceable in dirName:
+                # print(dirName, "-->", "'" + perform_directory_name_replacement(dirName.replace(directlyReplaceable, "")) + "'") 
+                # print(perform_directory_name_replacement(dirName.replace(directlyReplaceable, "")))
+                return self.perform_directory_name_replacement(dirName.replace(directlyReplaceable, ""))
 
-def perform_filename_replacement(filename):
-    versionStringPossibleMatch = re.search(pattern, filename)
-    if versionStringPossibleMatch:
-        versionString = versionStringPossibleMatch.group(0)
-        newName = filename.replace(versionString, "")
-        nameSplit = newName.split(".")
-        outName = " ".join(nameSplit[:-1])
-        assert outName != ""
-        return outName
+        # check case where it is a KaOs repack
+        # AMID.EVIL.v2172c.REPACK-KaOs -> AMID EVIL 
+        # Red.Faction.Armageddon.v1.01.REPACK-KaOs -> Red Faction Armageddon
+        # Transport.Fever.2.v33872-GOG -> Transport Fever 2
+        for dotAndVersionReplacable in dotAndVersionReplacables:
+            if dotAndVersionReplacable in dirName:
+                newName = dirName.replace(dotAndVersionReplacable, "").replace(".", " ")
 
-    updatedName = filename
-    for fileType in fileTypes:
-        updatedName = updatedName.replace(f".{fileType}", "")
-    updatedName = perform_replacement(updatedName) # XXX why only here?
-    updatedName = " ".join(updatedName.split("."))
-    return updatedName
+                # if version number exists in file name...... 
+                # XXX oh lol, if version doesn't exist in the filename and the file has a "v" in it then this will break
+                # XXX the way to fix this would be to go backwards through the string making sure you hit numbers, spaces and periods, and stop when you hit the v.
+                # XXX and if you don't hit a v but run into another character that isnt a number, space or period, then you claim there is no version string
+                try:
+                    versionNumberIndex = newName.lower().rindex("v")
+                    outName = newName[:versionNumberIndex]
+                    # print(outName)
+                    return self.perform_directory_name_replacement(outName)
+                
+                # this is fine - this just means there was no version number in the filename
+                except ValueError:
+                    # print(newName)
+                    return self.perform_directory_name_replacement(newName)
+        
+        # Just_Cause_2_1.0.0.2_(50335)_win_gog
+        # Steel_Division_2_51957_(47364)_win_gog-1
+        # Streets_of_Rogue_95_(48531)_win_gog
+        if ")_win_gog" in dirName or ")_win_dev_gog" in dirName:
+            # if this doesn't exist, I want an exception to be triggered because the format is invalid
+            openBracketIndex = dirName.rindex("(")
+            updatedName = dirName[:openBracketIndex]
 
-class AbstractInputSanitizer(ABC):
-    @abstractmethod
-    def perform_directory_name_replacement(self, directoryName: str) -> str:
-        return ""
-    
-    @abstractmethod
-    def perform_filename_replacement(self, fileName: str) -> str:
-        return ""
+            # remove version and split something like
+            # Streets_of_Rogue_95_
+            updatedName = " ".join(updatedName.split("_")[:-2])
+            # print(updatedName)
+            return self.perform_directory_name_replacement(updatedName)
+        
+        for dotReplacable in dotReplacables:
+            if dotReplacable in dirName:
+                # print(dirName.replace(dotReplacable, "").replace(".", " "))
+                return self.perform_directory_name_replacement(dirName.replace(dotReplacable, "").replace(".", " "))
+        
+        for underscoreReplacable in underscoreReplacables:
+            if underscoreReplacable in dirName:
+                # print(dirName.replace(underscoreReplacable, "").replace("_", " "))
+                return self.perform_directory_name_replacement(dirName.replace(underscoreReplacable, "").replace("_", " "))
+        # print(dirName)
+        return dirName
+
+    def perform_filename_replacement(self, filename):
+        versionStringPossibleMatch = re.search(pattern, filename)
+        if versionStringPossibleMatch:
+            versionString = versionStringPossibleMatch.group(0)
+            newName = filename.replace(versionString, "")
+            nameSplit = newName.split(".")
+            outName = " ".join(nameSplit[:-1])
+            assert outName != ""
+            return outName
+
+        updatedName = filename
+        for fileType in fileTypes:
+            updatedName = updatedName.replace(f".{fileType}", "")
+        updatedName = self.perform_directory_name_replacement(updatedName) # XXX why only here?
+        updatedName = " ".join(updatedName.split("."))
+        return updatedName
 
 def main():
+    inputSanitizer = InputSanitizer()
     directories, filenames = [], []
     for path in paths:
         _, currDirectories, currFilenames = next(walk(path), (None, [], []))
         directories.extend(currDirectories)
         filenames.extend(currFilenames)
-    outputDirs = [perform_replacement(dirName) for dirName in directories]
-    outputFilenames = [perform_filename_replacement(filename) for filename in filenames]
+    outputDirs = [inputSanitizer.perform_directory_name_replacement(dirName) for dirName in directories]
+    outputFilenames = [inputSanitizer.perform_filename_replacement(filename) for filename in filenames]
 
     out = outputDirs + outputFilenames
 
