@@ -18,8 +18,9 @@ class ObservedDataStructure:
         return update_sock
 
     @sendUpdateDecorator
-    def __init__(self, fetchSocketToUpdate : Callable[[], SocketWrapper]):
+    def __init__(self, fetchSocketToUpdate : Callable[[], SocketWrapper], socket_name: str):
         self.fetchSocketToUpdate = fetchSocketToUpdate
+        self.socket_name = socket_name
         self.dict = {}
     
     @sendUpdateDecorator
@@ -28,6 +29,8 @@ class ObservedDataStructure:
 
     @sendUpdateDecorator
     def remove(self, sendable: Sendable):
+        print(f"remove called on {sendable} {self.socket_name}".encode('cp1252', errors='backslashreplace').decode('cp1252'))
+        # print(f"remove called on {sendable} {self.socket_name}")
         del self.dict[sendable.get_game_name_on_disk()]
     
     @sendUpdateDecorator
@@ -36,5 +39,8 @@ class ObservedDataStructure:
             self._add(sendable)
 
     def _add(self, sendable: Sendable):
+        print(f"add called on {sendable} {self.socket_name}".encode('cp1252', errors='backslashreplace').decode('cp1252'))
+
+        # print(f"add called on {sendable} {self.socket_name}")
         self.dict[sendable.game_name_on_disk] = asdict(sendable)
     
