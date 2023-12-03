@@ -1,6 +1,8 @@
 from typing import Type
 from ObjectRelationalMapper.ORMMappedObjects.ORMAbstractBase import ORMAbstractBase
-from ObjectRelationalMapper.StatementCreation.StatementCreatorBase import StatementCreatorBase
+from ObjectRelationalMapper.StatementCreation.StatementCreatorBase import (
+    StatementCreatorBase,
+)
 
 
 class TableSelectorPostgres(StatementCreatorBase):

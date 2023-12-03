@@ -6,17 +6,15 @@ gameTitleOnDisk = "Hello, I'm a game title"
 possibleTitleMatch1 = "Hello, I'm a game title (tm)"
 possibleTitleMatch2 = "Hello, I'm a game title 2"
 
+
 def create_user_input_required_queue_entry():
     possibleMatch1 = PossibleMatchQueueEntry(possibleTitleMatch1, "title 1", 0.91)
     possibleMatch2 = PossibleMatchQueueEntry(possibleTitleMatch2, "title 2", 0.98)
-    possibleMatches = [
-        possibleMatch1, 
-        possibleMatch2
-    ]
+    possibleMatches = [possibleMatch1, possibleMatch2]
     return UserInputRequiredQueueEntry(gameTitleOnDisk, possibleMatches)
 
 
-class UserInputRequiredQueueEntryTest(unittest.TestCase):    
+class UserInputRequiredQueueEntryTest(unittest.TestCase):
     def test_create(self):
         create_user_input_required_queue_entry()
 
@@ -30,5 +28,6 @@ class UserInputRequiredQueueEntryTest(unittest.TestCase):
         x.toDict()
         x.toDict()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

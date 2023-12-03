@@ -6,12 +6,17 @@ from Database.PostgresGameDAOFactory import PostgresGameDAOFactory
 from Server.Server import Server
 
 from State.StateCommunicatorFactory import StateCommunicatorFactory
-from State.StateCommunicatorQueues import StateCommunicationQueueWriter, StateCommunicationQueueReader
+from State.StateCommunicatorQueues import (
+    StateCommunicationQueueWriter,
+    StateCommunicationQueueReader,
+)
 
-from ObservedDataStructure.ObserverSocketHookupFactory import ObserverSocketHookupFactory
+from ObservedDataStructure.ObserverSocketHookupFactory import (
+    ObserverSocketHookupFactory,
+)
 from multiprocessing import Manager
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     postgresGameDAOFactory = PostgresGameDAOFactory()
     gameDAO = postgresGameDAOFactory.createGameDAO()
     gameDAO.create_tables()
@@ -28,11 +33,15 @@ if __name__ == '__main__':
     # next iteration of this would be having sockets that can be disconnected (and the messages get queued) and then reconnected and it will send all the queued messages along
     # the next iteration after that (assuming we are still sending full state and haven't moved to sending only the parts of state that have updated) would be to only send the most recent queued message
     observerSocketHookupFactory = ObserverSocketHookupFactory(websocketRegistry)
-    games_observable_data_structure = observerSocketHookupFactory.hookUpObservableDataStructure(GAMES)
+    games_observable_data_structure = (
+        observerSocketHookupFactory.hookUpObservableDataStructure(GAMES)
+    )
     games_observable_data_structure.batch_add(gameDAO.get_all_games())
     stateCommunicatorFactory = StateCommunicatorFactory()
-    stateCommunicator = stateCommunicatorFactory.createStateCommunicator(observerSocketHookupFactory, STATES, games_observable_data_structure)
-    
+    stateCommunicator = stateCommunicatorFactory.createStateCommunicator(
+        observerSocketHookupFactory, STATES, games_observable_data_structure
+    )
+
     m = Manager()
     queue = m.Queue()
     writer = StateCommunicationQueueWriter(queue)

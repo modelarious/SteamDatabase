@@ -1,6 +1,7 @@
 from QueueEntries.Sendable import SteamSendable
 from dataclasses import dataclass
 
+
 @dataclass
 class MatchQueueEntry(SteamSendable):
     game_name_on_disk: str
@@ -9,7 +10,7 @@ class MatchQueueEntry(SteamSendable):
 
     def get_game_name_from_steam(self):
         return self.game_name_from_steam
-    
+
     def get_game_name_on_disk(self):
         return self.game_name_on_disk
 

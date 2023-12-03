@@ -3,8 +3,8 @@ from threading import Event
 from State.States import STATES
 
 # socket is used for issuing commands from front end to back end
-COMMAND = '/command'
-GAMES = '/games'
+COMMAND = "/command"
+GAMES = "/games"
 
 
 # GAMES_SUMMARY = '/games_summary' # Would be nice to do
@@ -13,13 +13,11 @@ GAMES = '/games'
 # XXX Extending the above, when sending to the debug view it would be nice to just send the Sendable and SteamSendable
 # objects instead of the full sized objects to cut down on network traffic
 
-expectedSockets = set([
-    COMMAND,
-    GAMES
-])
+expectedSockets = set([COMMAND, GAMES])
 
 # add all States to expectedSockets
 expectedSockets |= STATES
+
 
 class WebsocketClientHandlerRegistry:
     def __init__(self):
@@ -42,17 +40,17 @@ class WebsocketClientHandlerRegistry:
         # loop until client closes connection
         self.__socketWrappers[socket_name].connection_loop()
 
-        # client has closed connection and we exit this context but leave the SocketWrapper 
+        # client has closed connection and we exit this context but leave the SocketWrapper
         # object in self.__socketWrappers so that others can wait on the internal queue and get
         # notified when the client re-establishes connecttion
-    
+
     def get_socket(self, socket_name):
         return self.__socketWrappers[socket_name]
-    
+
     def _internalCheckAllSocketsReady(self):
         currentSockets = set(self.__socketWrappers.keys())
         if currentSockets == expectedSockets:
-            #signal to any processes waiting for configuration
+            # signal to any processes waiting for configuration
             self.__allSocketsReady.set()
         else:
             print(f"waiting for {expectedSockets.difference(currentSockets)}")
