@@ -17,6 +17,7 @@ class ORMGame(ORMAbstractBase):
 
     @staticmethod
     def get_insertion_data(game_model: Game) -> tuple:
+        # XXX game_model is a dataclass - can just do astuple() from dataclasses module
         return (
             game_model.steam_id, 
             game_model.game_name_on_disk, 

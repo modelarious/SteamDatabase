@@ -31,6 +31,7 @@ class PostgresSelectedValues:
 		try:
 			return self._returned_data[self._get_class_name(ORMClass)][steam_id]
 		except:
+			print(f"failed to find info on {ORMClass} for {steam_id}")
 			return default_value
 
 	# if no games were returned from query, then return true
