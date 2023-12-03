@@ -25,7 +25,7 @@ class GameFromORMFactory:
 		screenshot_data = query_storage.get_associated_data(ORMScreenshotURLS, steam_id)
 		developer_data = query_storage.get_associated_data(ORMDevelopers, steam_id)
 		publisher_data = query_storage.get_associated_data(ORMPublishers, steam_id)
-		genre_data = query_storage.get_associated_data(ORMGenres, steam_id)
+		genre_data = query_storage.get_associated_data(ORMGenres, steam_id, default_value=[])
 		publishers = [
 			orm_publisher.publisher for orm_publisher in publisher_data
 		]

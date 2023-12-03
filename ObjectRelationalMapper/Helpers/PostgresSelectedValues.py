@@ -15,7 +15,7 @@
 #   12345: ORMGame(...)
 #   34567: ORMGame(...)
 # }
-from typing import Dict, List, Type, Union
+from typing import Dict, List, Type, Union, Optional, Any
 from ObjectRelationalMapper.ORMMappedObjects.ORMAbstractBase import ORMAbstractBase
 from ObjectRelationalMapper.ORMMappedObjects.ORMGame import ORMGame
 
@@ -27,8 +27,12 @@ class PostgresSelectedValues:
 		class_name = self._get_class_name(ORMClass)
 		self._returned_data[class_name] = self._group_values(ORMClass, orm_instances)
 
-	def get_associated_data(self, ORMClass: Type[ORMAbstractBase], steam_id: int) -> Dict[int,Union[ORMAbstractBase, List[ORMAbstractBase]]]:
-		return self._returned_data[self._get_class_name(ORMClass)][steam_id]
+	def get_associated_data(self, ORMClass: Type[ORMAbstractBase], steam_id: int, default_value: Optional[Any] = None) -> Dict[int,Union[ORMAbstractBase, List[ORMAbstractBase]]]:
+		try:
+			return self._returned_data[self._get_class_name(ORMClass)][steam_id]
+		except:
+			print(f"failed to find info on {ORMClass} for {steam_id}")
+			return default_value
 
 	# if no games were returned from query, then return true
 	def games_were_returned(self) -> bool:

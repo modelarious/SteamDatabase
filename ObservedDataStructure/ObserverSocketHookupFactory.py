@@ -9,4 +9,4 @@ class ObserverSocketHookupFactory:
     def hookUpObservableDataStructure(self, socketName: str) -> ObservedDataStructure:
         def fetchSocket():
             return self.websocketRegistry.get_socket(socketName)
-        return ObservedDataStructure(fetchSocket)
+        return ObservedDataStructure(fetchSocket, socketName)
