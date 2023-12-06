@@ -28,7 +28,7 @@ class StartGameMatchCommand(Command):
         steamGamesList = steamGameListFetcher.fetch_games_list()
 
         dirListFetcher = DirListFetcherMOCKDATA()
-        game_titles_on_disk_mock = dirListFetcher.get_dirs(self.path_on_disk)
+        # game_titles_on_disk_mock = dirListFetcher.get_dirs(self.path_on_disk)
         dirListFetcher = DirListFetcher()
         game_titles_on_disk = dirListFetcher.get_files_and_dirs(self.path_on_disk)
 
