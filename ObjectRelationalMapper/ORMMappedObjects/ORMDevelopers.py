@@ -3,6 +3,7 @@ from GameModel import Game
 from dataclasses import dataclass
 from ObjectRelationalMapper.ORMMappedObjects.ORMAbstractBase import ORMAbstractBase
 
+
 @dataclass
 class ORMDevelopers(ORMAbstractBase):
     steam_id: int
@@ -10,8 +11,8 @@ class ORMDevelopers(ORMAbstractBase):
 
     @staticmethod
     def get_table_name() -> str:
-        return 'Developers'
-    
+        return "Developers"
+
     @staticmethod
     def get_insertion_data(game_model: Game) -> tuple:
         developers = game_model.app_detail.developers
@@ -26,11 +27,8 @@ class ORMDevelopers(ORMAbstractBase):
 
     @staticmethod
     def get_foreign_key_mappings() -> Dict[str, str]:
-        return {"steam_id" : "Games"}
-    
+        return {"steam_id": "Games"}
+
     @staticmethod
     def get_non_unique_mappings() -> List[str]:
-        return [
-            'steam_id',
-            'developer'
-        ]
+        return ["steam_id", "developer"]

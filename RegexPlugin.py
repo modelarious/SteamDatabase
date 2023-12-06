@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from os import replace, walk
 import re
 
-'''
+"""
 dirs snuck through:
 
 
@@ -24,16 +24,18 @@ Creeper World 4 v2.0.1-
 Wuppo Definitive Edition v1 0 37
 There Is No Game Wrong Dimension v1.0.29-
 Shantae And The Seven Sirens v731089-
-'''
+"""
+
 
 class AbstractInputSanitizer(ABC):
     @abstractmethod
     def perform_directory_name_replacement(self, directoryName: str) -> str:
         return ""
-    
+
     @abstractmethod
     def perform_filename_replacement(self, fileName: str) -> str:
         return ""
+
 
 # XXX temporary
 skip = [
@@ -44,7 +46,7 @@ skip = [
     "FL Studio",
     "CCleaner",
     "Matt Halpern",
-    "Linux"
+    "Linux",
 ]
 directlyReplaceables = [
     "REPACK2-KaOs",
@@ -71,8 +73,7 @@ directlyReplaceables = [
     "full",
     "Update",
     "MULTi9",
-    "MULTi19"
-    "Vigilancia.y.Seguridad",
+    "MULTi19" "Vigilancia.y.Seguridad",
     "Animation.Fix",
     "rzr-",
     "codex-",
@@ -83,7 +84,7 @@ directlyReplaceables = [
     "-RUNE",
     "- UE",
     "-TENOKE",
-    "- RELOADED by CarlesNeo"
+    "- RELOADED by CarlesNeo",
 ]
 
 regexesToRemove = {
@@ -97,7 +98,7 @@ dotAndVersionReplacables = [
     "-GOG",
     "-CODEX",
     "-SiMPLEX",
-    "-THETA"
+    "-THETA",
 ]
 
 dotReplacables = [
@@ -113,14 +114,10 @@ dotReplacables = [
     "-PROPHET",
     "-EMPRESS",
     "-VREX",
-    "Early.Access"
+    "Early.Access",
 ]
 
-underscoreReplacables = [
-    "-DINOByTES",
-    "-FLT",
-    "Razor1911"
-]
+underscoreReplacables = ["-DINOByTES", "-FLT", "Razor1911"]
 
 paths = [
     r"C:\Users\micha\Documents\BiglyBT Downloads",
@@ -133,23 +130,14 @@ paths = [
     r"\\TOWER\Big\games",
 ]
 
-fileTypes = [
-    "rar",
-    "zip",
-    "7z",
-    "gz",
-    "tar.zst",
-    "iso"
-]
+fileTypes = ["rar", "zip", "7z", "gz", "tar.zst", "iso"]
 
-fileNameReplaceables = [
-    "rld-",
-    "-GOG",
-    "-DARKZER0"
-]
+fileNameReplaceables = ["rld-", "-GOG", "-DARKZER0"]
+
 
 def remove_extra_spaces(name):
     return " ".join(word for word in name.split(" ") if word != "")
+
 
 # on windows - when a folder is a copy of another folder, windows adds a -1 to the end of the file, the next copy is -2, etc
 # this wrapper removes a -1 (but not any other copy indicator like -2)
@@ -159,18 +147,22 @@ def remove_tailing_minus_one_wrapper(func):
         if name[-2:] == "-1":
             return name[:-2]
         return name
+
     return wrapper
 
+
 def perform_strip_wrapper(func):
-    def wrapper( *args, **kwargs):
+    def wrapper(*args, **kwargs):
         name = func(*args, **kwargs)
         return name.strip()
+
     return wrapper
+
 
 def remove_parenthesis_content(name):
     # Replace content between parentheses, square brackets, or curly braces
     # (including the brackets themselves) with an empty string.
-    return re.sub(r'\s?[\[\(\{].*?[\]\)\}]\s?', ' ', name).strip()
+    return re.sub(r"\s?[\[\(\{].*?[\]\)\}]\s?", " ", name).strip()
 
 
 def too_many_letters(s):
@@ -189,31 +181,38 @@ def too_many_letters(s):
 
 
 class InputSanitizer(AbstractInputSanitizer):
-
     @remove_tailing_minus_one_wrapper
     @perform_strip_wrapper
-    def perform_directory_name_replacement(self, dirName, try_removing_version_number: bool):
+    def perform_directory_name_replacement(
+        self, dirName, try_removing_version_number: bool
+    ):
         # print(f"starting with {dirName}")
-        
+
         for skippable in skip:
             if skippable.lower() in dirName.lower():
                 return "-" * 100
-        
+
         # try simple replacement cases first
         for directlyReplaceable in directlyReplaceables:
             if directlyReplaceable in dirName:
-                # print(dirName, "-->", "'" + perform_directory_name_replacement(dirName.replace(directlyReplaceable, "")) + "'") 
+                # print(dirName, "-->", "'" + perform_directory_name_replacement(dirName.replace(directlyReplaceable, "")) + "'")
                 # print(perform_directory_name_replacement(dirName.replace(directlyReplaceable, "")))
-                return self.perform_directory_name_replacement(dirName.replace(directlyReplaceable, ""), try_removing_version_number)
+                return self.perform_directory_name_replacement(
+                    dirName.replace(directlyReplaceable, ""),
+                    try_removing_version_number,
+                )
 
         # check case where it is a KaOs repack
-        # AMID.EVIL.v2172c.REPACK-KaOs -> AMID EVIL 
+        # AMID.EVIL.v2172c.REPACK-KaOs -> AMID EVIL
         # Red.Faction.Armageddon.v1.01.REPACK-KaOs -> Red Faction Armageddon
         # Transport.Fever.2.v33872-GOG -> Transport Fever 2
         for dotAndVersionReplacable in dotAndVersionReplacables:
             if dotAndVersionReplacable in dirName:
-                return self.perform_directory_name_replacement(dirName.replace(dotAndVersionReplacable, "").replace(".", " "), try_removing_version_number)
-        
+                return self.perform_directory_name_replacement(
+                    dirName.replace(dotAndVersionReplacable, "").replace(".", " "),
+                    try_removing_version_number,
+                )
+
         # Just_Cause_2_1.0.0.2_(50335)_win_gog
         # Steel_Division_2_51957_(47364)_win_gog-1
         # Streets_of_Rogue_95_(48531)_win_gog
@@ -226,17 +225,25 @@ class InputSanitizer(AbstractInputSanitizer):
             # Streets_of_Rogue_95_
             updatedName = " ".join(updatedName.split("_")[:-2])
             # print(updatedName)
-            return self.perform_directory_name_replacement(updatedName, try_removing_version_number)
-        
+            return self.perform_directory_name_replacement(
+                updatedName, try_removing_version_number
+            )
+
         for dotReplacable in dotReplacables:
             if dotReplacable in dirName:
                 # print(dirName.replace(dotReplacable, "").replace(".", " "))
-                return self.perform_directory_name_replacement(dirName.replace(dotReplacable, "").replace(".", " "), try_removing_version_number)
-        
+                return self.perform_directory_name_replacement(
+                    dirName.replace(dotReplacable, "").replace(".", " "),
+                    try_removing_version_number,
+                )
+
         for underscoreReplacable in underscoreReplacables:
             if underscoreReplacable in dirName:
                 # print(dirName.replace(underscoreReplacable, "").replace("_", " "))
-                return self.perform_directory_name_replacement(dirName.replace(underscoreReplacable, "").replace("_", " "), try_removing_version_number)
+                return self.perform_directory_name_replacement(
+                    dirName.replace(underscoreReplacable, "").replace("_", " "),
+                    try_removing_version_number,
+                )
 
         for reg_exp, to_replace in regexesToRemove.items():
             if re.search(reg_exp, dirName):
@@ -256,38 +263,49 @@ class InputSanitizer(AbstractInputSanitizer):
             if re.search(r"\b[Bb]uild\b", dirName):
                 try:
                     buildIndex = dirName.lower().rindex("build")
-                    possibleVersionNumber = dirName[buildIndex + len("build"):]
+                    possibleVersionNumber = dirName[buildIndex + len("build") :]
                     if too_many_letters(possibleVersionNumber):
                         # print(f"there are {count_letters(possibleVersionNumber)} letters, therefore, not doing replacement")
-                        return self.perform_directory_name_replacement(dirName, try_removing_version_number)
+                        return self.perform_directory_name_replacement(
+                            dirName, try_removing_version_number
+                        )
 
                     outName = dirName[:buildIndex]
-                    return self.perform_directory_name_replacement(outName, try_removing_version_number)
+                    return self.perform_directory_name_replacement(
+                        outName, try_removing_version_number
+                    )
                 except ValueError:
-                    return self.perform_directory_name_replacement(dirName, try_removing_version_number)
+                    return self.perform_directory_name_replacement(
+                        dirName, try_removing_version_number
+                    )
             if "v" in dirName.lower():
                 if "VR" in dirName:
-                    return self.perform_directory_name_replacement(dirName, try_removing_version_number)
+                    return self.perform_directory_name_replacement(
+                        dirName, try_removing_version_number
+                    )
                 # print("Found a v in the name")
-                # if version number exists in file name...... 
+                # if version number exists in file name......
                 try:
                     versionNumberIndex = dirName.lower().rindex("v")
-                    possibleVersionNumber = dirName[versionNumberIndex + 1:]
+                    possibleVersionNumber = dirName[versionNumberIndex + 1 :]
                     # print(f"possible version number is {possibleVersionNumber}")
                     # if the possible version string contains more than one letter, it's likely not a version string
                     if too_many_letters(possibleVersionNumber):
                         # print(f"there are too many letters therefore, not doing replacement")
-                        return self.perform_directory_name_replacement(dirName, try_removing_version_number)
+                        return self.perform_directory_name_replacement(
+                            dirName, try_removing_version_number
+                        )
 
                     outName = dirName[:versionNumberIndex]
-                    return self.perform_directory_name_replacement(outName, try_removing_version_number)
-                
+                    return self.perform_directory_name_replacement(
+                        outName, try_removing_version_number
+                    )
+
                 # this is fine - this just means there was no version number in the filename
                 except ValueError:
-                    return self.perform_directory_name_replacement(dirName, try_removing_version_number)
-            
-                    
-
+                    return self.perform_directory_name_replacement(
+                        dirName, try_removing_version_number
+                    )
 
             # print("TRYING TO REPLACE")
             pattern = r"\d+(\.\d+)+"
@@ -295,13 +313,17 @@ class InputSanitizer(AbstractInputSanitizer):
             match = re.search(pattern, dirName)
             # print(f"match found? {match}")
             if match:
-                return self.perform_directory_name_replacement(dirName.replace(match.group(), ""), try_removing_version_number)
-            return self.perform_directory_name_replacement(dirName, try_removing_version_number)
-        
+                return self.perform_directory_name_replacement(
+                    dirName.replace(match.group(), ""), try_removing_version_number
+                )
+            return self.perform_directory_name_replacement(
+                dirName, try_removing_version_number
+            )
+
         for sep in [".", "_"]:
             dirName = " ".join(dirName.split(sep))
         return remove_extra_spaces(dirName)
-    
+
     def possibly_replace(self, pattern: str, filename: str) -> str:
         versionStringPossibleMatch = re.search(pattern, filename)
         if versionStringPossibleMatch:
@@ -311,7 +333,7 @@ class InputSanitizer(AbstractInputSanitizer):
         return filename
 
     def perform_filename_replacement(self, filename: str) -> str:
-        #match a "v" followed by a number - that will match the entire version string and file extension
+        # match a "v" followed by a number - that will match the entire version string and file extension
         # ex: Tales.of.Majeyal.v1.7.2.ALl.DLC.GOG.rar -> matches v1.7.2.ALl.DLC.GOG.rar
         # OR
         # match a series of 2 or more numbers followed by a file extension (rar, zip, 7z, etc) like "Ai.War.2.138962.rar" would match the "138962.rar"
@@ -325,7 +347,7 @@ class InputSanitizer(AbstractInputSanitizer):
         newName = self.possibly_replace(version_pattern, newName)
         newName = self.possibly_replace(beta_pattern, newName)
         newName = self.possibly_replace(early_access_pattern, newName)
-            
+
         for replaceable in fileNameReplaceables:
             newName = newName.replace(replaceable, "")
 
@@ -347,16 +369,19 @@ def main():
         _, currDirectories, currFilenames = next(walk(path), (None, [], []))
         directories.extend(currDirectories)
         filenames.extend(currFilenames)
-    outputDirs = [f"    [\"{dirName}\", \"{inputSanitizer.perform_directory_name_replacement(dirName, True)}\"]," for dirName in directories]
+    outputDirs = [
+        f'    ["{dirName}", "{inputSanitizer.perform_directory_name_replacement(dirName, True)}"],'
+        for dirName in directories
+    ]
     # outputFilenames = [f"    [\"{filename}\", \"{inputSanitizer.perform_filename_replacement(filename)}\"]," for filename in filenames]
-    
+
     # out = outputDirs + outputFilenames
 
     print("[")
     for x in outputDirs:
         print(x)
     print("]")
-    
+
 
 if __name__ == "__main__":
     main()

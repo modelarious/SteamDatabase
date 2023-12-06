@@ -2,19 +2,26 @@ from Server.WebsocketClientHandlerRegistry import WebsocketClientHandlerRegistry
 from Server.Server import Server
 
 from State.StateCommunicatorFactory import StateCommunicatorFactory
-from ObservedDataStructure.ObserverSocketHookupFactory import ObserverSocketHookupFactory
+from ObservedDataStructure.ObserverSocketHookupFactory import (
+    ObserverSocketHookupFactory,
+)
 
 from multiprocessing import Manager
 
 from SteamDatabase import match_steam_games_to_games_on_disk_and_store
-from ExternalDataFetchers.SteamGameListFetcherMOCKDATA import SteamGameListFetcherMOCKDATA
+from ExternalDataFetchers.SteamGameListFetcherMOCKDATA import (
+    SteamGameListFetcherMOCKDATA,
+)
 from InternalDataFetchers.DirListFetcherMOCKDATA import DirListFetcherMOCKDATA
 
-from State.StateCommunicatorQueues import StateCommunicationQueueWriter, StateCommunicationQueueReader
+from State.StateCommunicatorQueues import (
+    StateCommunicationQueueWriter,
+    StateCommunicationQueueReader,
+)
 
 
 m = Manager()
-# XXX this is going to have to change, because you'll 
+# XXX this is going to have to change, because you'll
 # need one for each function in the StateCommunicationInterface
 # which will get out of hand!
 # consider a "StateCommunicatorQueueContainerFactor" which takes an instance of the manager and creates a
@@ -33,7 +40,9 @@ print("all needed sockets have been connected")
 # now that we are guaranteed that the sockets are connected, we can use them
 observerSocketHookupFactory = ObserverSocketHookupFactory(websocketRegistry, m)
 stateCommunicatorFactory = StateCommunicatorFactory()
-stateCommunicator = stateCommunicatorFactory.createStateCommunicator(observerSocketHookupFactory)
+stateCommunicator = stateCommunicatorFactory.createStateCommunicator(
+    observerSocketHookupFactory
+)
 
 # XXX this is shared with the cli - use abstract factory pattern to make mock data
 # steamGameListFetcher = SteamGameListFetcherMOCKDATA()

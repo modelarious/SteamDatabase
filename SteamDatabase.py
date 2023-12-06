@@ -11,6 +11,7 @@ from queue import Empty
 from typing import Callable
 from Server.SocketWrapper import SocketWrapper
 
+
 def build_steam_title_map(steamGamesList):
     steamTitleMap = dict()
     for gameObj in steamGamesList:
@@ -18,7 +19,13 @@ def build_steam_title_map(steamGamesList):
         steamTitleMap[gameTitle] = gameObj
     return steamTitleMap
 
-def ui_handling(userInputRequiredQueue, gameNameMatchesProcessingQueue, stateCommunicator, input_socket_fetch_function):
+
+def ui_handling(
+    userInputRequiredQueue,
+    gameNameMatchesProcessingQueue,
+    stateCommunicator,
+    input_socket_fetch_function,
+):
     queuedGames = []
     while queuedGames != [END_OF_QUEUE]:
         print(f"queuedGames = {queuedGames}")
@@ -26,9 +33,11 @@ def ui_handling(userInputRequiredQueue, gameNameMatchesProcessingQueue, stateCom
         input_socket = input_socket_fetch_function()
         match_queue_entry = MatchQueueEntry(**input_socket.get_message())
 
-        #transistion to the info retrieval state
-        stateCommunicator.setQueuedForInfoRetrievalStateFromAwaitingUser(match_queue_entry)
-        gameNameMatchesProcessingQueue.put(match_queue_entry) 
+        # transistion to the info retrieval state
+        stateCommunicator.setQueuedForInfoRetrievalStateFromAwaitingUser(
+            match_queue_entry
+        )
+        gameNameMatchesProcessingQueue.put(match_queue_entry)
 
         # gather all currently queued items
         inputAvailable = True
@@ -38,7 +47,7 @@ def ui_handling(userInputRequiredQueue, gameNameMatchesProcessingQueue, stateCom
                 queuedGames.append(game)
             except Empty:
                 inputAvailable = False
-        
+
         # remove the one we just dealt with from the array to ensure we approach the exit condition
         for queuedGame in queuedGames:
             if queuedGame.game_name_on_disk == match_queue_entry.game_name_on_disk:
@@ -48,11 +57,18 @@ def ui_handling(userInputRequiredQueue, gameNameMatchesProcessingQueue, stateCom
             errorString = f"\n\n\n\n\n\n\n\nFAILED TO FIND MATCH FOR GAME {match_queue_entry}\n\n\n\n\n\n\n\n\n"
             raise Exception(errorString)
 
+
 # XXX this is ripe for refactor.
 # XXX Go all Dependency Injection on it's ass.
-def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, stateCommunicator: StateCommunicatorInterface, pathOnDisk: str, input_socket_fetch_function: Callable[[], SocketWrapper]):
+def match_steam_games_to_games_on_disk_and_store(
+    steamGamesList,
+    gamesOnDisk,
+    stateCommunicator: StateCommunicatorInterface,
+    pathOnDisk: str,
+    input_socket_fetch_function: Callable[[], SocketWrapper],
+):
     stateCommunicator.batchSetUpcomingState(gamesOnDisk)
-    
+
     quickSteamTitleMap = build_steam_title_map(steamGamesList)
 
     print("creating manager and queues")
@@ -68,20 +84,38 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
     print("finished constructing necessary objects")
 
     print("launching game storage process")
-    gameLookupAndStorageProcess = Process(target=game_lookup_and_storage_process, args=(gameNameMatchesProcessingQueue, gameDAO, stateCommunicator, gameFactory))
+    gameLookupAndStorageProcess = Process(
+        target=game_lookup_and_storage_process,
+        args=(gameNameMatchesProcessingQueue, gameDAO, stateCommunicator, gameFactory),
+    )
     gameLookupAndStorageProcess.start()
     print("finished launching game storage process")
-    
+
     # This process goes through the steamGamesList and applies the min edit dist algo. (uses a pool of processes to accomplish this quicker)
     # adds matches that are 1.0 to the GamePerfectMatches queue, adds anything else UserInputRequired queue for user input process to consume
     print("launching minimum edit distance handling process")
-    minimumEditDistanceProcess = Process(target=minimum_edit_distance_processing, args=(userInputRequiredQueue, gameNameMatchesProcessingQueue, steamGamesList, gamesOnDisk, quickSteamTitleMap, stateCommunicator))
+    minimumEditDistanceProcess = Process(
+        target=minimum_edit_distance_processing,
+        args=(
+            userInputRequiredQueue,
+            gameNameMatchesProcessingQueue,
+            steamGamesList,
+            gamesOnDisk,
+            quickSteamTitleMap,
+            stateCommunicator,
+        ),
+    )
     minimumEditDistanceProcess.start()
     print("finished launching minimum edit distance handling process")
 
     # this is intendid to be blocking
     print("launching user input handling")
-    ui_handling(userInputRequiredQueue, gameNameMatchesProcessingQueue, stateCommunicator, input_socket_fetch_function)
+    ui_handling(
+        userInputRequiredQueue,
+        gameNameMatchesProcessingQueue,
+        stateCommunicator,
+        input_socket_fetch_function,
+    )
     print("finished user input handling")
 
     # this process will signal to the user input process that it is finished by putting END_OF_QUEUE
@@ -95,7 +129,6 @@ def match_steam_games_to_games_on_disk_and_store(steamGamesList, gamesOnDisk, st
 
     unableToInsert = gameLookupAndStorageProcess.join()
     print(f"unableToInsert={unableToInsert}")
-    
 
 
 # One process for going through the steamGamesList and applying the min edit dist algo - adds matches that are 1.0 to the GamePerfectMatches queue, adds anything else UserInputRequired queue for user input process to consume

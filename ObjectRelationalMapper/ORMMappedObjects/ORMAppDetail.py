@@ -3,6 +3,7 @@ from GameModel import Game
 from dataclasses import dataclass
 from ObjectRelationalMapper.ORMMappedObjects.ORMAbstractBase import ORMAbstractBase
 
+
 @dataclass
 class ORMAppDetail(ORMAbstractBase):
     steam_id: int
@@ -16,8 +17,8 @@ class ORMAppDetail(ORMAbstractBase):
 
     @staticmethod
     def get_table_name() -> str:
-        return 'AppDetails'
-    
+        return "AppDetails"
+
     @staticmethod
     def get_insertion_data(game_model: Game) -> tuple:
         app_detail = game_model.app_detail
@@ -32,31 +33,29 @@ class ORMAppDetail(ORMAbstractBase):
             app_detail.background_image_url,
         )
         return app_detail_data
-    
+
     @staticmethod
     def needs_multiple_statements() -> bool:
         return False
 
     @staticmethod
     def get_primary_key() -> Tuple[str]:
-        return ('steam_id')
-    
+        return "steam_id"
+
     @staticmethod
     def get_foreign_key_mappings() -> Dict[str, str]:
-        return {"steam_id" : "Games"}
-    
+        return {"steam_id": "Games"}
+
     @staticmethod
     def get_non_unique_mappings() -> List[str]:
         return [
-            'detailed_description',
-            'about_the_game',
-            'short_description',
-            'metacritic_score',
-            'controller_support'
+            "detailed_description",
+            "about_the_game",
+            "short_description",
+            "metacritic_score",
+            "controller_support",
         ]
-    
+
     @staticmethod
     def get_nullable_fields() -> List[str]:
-        return [
-            'metacritic_score'
-        ]
+        return ["metacritic_score"]
