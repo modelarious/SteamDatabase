@@ -27,7 +27,7 @@ def ui_handling(
 ):
     queuedGames = []
     while queuedGames != [END_OF_QUEUE]:
-        print(f"queuedGames = {queuedGames}")
+        # print(f"queuedGames = {queuedGames}")
         # block on waiting for message from socket from user input section
         input_socket = input_socket_fetch_function()
         match_queue_entry = MatchQueueEntry(**input_socket.get_message())
@@ -66,6 +66,10 @@ def match_steam_games_to_games_on_disk_and_store(
     pathOnDisk: str,
     input_socket_fetch_function: Callable[[], SocketWrapper],
 ):
+    if gamesOnDisk == []:
+        print("WARN: skipping processing because gamesOnDisk is empty")
+        return
+
     stateCommunicator.batchSetUpcomingState(gamesOnDisk)
 
     quickSteamTitleMap = build_steam_title_map(steamGamesList)

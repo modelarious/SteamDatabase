@@ -5,6 +5,7 @@ from ExternalDataFetchers.SteamAPIDataFetcher import (
     IncorrectAppTypeException,
     NoResponseException,
     ResponseUnsuccesfulException,
+    BadResponseException
 )
 from Utilities.Constants import END_OF_QUEUE
 from psycopg2.errors import UniqueViolation
@@ -32,21 +33,21 @@ def game_lookup_and_storage_process(
     unableToInsert = []
     gnmpe = gameNameMatchesProcessingQueue.get()
     while gnmpe != END_OF_QUEUE:
-        print("got ", gnmpe)
+        # print("got ", gnmpe)
         gameNameOnDisk = gnmpe.get_game_name_on_disk()
         stateCommunicator.setInfoRetrievalActiveState(gnmpe)
-        print("set ", gnmpe, "to info retrieval")
+        # print("set ", gnmpe, "to info retrieval")
         try:
             game = gameFactory.create(gnmpe)
-            print("created game")
+            # print("created game")
             try:
-                print("try to commit game")
+                # print("try to commit game")
                 gameDAO.commit_game(game)
                 stateCommunicator.setStoredState(game)
-                print("success")
+                # print("success")
             except UniqueViolation as e:
-                print("failure")
-                errorString = f"Unable to insert: {gnmpe.get_steam_id_number()}, {gameNameOnDisk}\n{e}\ngame={game}"
+                # print("failure")
+                errorString = f"Unable to insert: {gnmpe.get_steam_id_number()}, {gameNameOnDisk}\n{e}\ngame_name_on_disk={game.game_name_on_disk}"
                 raise DatabaseInsertException(errorString)
 
         # YYY on exceptions, should I be tracking a state change to error?
@@ -56,6 +57,7 @@ def game_lookup_and_storage_process(
             ResponseUnsuccesfulException,
             IncorrectAppTypeException,
             DatabaseInsertException,
+            BadResponseException
         ) as e:
             stateCommunicator.transitionToErrorState(ErrorSendable(gnmpe, e))
             unableToInsert.append(gameNameOnDisk)

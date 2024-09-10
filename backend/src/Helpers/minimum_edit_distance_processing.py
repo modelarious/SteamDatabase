@@ -120,6 +120,9 @@ def minimum_edit_distance_processing(
     numDesignatedCores = min(max(1, availableCores), MAX_WORKER_COUNT)
     print(f"numDesignatedCores = {numDesignatedCores}")
 
+    # XXX this is because Windows kept failing to allocate resources when I maxed out all available cores
+    numDesignatedCores = int(numDesignatedCores//2)
+
     print("starting process pool executor")
     with ProcessPoolExecutor(
         max_workers=numDesignatedCores

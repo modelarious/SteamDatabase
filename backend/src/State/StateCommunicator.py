@@ -60,7 +60,7 @@ class StateCommunicator(StateCommunicatorInterface):
             self.internalStateTracker.track(sendable, self.upcoming)
 
     def setFindingNameActiveState(self, gameTitleOnDisk: str):
-        print(f"setFindingNameActiveState({gameTitleOnDisk})")
+        # print(f"setFindingNameActiveState({gameTitleOnDisk})")
         sendable = Sendable(gameTitleOnDisk)
         self.upcoming.remove(sendable)
         self.findingNameActive.add(sendable)
@@ -69,7 +69,7 @@ class StateCommunicator(StateCommunicatorInterface):
     def setAwaitingUserInputState(
         self, userInputRequiredQueueEntry: UserInputRequiredQueueEntry
     ):
-        print(f"setAwaitingUserInputState({userInputRequiredQueueEntry})")
+        # print(f"setAwaitingUserInputState({userInputRequiredQueueEntry})")
         self.findingNameActive.remove(userInputRequiredQueueEntry)
         self.awaitingUser.add(userInputRequiredQueueEntry)
         self.internalStateTracker.track(userInputRequiredQueueEntry, self.awaitingUser)

@@ -75,8 +75,8 @@ class AppDetailFactory:
         basic_log_message = f"{app_id} has no {field_name}. "
         basic_logger.error(basic_log_message)
 
-        extended_message = f"{basic_log_message} Context={app_detail_response}"
-        extended_logger.error(extended_message)
+        # extended_message = f"{basic_log_message} Context={app_detail_response}"
+        # extended_logger.error(extended_message)
 
     def _get_developers(self, app_detail_response, app_id):
         if "developers" in app_detail_response:

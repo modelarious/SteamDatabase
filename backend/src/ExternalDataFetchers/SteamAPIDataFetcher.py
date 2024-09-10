@@ -2,6 +2,12 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 from ExternalDataFetchers.AppDetail import AppDetailFactory, AppDetail
 import requests
+from json.decoder import JSONDecodeError
+
+
+
+class BadResponseException(Exception):
+    pass
 
 
 class NoResponseException(Exception):
@@ -30,6 +36,12 @@ class SteamAPIDataFetcher:
 
     def get_app_detail(self, steam_id: int) -> Optional[AppDetail]:
         URL = f"https://store.steampowered.com/api/appdetails?appids={steam_id}"
+        try:
+            request_return = requests.get(url=URL)
+            steam_response = request_return.json()
+        except JSONDecodeError:
+            raise BadResponseException(f"Had an issue while dealing with {URL} - response was not decodable as JSON {request_return.text}")
+
         request_return = requests.get(url=URL)
         steam_response = request_return.json()
         if not steam_response:

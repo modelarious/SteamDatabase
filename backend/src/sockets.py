@@ -10,13 +10,27 @@ from State.StateCommunicatorQueues import (
     StateCommunicationQueueWriter,
     StateCommunicationQueueReader,
 )
-
+from ScheduledTasks.Clustering import run_recommendations
 from ObservedDataStructure.ObserverSocketHookupFactory import (
     ObserverSocketHookupFactory,
 )
 from multiprocessing import Manager
+import schedule
+import time
+import threading
+ 
+
+def run_scheduler():
+    while True:
+        schedule.run_pending()
+        time.sleep(60)
+
+schedule.every().day.at("10:00").do(run_recommendations)
 
 if __name__ == "__main__":
+    scheduler_thread = threading.Thread(target=run_scheduler)
+    scheduler_thread.start()
+
     postgresGameDAOFactory = PostgresGameDAOFactory()
     gameDAO = postgresGameDAOFactory.createGameDAO()
     gameDAO.create_tables()

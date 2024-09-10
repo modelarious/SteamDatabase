@@ -18,7 +18,7 @@ class SocketWrapper:
             # message would be None if client closed the connection unexpectedly
             if received_message != None:
                 json_message = loads(received_message)
-                print(f"received {json_message} on {self.socket_name}")
+                # print(f"received {json_message} on {self.socket_name}")
                 self.received_message_queue.put(json_message)
 
             return received_message

@@ -255,7 +255,7 @@ class InputSanitizer(AbstractInputSanitizer):
             dirName = dirName[:-2]
         # print(f"after is {dirName}")
 
-        print(f"working on removing version number from {dirName}")
+        # print(f"working on removing version number from {dirName}")
         if try_removing_version_number:
             # if we've already tried to remove the version number, don't try again
             try_removing_version_number = False

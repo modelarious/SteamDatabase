@@ -4,7 +4,8 @@ from os import getenv
 
 class PostgresConnectionFactory:
     def createConnection(self):
-        host = "127.0.0.1"
+        # host = "127.0.0.1"
+        host = "192.168.1.75"
 
         # detect if running in docker compose env, if so, point to the database defined there instead
         docker_switch = getenv("DOCKER_ENV")
