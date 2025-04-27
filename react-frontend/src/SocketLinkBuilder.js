@@ -2,7 +2,7 @@ const autoBind = require('auto-bind');
 
 export class SocketLinkBuilder {
 	constructor() {
-		const backendServerIP = "127.0.0.1"
+		const backendServerIP = "192.168.1.75";
 		const backendServerPort = 3091;
 		this.socketLinkStart = `ws://${backendServerIP}:${backendServerPort}`;
   

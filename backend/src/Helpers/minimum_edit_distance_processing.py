@@ -125,9 +125,6 @@ def minimum_edit_distance_processing(
         max_workers=numDesignatedCores
     ) as MinimumEditDistanceProcessPool:
         print("created process pool executor")
-        # future = MinimumEditDistanceProcessPool.submit(pow, 323, 1235)
-        # executor.map(is_prime, PRIMES)
-
         # fastest method of exhausting an iterable when you don't care about the output
         # https://code.activestate.com/lists/python-ideas/23364
         # exhaust_iterable = deque(maxlen=0).extend

@@ -36,6 +36,7 @@ class StartGameMatchCommand(Command):
         postgres_dao = postgres_dao_factory.createGameDAO()
         game_titles_from_postgres = set(postgres_dao.get_titles_of_all_stored_games())
 
+        
         filtered_game_titles = sorted(
             list(
                 set(

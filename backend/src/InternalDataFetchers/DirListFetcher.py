@@ -9,7 +9,7 @@ class DirListFetcher:
         try:
             targetDirectoryInfo = next(dirInfoIterator)
         except StopIteration:
-            return False
+            return []
         _, dirs, files = targetDirectoryInfo
         inputSanitizer = InputSanitizer()
         dirs = [
